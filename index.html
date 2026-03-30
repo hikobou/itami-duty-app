@@ -1,366 +1,398 @@
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Search, Bus, Clock3, AlertTriangle, CarFront, BadgeInfo, CalendarDays } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤番検索システム 2</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Meiryo, sans-serif;
+      background: #020617;
+      color: #f8fafc;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .hero {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 32px;
+    }
+    .sub {
+      color: #94a3b8;
+      margin: 0;
+    }
+    .top-row {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: 16px;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 15px;
+    }
+    button:hover { filter: brightness(1.12); }
+    .mode-btn.active { filter: brightness(1.25); }
+    .mode-btn.inactive { filter: brightness(0.92); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .search {
+      width: 100%;
+      height: 48px;
+      border-radius: 18px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: #f8fafc;
+      padding: 0 16px;
+      font-size: 16px;
+      outline: none;
+    }
+    .search:focus {
+      border-color: #64748b;
+      box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+    }
+    .quick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .quick button {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+    }
+    .info, .empty, .result-card {
+      padding: 20px;
+    }
+    .info p, .empty p { margin: 0 0 10px; color: #cbd5e1; }
+    .empty strong { display: block; margin-bottom: 8px; }
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .result-head h2 {
+      margin: 0 0 6px;
+      font-size: 30px;
+    }
+    .kind { color: #94a3b8; }
+    .rank-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .rank {
+      background: #f8fafc;
+      color: #0f172a;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+    .subcard {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .subcard h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+    .times {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .timebox, .singlebox {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .label {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    .value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .side {
+      display: grid;
+      gap: 16px;
+    }
+    .note {
+      min-height: 96px;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .muted { color: #94a3b8; }
+    @media (max-width: 860px) {
+      .top-row { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 28px; }
+      .result-head { flex-direction: column; align-items: flex-start; }
+      .times { grid-template-columns: 1fr; }
+      .value { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card hero">
+      <h1>勤番検索システム 2</h1>
+      <p class="sub">勤務番号を入れると、該当勤務の詳細をすぐ表示</p>
 
-/**
- * 勤番検索システム v2
- * - まずは動く土台を1ファイルで構築
- * - DBは下の weekdayData / holidayData に追加していけば拡張可能
- * - 検索結果にだけ「しんどさ」「アホアホ」ランキングを反映
- * - 平日/休日ボタンは色を変えず、選択時に明るさだけ上げる仕様
- * - 初期表示の余白を極力削減
- */
-
-const rankingMap = {
-  39: { hard: 1, aho: 1 },
-  109: { hard: 2 },
-  227: { hard: 3, aho: 2 },
-  213: { aho: 3 },
-};
-
-const weekdayData = [
-  {
-    dutyNo: "39",
-    kind: "早出",
-    workIn: "06:10",
-    firstOut: "06:35",
-    firstIn: "10:02",
-    offDuty: "10:12",
-    vehicle: "未登録",
-    note: "サンプルデータ",
-  },
-  {
-    dutyNo: "109",
-    kind: "遅出",
-    workIn: "12:10",
-    firstOut: "12:35",
-    secondIn: "21:00",
-    offDuty: "21:10",
-    vehicle: "未登録",
-    note: "サンプルデータ",
-  },
-  {
-    dutyNo: "213",
-    kind: "中休",
-    workIn: "06:20",
-    firstOut: "06:45",
-    firstIn: "10:10",
-    firstLeave: "10:30",
-    secondWorkIn: "15:40",
-    secondOut: "16:00",
-    secondIn: "20:35",
-    offDuty: "20:45",
-    vehicle: "未登録",
-    note: "サンプルデータ",
-  },
-  {
-    dutyNo: "227",
-    kind: "中休",
-    workIn: "06:25",
-    firstOut: "06:50",
-    firstIn: "10:15",
-    firstLeave: "10:35",
-    secondWorkIn: "15:50",
-    secondOut: "16:10",
-    secondIn: "20:40",
-    offDuty: "20:50",
-    vehicle: "未登録",
-    note: "サンプルデータ",
-  },
-];
-
-const holidayData = [
-  {
-    dutyNo: "1",
-    kind: "早出",
-    workIn: "06:00",
-    firstOut: "06:25",
-    firstIn: "09:48",
-    offDuty: "09:58",
-    vehicle: "未登録",
-    note: "休日サンプル",
-  },
-  {
-    dutyNo: "101",
-    kind: "遅出",
-    workIn: "12:00",
-    firstOut: "12:25",
-    secondIn: "20:50",
-    offDuty: "21:00",
-    vehicle: "未登録",
-    note: "休日サンプル",
-  },
-];
-
-const labelMap = {
-  workIn: "出勤",
-  firstOut: "前半出庫",
-  firstIn: "前半入庫",
-  firstLeave: "前半退勤",
-  secondWorkIn: "後半出勤",
-  secondOut: "後半出庫",
-  secondIn: "後半入庫",
-  offDuty: "退勤",
-  vehicle: "車両",
-  note: "備考",
-};
-
-const timeKeys = [
-  "workIn",
-  "firstOut",
-  "firstIn",
-  "firstLeave",
-  "secondWorkIn",
-  "secondOut",
-  "secondIn",
-  "offDuty",
-];
-
-function getRankBadges(dutyNo) {
-  const rank = rankingMap[Number(dutyNo)];
-  if (!rank) return [];
-
-  const badges = [];
-  if (rank.hard) badges.push(`しんどさ ${rank.hard}位`);
-  if (rank.aho) badges.push(`アホアホ ${rank.aho}位`);
-  return badges;
-}
-
-function normalize(str) {
-  return String(str ?? "")
-    .replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xfee0))
-    .trim()
-    .toLowerCase();
-}
-
-export default function KinbanSearchSystemV2() {
-  const [mode, setMode] = useState("weekday");
-  const [query, setQuery] = useState("");
-
-  const activeData = mode === "weekday" ? weekdayData : holidayData;
-
-  const results = useMemo(() => {
-    const q = normalize(query);
-    if (!q) return [];
-
-    return activeData.filter((item) => {
-      const joined = [
-        item.dutyNo,
-        item.kind,
-        item.workIn,
-        item.firstOut,
-        item.firstIn,
-        item.firstLeave,
-        item.secondWorkIn,
-        item.secondOut,
-        item.secondIn,
-        item.offDuty,
-        item.vehicle,
-        item.note,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return joined.includes(q);
-    });
-  }, [activeData, query]);
-
-  const quickNums = useMemo(() => {
-    return activeData.slice(0, 12).map((x) => x.dutyNo);
-  }, [activeData]);
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="mb-4"
-        >
-          <Card className="border-slate-800 bg-slate-900/95 shadow-2xl rounded-3xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-slate-800 p-3">
-                    <Bus className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">勤番検索システム 2</h1>
-                    <p className="text-sm md:text-base text-slate-400">勤務番号を入れると、該当勤務の詳細をすぐ表示</p>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-[auto_auto_1fr] md:items-center">
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setMode("weekday")}
-                      className={`rounded-2xl bg-slate-800 hover:bg-slate-800 text-white border border-slate-700 transition ${
-                        mode === "weekday" ? "brightness-125" : "brightness-90"
-                      }`}
-                    >
-                      平日
-                    </Button>
-                    <Button
-                      onClick={() => setMode("holiday")}
-                      className={`rounded-2xl bg-slate-800 hover:bg-slate-800 text-white border border-slate-700 transition ${
-                        mode === "holiday" ? "brightness-125" : "brightness-90"
-                      }`}
-                    >
-                      休日
-                    </Button>
-                  </div>
-
-                  <Badge variant="secondary" className="w-fit rounded-xl px-3 py-1 text-sm bg-slate-800 text-slate-200 border border-slate-700">
-                    <CalendarDays className="mr-1 h-4 w-4" />
-                    {mode === "weekday" ? "平日データ" : "休日データ"}
-                  </Badge>
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <Input
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="勤番、時刻、車両、備考で検索… 例: 227"
-                      className="h-12 rounded-2xl border-slate-700 bg-slate-950 pl-10 text-base"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {quickNums.map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => setQuery(num)}
-                      className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-sm text-slate-200 transition hover:brightness-125"
-                    >
-                      {num}勤
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {!query ? (
-          <Card className="border-slate-800 bg-slate-900/90 rounded-3xl">
-            <CardContent className="p-5 md:p-6">
-              <div className="flex items-start gap-3 text-slate-300">
-                <BadgeInfo className="mt-0.5 h-5 w-5 shrink-0" />
-                <div className="space-y-2 text-sm md:text-base">
-                  <p>上の検索欄に勤番を入れると結果がここに出る。</p>
-                  <p>今はサンプル版。実データを全部入れたら本番化できる。</p>
-                  <p>ランキング表示は検索結果にだけ反映する仕様。</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {results.length === 0 ? (
-              <Card className="border-amber-800/60 bg-amber-950/30 rounded-3xl">
-                <CardContent className="p-5 md:p-6">
-                  <div className="flex items-start gap-3 text-amber-100">
-                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-                    <div>
-                      <p className="font-semibold">該当データなし</p>
-                      <p className="text-sm text-amber-200/80">このモード内では一致する勤番がまだ登録されていない。</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              results.map((item) => {
-                const rankBadges = getRankBadges(item.dutyNo);
-                return (
-                  <motion.div
-                    key={`${mode}-${item.dutyNo}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="overflow-hidden border-slate-800 bg-slate-900/95 rounded-3xl shadow-xl">
-                      <CardHeader className="border-b border-slate-800 bg-slate-900/90 pb-4">
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <CardTitle className="text-2xl font-bold tracking-tight">{item.dutyNo}勤</CardTitle>
-                            <p className="mt-1 text-slate-400">勤務種別: {item.kind}</p>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {rankBadges.map((text) => (
-                              <Badge key={text} className="rounded-full bg-slate-100 text-slate-900">
-                                {text}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="p-4 md:p-6">
-                        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                          <Card className="border-slate-800 bg-slate-950/70 rounded-2xl">
-                            <CardContent className="p-4">
-                              <div className="mb-3 flex items-center gap-2 text-slate-200">
-                                <Clock3 className="h-4 w-4" />
-                                <p className="font-semibold">勤務時刻</p>
-                              </div>
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                {timeKeys.map((key) =>
-                                  item[key] ? (
-                                    <div key={key} className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
-                                      <div className="text-xs text-slate-400">{labelMap[key]}</div>
-                                      <div className="mt-1 text-lg font-semibold">{item[key]}</div>
-                                    </div>
-                                  ) : null
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          <div className="grid gap-4">
-                            <Card className="border-slate-800 bg-slate-950/70 rounded-2xl">
-                              <CardContent className="p-4">
-                                <div className="mb-3 flex items-center gap-2 text-slate-200">
-                                  <CarFront className="h-4 w-4" />
-                                  <p className="font-semibold">車両関連</p>
-                                </div>
-                                <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
-                                  <div className="text-xs text-slate-400">車両</div>
-                                  <div className="mt-1 text-lg font-semibold">{item.vehicle || "―"}</div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            <Card className="border-slate-800 bg-slate-950/70 rounded-2xl">
-                              <CardContent className="p-4">
-                                <div className="mb-3 flex items-center gap-2 text-slate-200">
-                                  <BadgeInfo className="h-4 w-4" />
-                                  <p className="font-semibold">備考</p>
-                                </div>
-                                <ScrollArea className="h-24 rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-300">
-                                  {item.note || "記載なし"}
-                                </ScrollArea>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        )}
+      <div class="top-row">
+        <div class="btn-group">
+          <button id="weekdayBtn" class="mode-btn active">平日</button>
+          <button id="holidayBtn" class="mode-btn inactive">休日</button>
+        </div>
+        <div class="badge" id="modeBadge">平日データ</div>
+        <input id="searchInput" class="search" type="text" placeholder="勤番、時刻、車両、備考で検索… 例: 227" />
       </div>
+
+      <div class="quick" id="quickButtons"></div>
     </div>
-  );
-}
+
+    <div id="content"></div>
+  </div>
+
+  <script>
+    const rankingMap = {
+      39: { hard: 1, aho: 1 },
+      109: { hard: 2 },
+      227: { hard: 3, aho: 2 },
+      213: { aho: 3 },
+    };
+
+    const weekdayData = [
+      { dutyNo: '39', kind: '早出', workIn: '06:10', firstOut: '06:35', firstIn: '10:02', offDuty: '10:12', vehicle: '未登録', note: 'サンプルデータ' },
+      { dutyNo: '109', kind: '遅出', workIn: '12:10', firstOut: '12:35', secondIn: '21:00', offDuty: '21:10', vehicle: '未登録', note: 'サンプルデータ' },
+      { dutyNo: '213', kind: '中休', workIn: '06:20', firstOut: '06:45', firstIn: '10:10', firstLeave: '10:30', secondWorkIn: '15:40', secondOut: '16:00', secondIn: '20:35', offDuty: '20:45', vehicle: '未登録', note: 'サンプルデータ' },
+      { dutyNo: '227', kind: '中休', workIn: '06:25', firstOut: '06:50', firstIn: '10:15', firstLeave: '10:35', secondWorkIn: '15:50', secondOut: '16:10', secondIn: '20:40', offDuty: '20:50', vehicle: '未登録', note: 'サンプルデータ' },
+    ];
+
+    const holidayData = [
+      { dutyNo: '1', kind: '早出', workIn: '06:00', firstOut: '06:25', firstIn: '09:48', offDuty: '09:58', vehicle: '未登録', note: '休日サンプル' },
+      { dutyNo: '101', kind: '遅出', workIn: '12:00', firstOut: '12:25', secondIn: '20:50', offDuty: '21:00', vehicle: '未登録', note: '休日サンプル' },
+    ];
+
+    const labelMap = {
+      workIn: '出勤',
+      firstOut: '前半出庫',
+      firstIn: '前半入庫',
+      firstLeave: '前半退勤',
+      secondWorkIn: '後半出勤',
+      secondOut: '後半出庫',
+      secondIn: '後半入庫',
+      offDuty: '退勤',
+      vehicle: '車両',
+      note: '備考'
+    };
+
+    const timeKeys = ['workIn', 'firstOut', 'firstIn', 'firstLeave', 'secondWorkIn', 'secondOut', 'secondIn', 'offDuty'];
+
+    let mode = 'weekday';
+
+    const weekdayBtn = document.getElementById('weekdayBtn');
+    const holidayBtn = document.getElementById('holidayBtn');
+    const modeBadge = document.getElementById('modeBadge');
+    const searchInput = document.getElementById('searchInput');
+    const quickButtons = document.getElementById('quickButtons');
+    const content = document.getElementById('content');
+
+    function normalize(str) {
+      return String(str || '')
+        .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+        .trim()
+        .toLowerCase();
+    }
+
+    function getActiveData() {
+      return mode === 'weekday' ? weekdayData : holidayData;
+    }
+
+    function getRankBadges(dutyNo) {
+      const rank = rankingMap[Number(dutyNo)];
+      if (!rank) return [];
+      const badges = [];
+      if (rank.hard) badges.push(`しんどさ ${rank.hard}位`);
+      if (rank.aho) badges.push(`アホアホ ${rank.aho}位`);
+      return badges;
+    }
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      weekdayBtn.className = 'mode-btn ' + (mode === 'weekday' ? 'active' : 'inactive');
+      holidayBtn.className = 'mode-btn ' + (mode === 'holiday' ? 'active' : 'inactive');
+      modeBadge.textContent = mode === 'weekday' ? '平日データ' : '休日データ';
+      renderQuickButtons();
+      render();
+    }
+
+    function renderQuickButtons() {
+      const nums = getActiveData().slice(0, 12).map(x => x.dutyNo);
+      quickButtons.innerHTML = nums.map(num => `<button onclick="setQuick('${num}')">${num}勤</button>`).join('');
+    }
+
+    function setQuick(num) {
+      searchInput.value = num;
+      render();
+    }
+    window.setQuick = setQuick;
+
+    function renderInfo() {
+      content.innerHTML = `
+        <div class="card info">
+          <p>上の検索欄に勤番を入れると結果がここに出る。</p>
+          <p>今はサンプル版。実データを全部入れたら本番化できる。</p>
+          <p>ランキング表示は検索結果にだけ反映する仕様。</p>
+        </div>
+      `;
+    }
+
+    function renderEmpty() {
+      content.innerHTML = `
+        <div class="card empty">
+          <strong>該当データなし</strong>
+          <p>このモード内では一致する勤番がまだ登録されていない。</p>
+        </div>
+      `;
+    }
+
+    function renderResults(results) {
+      content.innerHTML = results.map(item => {
+        const rankBadges = getRankBadges(item.dutyNo)
+          .map(text => `<span class="rank">${text}</span>`)
+          .join('');
+
+        const times = timeKeys
+          .filter(key => item[key])
+          .map(key => `
+            <div class="timebox">
+              <div class="label">${labelMap[key]}</div>
+              <div class="value">${item[key]}</div>
+            </div>
+          `)
+          .join('');
+
+        return `
+          <div class="card result-card" style="margin-bottom:16px;">
+            <div class="result-head">
+              <div>
+                <h2>${item.dutyNo}勤</h2>
+                <div class="kind">勤務種別: ${item.kind}</div>
+              </div>
+              <div class="rank-wrap">${rankBadges}</div>
+            </div>
+
+            <div class="result-grid">
+              <div class="subcard">
+                <h3>勤務時刻</h3>
+                <div class="times">${times}</div>
+              </div>
+
+              <div class="side">
+                <div class="subcard">
+                  <h3>車両関連</h3>
+                  <div class="singlebox">
+                    <div class="label">車両</div>
+                    <div class="value">${item.vehicle || '―'}</div>
+                  </div>
+                </div>
+
+                <div class="subcard">
+                  <h3>備考</h3>
+                  <div class="singlebox note">${item.note || '記載なし'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function render() {
+      const q = normalize(searchInput.value);
+      if (!q) {
+        renderInfo();
+        return;
+      }
+
+      const results = getActiveData().filter(item => {
+        const joined = [
+          item.dutyNo, item.kind, item.workIn, item.firstOut, item.firstIn,
+          item.firstLeave, item.secondWorkIn, item.secondOut, item.secondIn,
+          item.offDuty, item.vehicle, item.note
+        ].filter(Boolean).join(' ').toLowerCase();
+        return joined.includes(q);
+      });
+
+      if (results.length === 0) {
+        renderEmpty();
+      } else {
+        renderResults(results);
+      }
+    }
+
+    weekdayBtn.addEventListener('click', () => setMode('weekday'));
+    holidayBtn.addEventListener('click', () => setMode('holiday'));
+    searchInput.addEventListener('input', render);
+
+    renderQuickButtons();
+    renderInfo();
+  </script>
+</body>
+</html>
 
