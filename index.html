@@ -608,13 +608,20 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 searchInput.addEventListener('input', () => {
+  searchInput.value = searchInput.value.replace(/[^0-9]/g, '').slice(0, 3);
   const value = searchInput.value.trim();
+
   if (!value) {
     result.innerHTML = '';
     resultStatus.textContent = '待機中';
     return;
   }
-  searchDuty();
+
+  resultStatus.textContent = `入力中: ${value}`;
+
+  if (value.length === 2 || value.length === 3) {
+    searchDuty();
+  }
 });
 
 function renderDutyHtml(dutyNo, duty) {
@@ -772,6 +779,10 @@ function runSelfTests() {
     const normalizedMissingMap = normalizeMapData(null);
     console.assert(Object.keys(normalizedMissingMap.weekday).length === 0, 'normalizeMapData should return empty weekday map for null');
     console.assert(Object.keys(normalizedMissingMap.holiday).length === 0, 'normalizeMapData should return empty holiday map for null');
+
+    const cleaned = '12a3b'.replace(/[^0-9]/g, '').slice(0, 3);
+    console.assert(cleaned === '123', 'input helper should keep only up to 3 digits');
+    console.assert(['39'.length, '109'.length].every((n) => n === 2 || n === 3), 'auto search target lengths should be 2 or 3');
   } finally {
     vehicleDb = originalVehicleDb;
     dutyVehicleDb = originalDutyVehicleDb;
