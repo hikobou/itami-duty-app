@@ -1,398 +1,791 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>勤番検索システム 2</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Meiryo, sans-serif;
-      background: #020617;
-      color: #f8fafc;
-    }
-    .wrap {
-      width: 100%;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    .card {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-    .hero {
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      margin: 0 0 6px;
-      font-size: 32px;
-    }
-    .sub {
-      color: #94a3b8;
-      margin: 0;
-    }
-    .top-row {
-      display: grid;
-      grid-template-columns: auto auto 1fr;
-      gap: 12px;
-      align-items: center;
-      margin-top: 18px;
-    }
-    .btn-group {
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: #f8fafc;
-      border-radius: 16px;
-      padding: 12px 18px;
-      cursor: pointer;
-      transition: 0.2s ease;
-      font-size: 15px;
-    }
-    button:hover { filter: brightness(1.12); }
-    .mode-btn.active { filter: brightness(1.25); }
-    .mode-btn.inactive { filter: brightness(0.92); }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: #e2e8f0;
-      border-radius: 14px;
-      padding: 10px 14px;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-    .search {
-      width: 100%;
-      height: 48px;
-      border-radius: 18px;
-      border: 1px solid #334155;
-      background: #020617;
-      color: #f8fafc;
-      padding: 0 16px;
-      font-size: 16px;
-      outline: none;
-    }
-    .search:focus {
-      border-color: #64748b;
-      box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
-    }
-    .quick {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .quick button {
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 14px;
-    }
-    .info, .empty, .result-card {
-      padding: 20px;
-    }
-    .info p, .empty p { margin: 0 0 10px; color: #cbd5e1; }
-    .empty strong { display: block; margin-bottom: 8px; }
-    .result-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 14px;
-      margin-bottom: 16px;
-    }
-    .result-head h2 {
-      margin: 0 0 6px;
-      font-size: 30px;
-    }
-    .kind { color: #94a3b8; }
-    .rank-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .rank {
-      background: #f8fafc;
-      color: #0f172a;
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 14px;
-      font-weight: 700;
-    }
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 16px;
-    }
-    .subcard {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 18px;
-      padding: 16px;
-    }
-    .subcard h3 {
-      margin: 0 0 14px;
-      font-size: 17px;
-    }
-    .times {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .timebox, .singlebox {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 12px 14px;
-    }
-    .label {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 5px;
-    }
-    .value {
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .side {
-      display: grid;
-      gap: 16px;
-    }
-    .note {
-      min-height: 96px;
-      white-space: pre-wrap;
-      color: #cbd5e1;
-      line-height: 1.6;
-    }
-    .muted { color: #94a3b8; }
-    @media (max-width: 860px) {
-      .top-row { grid-template-columns: 1fr; }
-      .result-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 640px) {
-      h1 { font-size: 28px; }
-      .result-head { flex-direction: column; align-items: flex-start; }
-      .times { grid-template-columns: 1fr; }
-      .value { font-size: 20px; }
-    }
-  </style>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伊丹市交通局 勤番検索</title>
+<style>
+:root{
+  --bg:#0d241b;
+  --bg2:#0a1a14;
+  --panel:#163629;
+  --panel2:#1a4031;
+  --panel3:#204c3b;
+  --accent:#2aa876;
+  --accent-strong:#39c48d;
+  --line:#2a5f4c;
+  --line-soft:rgba(255,255,255,0.06);
+  --text:#e8f5ef;
+  --muted:#9fc5b5;
+  --danger:#dc2626;
+  --warn:#d97706;
+  --info:#2563eb;
+  --shadow:0 20px 40px rgba(0,0,0,0.18);
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:"Noto Sans JP",sans-serif;
+  background:linear-gradient(180deg,var(--bg),var(--bg2));
+  color:var(--text);
+}
+
+.container{
+  max-width:940px;
+  margin:0 auto;
+  padding:20px 16px 40px;
+}
+
+.hero{
+  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+}
+
+.hero-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.header{
+  font-size:30px;
+  font-weight:800;
+  letter-spacing:0.04em;
+  line-height:1.2;
+  margin-bottom:6px;
+  font-family:"Orbitron","Noto Sans JP",sans-serif;
+}
+
+.header .line2{
+  display:block;
+  font-size:36px;
+  font-weight:800;
+  letter-spacing:0.08em;
+}
+
+.sub{
+  font-size:12px;
+  color:var(--muted);
+  margin:0;
+}
+
+.system-badge{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,0.03);
+  border-radius:10px;
+  padding:10px 12px;
+  min-width:132px;
+}
+
+.system-badge-title{
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:0.08em;
+  margin-bottom:4px;
+}
+
+.system-badge-value{
+  font-family:"JetBrains Mono",monospace;
+  font-size:18px;
+  font-weight:700;
+}
+
+.toolbar{
+  display:grid;
+  grid-template-columns:180px 1fr 92px;
+  gap:10px;
+  margin-top:16px;
+}
+
+.mode-toggle{
+  display:flex;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:rgba(255,255,255,0.02);
+}
+
+.mode-toggle button{
+  flex:1;
+  padding:12px;
+  background:transparent;
+  border:none;
+  color:var(--muted);
+  font-size:14px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.mode-toggle button.active{
+  background:var(--accent);
+  color:#fff;
+}
+
+.search-box{
+  display:flex;
+  gap:10px;
+}
+
+.search-box input{
+  flex:1;
+  height:46px;
+  padding:0 14px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  background:#ffffff;
+  color:#111827;
+  font-size:17px;
+  font-family:"JetBrains Mono",monospace;
+  font-weight:700;
+}
+
+.search-box input::placeholder{color:#9ca3af;}
+.search-box input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(42,168,118,0.15);
+}
+
+.search-box button,
+.action-btn{
+  height:46px;
+  padding:0 16px;
+  border:none;
+  border-radius:10px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.action-btn{
+  background:var(--panel3);
+  border:1px solid var(--line);
+}
+
+.result-headline{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:16px 2px 8px;
+}
+
+.result-title{
+  font-size:13px;
+  color:var(--muted);
+  letter-spacing:0.08em;
+}
+
+.result-status{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.result{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:var(--shadow);
+}
+
+.result-main{
+  display:grid;
+  grid-template-columns:1.3fr 0.9fr;
+  gap:12px;
+}
+
+.time-card,
+.info-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+}
+
+.time-card{display:grid; gap:10px;}
+
+.result h3{
+  margin:0;
+  font-size:22px;
+  color:var(--accent-strong);
+}
+
+.duty-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+
+.start-time,
+.end-time{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:110px;
+  font-family:"JetBrains Mono",monospace;
+  font-size:16px;
+  font-weight:700;
+  color:#c8f5df;
+  background:rgba(38,160,111,0.15);
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--line);
+}
+
+.end-time{margin-left:6px;}
+
+.badge-mid,
+.badge-hard{
+  font-size:11px;
+  color:#fff;
+  padding:3px 7px;
+  border-radius:999px;
+}
+
+.badge-mid{background:var(--warn);}
+.badge-hard.high{background:var(--danger);}
+.badge-hard.mid{background:#ca8a04;}
+.badge-hard.low{background:#15803d;}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.summary-box{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--line-soft);
+  border-radius:10px;
+  padding:10px;
+}
+
+.summary-label{
+  font-size:10px;
+  color:var(--muted);
+  margin-bottom:4px;
+  letter-spacing:0.08em;
+}
+
+.summary-value{
+  font-family:"JetBrains Mono",monospace;
+  font-size:18px;
+  font-weight:700;
+}
+
+.item-list{display:grid; gap:8px;}
+
+.item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid var(--line-soft);
+  border-radius:10px;
+  font-size:14px;
+  background:rgba(255,255,255,0.02);
+}
+
+.item.primary{
+  background:linear-gradient(135deg,#1f7a5a,#26a06f);
+  color:#fff;
+  font-weight:700;
+  border-color:transparent;
+}
+
+.item.secondary{
+  background:rgba(38,160,111,0.15);
+  border-left:4px solid #26a06f;
+  font-weight:700;
+}
+
+.item-label{color:var(--muted);}
+.item.primary .item-label,
+.item.secondary .item-label{color:#eafff5;}
+.item-value{font-family:"JetBrains Mono",monospace; font-weight:700;}
+
+.info-sections{
+  display:grid;
+  gap:10px;
+}
+
+.info-card-title{
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:8px;
+  letter-spacing:0.08em;
+}
+
+.info-card-grid{display:grid; gap:6px;}
+
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:6px 0;
+  border-bottom:1px solid var(--line-soft);
+  font-size:13px;
+}
+
+.info-row:last-child{border-bottom:none;}
+.info-label{color:var(--muted);}
+.info-value{font-weight:700; text-align:right;}
+
+.empty{
+  color:var(--muted);
+  padding:18px;
+  text-align:center;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+
+.footer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:10px;
+  color:#ffffff;
+  margin-top:20px;
+  opacity:0.8;
+  white-space:nowrap;
+  letter-spacing:0.02em;
+}
+
+@media(max-width:760px){
+  .toolbar{grid-template-columns:1fr;}
+  .result-main{grid-template-columns:1fr;}
+  .hero-top{flex-direction:column;}
+}
+
+@media(max-width:520px){
+  .container{padding:14px 12px 28px;}
+  .header{font-size:24px;}
+  .header .line2{font-size:28px;}
+  .duty-head{flex-direction:column;}
+  .summary-grid{grid-template-columns:1fr;}
+  .start-time,.end-time{min-width:unset; width:auto;}
+  .footer{font-size:9px;}
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card hero">
-      <h1>勤番検索システム 2</h1>
-      <p class="sub">勤務番号を入れると、該当勤務の詳細をすぐ表示</p>
-
-      <div class="top-row">
-        <div class="btn-group">
-          <button id="weekdayBtn" class="mode-btn active">平日</button>
-          <button id="holidayBtn" class="mode-btn inactive">休日</button>
-        </div>
-        <div class="badge" id="modeBadge">平日データ</div>
-        <input id="searchInput" class="search" type="text" placeholder="勤番、時刻、車両、備考で検索… 例: 227" />
+<div class="container">
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="header">伊丹市交通局<br><span class="line2">勤番検索システム２</span></div>
+        <p class="sub">Duty Search System / Professional Edition</p>
       </div>
-
-      <div class="quick" id="quickButtons"></div>
+      <div class="system-badge">
+        <div class="system-badge-title">CURRENT MODE</div>
+        <div class="system-badge-value" id="modeLabel">WEEKDAY</div>
+      </div>
     </div>
 
-    <div id="content"></div>
+    <div class="toolbar">
+      <div class="mode-toggle">
+        <button id="weekdayBtn" class="active" type="button">平日</button>
+        <button id="holidayBtn" type="button">休日</button>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="例: 39" inputmode="numeric" autocomplete="off">
+        <button id="searchBtn" type="button">検索</button>
+      </div>
+
+      <button id="clearBtn" class="action-btn" type="button">クリア</button>
+    </div>
   </div>
 
-  <script>
-    const rankingMap = {
-      39: { hard: 1, aho: 1 },
-      109: { hard: 2 },
-      227: { hard: 3, aho: 2 },
-      213: { aho: 3 },
+  <div class="result-headline">
+    <div class="result-title">検索結果</div>
+    <div class="result-status" id="resultStatus">待機中</div>
+  </div>
+  <div id="result"></div>
+</div>
+
+<div class="footer">© 2026 Itami Duty System | Developed by Sanei Co., Ltd.</div>
+
+<script>
+let mode = 'weekday';
+
+const weekdayBtn = document.getElementById('weekdayBtn');
+const holidayBtn = document.getElementById('holidayBtn');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const clearBtn = document.getElementById('clearBtn');
+const result = document.getElementById('result');
+const modeLabel = document.getElementById('modeLabel');
+const resultStatus = document.getElementById('resultStatus');
+
+let vehicleDb = {};
+let dutyVehicleDb = { weekday: {}, holiday: {} };
+let dutyHardnessDb = { weekday: {}, holiday: {} };
+let datasets = { weekday: {}, holiday: {} };
+
+const DATA_FILES = {
+  weekday: './data/weekday.json',
+  holiday: './data/holiday.json',
+  vehicle: './data/vehicle.json',
+  dutyVehicle: './data/dutyVehicle.json',
+  dutyHardness: './data/dutyHardness.json'
+};
+
+const FALLBACK_DATA = {
+  vehicle: {
+    '大型': {
+      表示名: '大型車',
+      用途: '路線運用',
+      仕様: '標準仕様',
+      備考: '車両DBサンプル'
+    },
+    '中型': {
+      表示名: '中型車',
+      用途: '路線運用',
+      仕様: '中型仕様',
+      備考: '車両DBサンプル'
+    }
+  },
+  dutyVehicle: {
+    weekday: {
+      '39': '大型',
+      '109': '中型'
+    },
+    holiday: {
+      '39': '大型'
+    }
+  },
+  dutyHardness: {
+    weekday: {
+      '39': '高',
+      '109': '中'
+    },
+    holiday: {
+      '39': '高'
+    }
+  },
+  weekday: {
+    '39': {
+      出勤: '6:20',
+      前半出庫: '6:45',
+      前半入庫: '9:30',
+      前半退勤: '9:50',
+      後半出勤: '15:30',
+      後半出庫: '15:50',
+      後半入庫: '20:10',
+      退勤: '20:20'
+    },
+    '109': {
+      出勤: '12:10',
+      前半出庫: '12:35',
+      後半入庫: '21:00',
+      退勤: '21:10'
+    }
+  },
+  holiday: {
+    '39': {
+      出勤: '6:30',
+      前半出庫: '6:55',
+      前半入庫: '9:40',
+      前半退勤: '10:00',
+      後半出勤: '15:40',
+      後半出庫: '16:00',
+      後半入庫: '20:20',
+      退勤: '20:30'
+    }
+  }
+};
+
+function normalizeDutyData(data) {
+  return data && typeof data === 'object' ? data : {};
+}
+
+function normalizeVehicleData(data) {
+  return data && typeof data === 'object' ? data : {};
+}
+
+function normalizeMapData(data) {
+  if (!data || typeof data !== 'object') {
+    return { weekday: {}, holiday: {} };
+  }
+  return {
+    weekday: data.weekday && typeof data.weekday === 'object' ? data.weekday : {},
+    holiday: data.holiday && typeof data.holiday === 'object' ? data.holiday : {}
+  };
+}
+
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`${path} の読込に失敗 (${response.status})`);
+  }
+  return response.json();
+}
+
+async function loadExternalData() {
+  resultStatus.textContent = 'DB読込中';
+
+  try {
+    const [weekdayJson, holidayJson, vehicleJson, dutyVehicleJson, dutyHardnessJson] = await Promise.all([
+      fetchJson(DATA_FILES.weekday),
+      fetchJson(DATA_FILES.holiday),
+      fetchJson(DATA_FILES.vehicle),
+      fetchJson(DATA_FILES.dutyVehicle),
+      fetchJson(DATA_FILES.dutyHardness)
+    ]);
+
+    datasets = {
+      weekday: normalizeDutyData(weekdayJson),
+      holiday: normalizeDutyData(holidayJson)
     };
-
-    const weekdayData = [
-      { dutyNo: '39', kind: '早出', workIn: '06:10', firstOut: '06:35', firstIn: '10:02', offDuty: '10:12', vehicle: '未登録', note: 'サンプルデータ' },
-      { dutyNo: '109', kind: '遅出', workIn: '12:10', firstOut: '12:35', secondIn: '21:00', offDuty: '21:10', vehicle: '未登録', note: 'サンプルデータ' },
-      { dutyNo: '213', kind: '中休', workIn: '06:20', firstOut: '06:45', firstIn: '10:10', firstLeave: '10:30', secondWorkIn: '15:40', secondOut: '16:00', secondIn: '20:35', offDuty: '20:45', vehicle: '未登録', note: 'サンプルデータ' },
-      { dutyNo: '227', kind: '中休', workIn: '06:25', firstOut: '06:50', firstIn: '10:15', firstLeave: '10:35', secondWorkIn: '15:50', secondOut: '16:10', secondIn: '20:40', offDuty: '20:50', vehicle: '未登録', note: 'サンプルデータ' },
-    ];
-
-    const holidayData = [
-      { dutyNo: '1', kind: '早出', workIn: '06:00', firstOut: '06:25', firstIn: '09:48', offDuty: '09:58', vehicle: '未登録', note: '休日サンプル' },
-      { dutyNo: '101', kind: '遅出', workIn: '12:00', firstOut: '12:25', secondIn: '20:50', offDuty: '21:00', vehicle: '未登録', note: '休日サンプル' },
-    ];
-
-    const labelMap = {
-      workIn: '出勤',
-      firstOut: '前半出庫',
-      firstIn: '前半入庫',
-      firstLeave: '前半退勤',
-      secondWorkIn: '後半出勤',
-      secondOut: '後半出庫',
-      secondIn: '後半入庫',
-      offDuty: '退勤',
-      vehicle: '車両',
-      note: '備考'
+    vehicleDb = normalizeVehicleData(vehicleJson);
+    dutyVehicleDb = normalizeMapData(dutyVehicleJson);
+    dutyHardnessDb = normalizeMapData(dutyHardnessJson);
+    resultStatus.textContent = 'DB読込完了';
+  } catch (error) {
+    console.warn('外部JSON読込失敗。フォールバックDBを使用します。', error);
+    datasets = {
+      weekday: FALLBACK_DATA.weekday,
+      holiday: FALLBACK_DATA.holiday
     };
+    vehicleDb = FALLBACK_DATA.vehicle;
+    dutyVehicleDb = FALLBACK_DATA.dutyVehicle;
+    dutyHardnessDb = FALLBACK_DATA.dutyHardness;
+    resultStatus.textContent = 'サンプルDB使用中';
+  }
+}
 
-    const timeKeys = ['workIn', 'firstOut', 'firstIn', 'firstLeave', 'secondWorkIn', 'secondOut', 'secondIn', 'offDuty'];
+function getHardClass(level) {
+  if (level === '高') return 'high';
+  if (level === '中') return 'mid';
+  return 'low';
+}
 
-    let mode = 'weekday';
+function calcSummary(duty, vehicleKey, hard) {
+  const items = Object.keys(duty);
+  return {
+    steps: items.length,
+    vehicle: vehicleKey || '―',
+    hard: hard || '―'
+  };
+}
 
-    const weekdayBtn = document.getElementById('weekdayBtn');
-    const holidayBtn = document.getElementById('holidayBtn');
-    const modeBadge = document.getElementById('modeBadge');
-    const searchInput = document.getElementById('searchInput');
-    const quickButtons = document.getElementById('quickButtons');
-    const content = document.getElementById('content');
+function setMode(nextMode) {
+  mode = nextMode;
+  weekdayBtn.classList.toggle('active', mode === 'weekday');
+  holidayBtn.classList.toggle('active', mode === 'holiday');
+  modeLabel.textContent = mode === 'weekday' ? 'WEEKDAY' : 'HOLIDAY';
+  if (searchInput.value.trim()) searchDuty();
+}
 
-    function normalize(str) {
-      return String(str || '')
-        .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-        .trim()
-        .toLowerCase();
-    }
+weekdayBtn.onclick = () => setMode('weekday');
+holidayBtn.onclick = () => setMode('holiday');
+searchBtn.onclick = () => searchDuty();
+clearBtn.onclick = () => {
+  searchInput.value = '';
+  result.innerHTML = '';
+  resultStatus.textContent = '待機中';
+  searchInput.focus();
+};
 
-    function getActiveData() {
-      return mode === 'weekday' ? weekdayData : holidayData;
-    }
+searchInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') searchDuty();
+});
 
-    function getRankBadges(dutyNo) {
-      const rank = rankingMap[Number(dutyNo)];
-      if (!rank) return [];
-      const badges = [];
-      if (rank.hard) badges.push(`しんどさ ${rank.hard}位`);
-      if (rank.aho) badges.push(`アホアホ ${rank.aho}位`);
-      return badges;
-    }
+searchInput.addEventListener('input', () => {
+  const value = searchInput.value.trim();
+  if (!value) {
+    result.innerHTML = '';
+    resultStatus.textContent = '待機中';
+    return;
+  }
+  searchDuty();
+});
 
-    function setMode(nextMode) {
-      mode = nextMode;
-      weekdayBtn.className = 'mode-btn ' + (mode === 'weekday' ? 'active' : 'inactive');
-      holidayBtn.className = 'mode-btn ' + (mode === 'holiday' ? 'active' : 'inactive');
-      modeBadge.textContent = mode === 'weekday' ? '平日データ' : '休日データ';
-      renderQuickButtons();
-      render();
-    }
+function renderDutyHtml(dutyNo, duty) {
+  const start = duty['出勤'] || '―';
+  const end = duty['退勤'] || '';
+  const isMid = !!duty['前半退勤'];
+  const vehicleKey = dutyVehicleDb[mode]?.[dutyNo] || '―';
+  const hard = dutyHardnessDb[mode]?.[dutyNo] || '―';
+  const hardClass = getHardClass(hard);
+  const summary = calcSummary(duty, vehicleKey, hard);
+  const vehicleInfo = vehicleDb[vehicleKey] || {
+    表示名: vehicleKey,
+    用途: '―',
+    仕様: '―',
+    備考: '車両DB未登録'
+  };
 
-    function renderQuickButtons() {
-      const nums = getActiveData().slice(0, 12).map(x => x.dutyNo);
-      quickButtons.innerHTML = nums.map(num => `<button onclick="setQuick('${num}')">${num}勤</button>`).join('');
-    }
-
-    function setQuick(num) {
-      searchInput.value = num;
-      render();
-    }
-    window.setQuick = setQuick;
-
-    function renderInfo() {
-      content.innerHTML = `
-        <div class="card info">
-          <p>上の検索欄に勤番を入れると結果がここに出る。</p>
-          <p>今はサンプル版。実データを全部入れたら本番化できる。</p>
-          <p>ランキング表示は検索結果にだけ反映する仕様。</p>
+  let html = `
+    <div class="result">
+      <div class="duty-head">
+        <div>
+          <h3>${dutyNo}勤</h3>
+          <div class="badges">
+            ${isMid ? '<span class="badge-mid">中休</span>' : ''}
+            <span class="badge-hard ${hardClass}">しんどさ ${hard}</span>
+          </div>
         </div>
-      `;
-    }
-
-    function renderEmpty() {
-      content.innerHTML = `
-        <div class="card empty">
-          <strong>該当データなし</strong>
-          <p>このモード内では一致する勤番がまだ登録されていない。</p>
+        <div>
+          <span class="start-time">出勤 ${start}</span>
+          ${end ? `<span class="end-time">退勤 ${end}</span>` : ''}
         </div>
-      `;
-    }
+      </div>
 
-    function renderResults(results) {
-      content.innerHTML = results.map(item => {
-        const rankBadges = getRankBadges(item.dutyNo)
-          .map(text => `<span class="rank">${text}</span>`)
-          .join('');
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="summary-label">項目数</div>
+          <div class="summary-value">${summary.steps}</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">車両</div>
+          <div class="summary-value">${summary.vehicle}</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">しんどさ</div>
+          <div class="summary-value">${summary.hard}</div>
+        </div>
+      </div>
 
-        const times = timeKeys
-          .filter(key => item[key])
-          .map(key => `
-            <div class="timebox">
-              <div class="label">${labelMap[key]}</div>
-              <div class="value">${item[key]}</div>
-            </div>
-          `)
-          .join('');
+      <div class="result-main" style="margin-top:12px;">
+        <div class="time-card">
+          <div class="info-card-title">時間情報</div>
+          <div class="item-list">
+  `;
 
-        return `
-          <div class="card result-card" style="margin-bottom:16px;">
-            <div class="result-head">
-              <div>
-                <h2>${item.dutyNo}勤</h2>
-                <div class="kind">勤務種別: ${item.kind}</div>
-              </div>
-              <div class="rank-wrap">${rankBadges}</div>
-            </div>
+  for (const key in duty) {
+    let cls = 'item';
+    if (key === '出勤') cls += ' primary';
+    if (key === '後半出勤') cls += ' secondary';
+    html += `<div class="${cls}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
+  }
 
-            <div class="result-grid">
-              <div class="subcard">
-                <h3>勤務時刻</h3>
-                <div class="times">${times}</div>
-              </div>
+  html += `
+          </div>
+        </div>
 
-              <div class="side">
-                <div class="subcard">
-                  <h3>車両関連</h3>
-                  <div class="singlebox">
-                    <div class="label">車両</div>
-                    <div class="value">${item.vehicle || '―'}</div>
-                  </div>
-                </div>
-
-                <div class="subcard">
-                  <h3>備考</h3>
-                  <div class="singlebox note">${item.note || '記載なし'}</div>
-                </div>
-              </div>
+        <div class="info-sections">
+          <div class="info-card">
+            <div class="info-card-title">車両情報</div>
+            <div class="info-card-grid">
+              <div class="info-row"><span class="info-label">車両区分</span><span class="info-value">${vehicleInfo.表示名}</span></div>
+              <div class="info-row"><span class="info-label">用途</span><span class="info-value">${vehicleInfo.用途}</span></div>
+              <div class="info-row"><span class="info-label">仕様</span><span class="info-value">${vehicleInfo.仕様}</span></div>
+              <div class="info-row"><span class="info-label">備考</span><span class="info-value">${vehicleInfo.備考}</span></div>
             </div>
           </div>
-        `;
-      }).join('');
-    }
 
-    function render() {
-      const q = normalize(searchInput.value);
-      if (!q) {
-        renderInfo();
-        return;
-      }
+          <div class="info-card">
+            <div class="info-card-title">しんどさ情報</div>
+            <div class="info-card-grid">
+              <div class="info-row"><span class="info-label">判定</span><span class="info-value">${hard}</span></div>
+              <div class="info-row"><span class="info-label">表示色</span><span class="info-value">${hard === '高' ? '赤' : hard === '中' ? '黄' : '緑'}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
-      const results = getActiveData().filter(item => {
-        const joined = [
-          item.dutyNo, item.kind, item.workIn, item.firstOut, item.firstIn,
-          item.firstLeave, item.secondWorkIn, item.secondOut, item.secondIn,
-          item.offDuty, item.vehicle, item.note
-        ].filter(Boolean).join(' ').toLowerCase();
-        return joined.includes(q);
-      });
+  return html;
+}
 
-      if (results.length === 0) {
-        renderEmpty();
-      } else {
-        renderResults(results);
-      }
-    }
+function searchDuty() {
+  const input = searchInput.value.trim();
 
-    weekdayBtn.addEventListener('click', () => setMode('weekday'));
-    holidayBtn.addEventListener('click', () => setMode('holiday'));
-    searchInput.addEventListener('input', render);
+  if (!input) {
+    result.innerHTML = '';
+    resultStatus.textContent = '待機中';
+    return;
+  }
 
-    renderQuickButtons();
-    renderInfo();
-  </script>
+  const data = datasets[mode] || {};
+  const duty = data[input];
+
+  if (!duty) {
+    result.innerHTML = '<div class="empty">該当なし</div>';
+    resultStatus.textContent = '未登録';
+    return;
+  }
+
+  result.innerHTML = renderDutyHtml(input, duty);
+  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${input}勤を表示中`;
+}
+
+function runSelfTests() {
+  console.assert(typeof renderDutyHtml === 'function', 'renderDutyHtml should exist');
+  console.assert(typeof loadExternalData === 'function', 'loadExternalData should exist');
+  console.assert(DATA_FILES.weekday.includes('weekday.json'), 'weekday path should be configured');
+  console.assert(DATA_FILES.holiday.includes('holiday.json'), 'holiday path should be configured');
+  console.assert(DATA_FILES.vehicle.includes('vehicle.json'), 'vehicle path should be configured');
+  console.assert(DATA_FILES.dutyVehicle.includes('dutyVehicle.json'), 'dutyVehicle path should be configured');
+  console.assert(DATA_FILES.dutyHardness.includes('dutyHardness.json'), 'dutyHardness path should be configured');
+
+  const originalVehicleDb = vehicleDb;
+  const originalDutyVehicleDb = dutyVehicleDb;
+  const originalDutyHardnessDb = dutyHardnessDb;
+  const originalMode = mode;
+
+  try {
+    vehicleDb = structuredClone(FALLBACK_DATA.vehicle);
+    dutyVehicleDb = structuredClone(FALLBACK_DATA.dutyVehicle);
+    dutyHardnessDb = structuredClone(FALLBACK_DATA.dutyHardness);
+    mode = 'weekday';
+
+    const html = renderDutyHtml('39', FALLBACK_DATA.weekday['39']);
+    console.assert(html.includes('39勤'), 'should render duty number');
+    console.assert(html.includes('時間情報'), 'should render time card');
+    console.assert(html.includes('車両情報'), 'should render vehicle info card');
+    console.assert(html.includes('しんどさ情報'), 'should render hard info card');
+    console.assert(html.includes('大型車'), 'should resolve vehicle DB label');
+    console.assert(html.includes('badge-hard high'), 'high hard level should use high class');
+
+    mode = 'holiday';
+    const holidayHtml = renderDutyHtml('39', FALLBACK_DATA.holiday['39']);
+    console.assert(holidayHtml.includes('6:30'), 'holiday renderer should render holiday dataset');
+
+    mode = 'weekday';
+    dutyVehicleDb.weekday['88'] = '未登録車';
+    dutyHardnessDb.weekday['88'] = '低';
+    const unknownVehicleHtml = renderDutyHtml('88', { 出勤: '7:00' });
+    console.assert(unknownVehicleHtml.includes('車両DB未登録'), 'unknown vehicle should show fallback text');
+
+    const mediumHtml = renderDutyHtml('109', FALLBACK_DATA.weekday['109']);
+    console.assert(mediumHtml.includes('badge-hard mid'), 'medium hard level should use mid class');
+
+    const normalizedMissingMap = normalizeMapData(null);
+    console.assert(Object.keys(normalizedMissingMap.weekday).length === 0, 'normalizeMapData should return empty weekday map for null');
+    console.assert(Object.keys(normalizedMissingMap.holiday).length === 0, 'normalizeMapData should return empty holiday map for null');
+  } finally {
+    vehicleDb = originalVehicleDb;
+    dutyVehicleDb = originalDutyVehicleDb;
+    dutyHardnessDb = originalDutyHardnessDb;
+    mode = originalMode;
+  }
+}
+
+async function initializeApp() {
+  await loadExternalData();
+  runSelfTests();
+}
+
+initializeApp();
+</script>
 </body>
 </html>
-
