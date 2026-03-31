@@ -695,51 +695,34 @@ function renderDutyHtml(dutyNo, duty) {
 
   let html = `
     <div class="result">
-    
+
       <div class="duty-head">
-      
         <div>
           <h3>${dutyNo}勤</h3>
-         <div class="badges">
-  ${isMid ? '<span class="badge-mid">中休</span>' : ''}
-  <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
-  <span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>
-  <span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>
-  <span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>
-</div>
+          <div class="badges">
+            ${isMid ? '<span class="badge-mid">中休</span>' : ''}
+            <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
+            <span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>
+            <span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>
+            <span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>
+          </div>
         </div>
+
         <div>
           <span class="start-time">出勤 ${start}</span>
           ${end ? `<span class="end-time">退勤 ${end}</span>` : ''}
         </div>
       </div>
 
-
-
       <div class="result-main" style="margin-top:12px;">
-<div class="summary-grid compact-summary">
-  <div class="summary-box">
-    <div class="summary-label">前半実働</div>
-    <div class="summary-value">${summary.front}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">後半実働</div>
-    <div class="summary-value">${summary.back}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩時間</div>
-    <div class="summary-value">${summary.rest}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩の質</div>
-    <div class="summary-value">${summary.restQuality}</div>
-  </div>
-</div>
 
-      
-        <div class="time-card">
-          <div class="info-card-title">時間情報</div>
-          <div class="item-list">
+        <!-- 左カラム -->
+        <div>
+
+          <!-- ★主役：時間情報 -->
+          <div class="time-card">
+            <div class="info-card-title">時間情報</div>
+            <div class="item-list">
   `;
 
   for (const key in duty) {
@@ -750,9 +733,32 @@ function renderDutyHtml(dutyNo, duty) {
   }
 
   html += `
+            </div>
           </div>
+
+          <!-- ★補助：summary（時間の下に配置） -->
+          <div class="summary-grid compact-summary">
+            <div class="summary-box">
+              <div class="summary-label">前半実働</div>
+              <div class="summary-value">${summary.front}</div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">後半実働</div>
+              <div class="summary-value">${summary.back}</div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">休憩時間</div>
+              <div class="summary-value">${summary.rest}</div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">休憩の質</div>
+              <div class="summary-value">${summary.restQuality}</div>
+            </div>
+          </div>
+
         </div>
 
+        <!-- 右カラム -->
         <div class="info-sections">
           <div class="info-card">
             <div class="info-card-title">前半車両情報</div>
@@ -774,6 +780,7 @@ function renderDutyHtml(dutyNo, duty) {
             ${fatigueInfo.メモ.length ? `<div class="info-card-title" style="margin-top:12px;">メモ</div><ul class="note-list">${fatigueInfo.メモ.map(line => `<li>${line}</li>`).join('')}</ul>` : ''}
           </div>
         </div>
+
       </div>
     </div>
   `;
