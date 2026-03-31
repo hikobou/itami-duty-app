@@ -651,7 +651,7 @@ function renderDutyHtml(dutyNo, duty) {
   const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
   const fatigueInfo = normalizeHardnessEntry(dutyHardnessDb[mode]?.[dutyNo]);
   const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
-  const summary = calcSummary(duty, fatigueInfo);
+  const summary = calcSummary(duty);
 
   let html = `
     <div class="result">
