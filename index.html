@@ -571,10 +571,9 @@ function calcSummary(duty) {
   const total実働 = frontWork + backWork;
   const restMin = total拘束 - total実働;
 
-  let restQuality = '普通';
-  if (休憩 >= 120) restQuality = '余裕あり';
+ let restQuality = '標準';
+if (休憩 >= 120) restQuality = '余裕あり';
 else if (休憩 < 60) restQuality = 'タイト';
-else restQuality = '標準';
   return {
     front: minutesToTime(frontWork),
     back: minutesToTime(backWork),
