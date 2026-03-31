@@ -224,12 +224,24 @@ body{
   padding:3px 7px;
   border-radius:999px;
 }
-.badge-mid{background:var(--warn);}
-.badge-fatigue.high{background:var(--danger);}
-.badge-fatigue.mid{background:#ca8a04;}
-.badge-fatigue.low{background:var(--ok);}
-.badge-access{background:#7c3aed;}
-.badge-ramp{background:var(--info);}
+.badge-mid { background: var(--warn); }
+.badge-fatigue.high { background: var(--danger); }
+.badge-fatigue.mid { background: #ca8a04; }
+.badge-fatigue.low { background: var(--ok); }
+.badge-access { background: #7c3aed; }
+.badge-ramp { background: var(--info); }
+
+/* ←ここに追加 */
+
+.badge-mode { background: #0f766e; }
+.badge-mission.at { background: #475569; }
+.badge-mission.mt { background: #b45309; }
+.badge-rest.long { background: #166534; }
+.badge-rest.normal { background: #a16207; }
+.badge-rest.tight { background: #b91c1c; }
+.badge-mission.at { background: #475569; }
+.badge-mission.mt { background: #b45309; }
+  
 .summary-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -623,20 +635,24 @@ function renderVehicleList(assignments) {
   }
 
   return assignments.map((item, index) => {
-    const carNo = item.車番 || '―';
-    const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
-    const notes = [];
+    const carNo = item.車番 || '-';
+const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
+const mission = vehicle.ミッション || '不明';
+const missionClass = mission === 'MT' ? 'mt' : 'at';
+const notes = [];
     if (item.注記) notes.push(item.注記);
     if (item.条件) notes.push(item.条件);
-    if (vehicle.ミッション) notes.push(vehicle.ミッション);
 
     const traits = Array.isArray(vehicle.癖) ? vehicle.癖 : [];
     const cautions = Array.isArray(vehicle.注意) ? vehicle.注意 : [];
 
     return `
-      <div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
-        <div class="info-card-title">車番 ${carNo}</div>
-        <div class="info-card-grid">
+<div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
+     <div class="info-card-title">車番 ${carNo}</div>
+　　　<div class="badges" style="margin-bottom:8px;">
+  　　<span class="badge-mission ${missionClass}">${mission}</span>
+　　　</div>
+<div class="info-card-grid">
           <div class="info-row"><span class="info-label">区分</span><span class="info-value">${notes.join(' / ') || '―'}</span></div>
           <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
           <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : (vehicle.メモ || 'なし')}</span></div>
