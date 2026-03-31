@@ -541,43 +541,45 @@ function getFatigueClass(level) {
   return 'low';
 }
 
-function timeToMinutes(t){
-  if(!t || !t.includes(':')) return 0;
-  const [h,m]=t.split(':').map(Number);
-  return h*60+m;
+function timeToMinutes(t) {
+  if (!t || typeof t !== 'string' || !t.includes(':')) return 0;
+  const [h, m] = t.split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return 0;
+  return h * 60 + m;
 }
 
-function minutesToTime(min){
-  const h=Math.floor(min/60);
-  const m=min%60;
+function minutesToTime(min) {
+  if (!Number.isFinite(min) || min < 0) return '―';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
   return `${h}時間${m}分`;
 }
 
 function calcSummary(duty) {
-  if (!duty) return { front:'―', back:'―', rest:'―', restQuality:'―' };
+  const start = timeToMinutes(duty['出勤']);
+  const end = timeToMinutes(duty['退勤']);
 
-  const frontStart = timeToMinutes(duty['前半出庫'] || '0:00');
-  const frontEnd = timeToMinutes(duty['前半入庫'] || '0:00');
-  const backStart = timeToMinutes(duty['後半出庫'] || '0:00');
-  const backEnd = timeToMinutes(duty['後半入庫'] || '0:00');
+  const frontStart = timeToMinutes(duty['前半出庫']);
+  const frontEnd = timeToMinutes(duty['前半入庫']);
 
-  const start = timeToMinutes(duty['出勤'] || '0:00');
-  const end = timeToMinutes(duty['退勤'] || '0:00');
+  const backStart = timeToMinutes(duty['後半出庫']);
+  const backEnd = timeToMinutes(duty['後半入庫']);
 
-  const frontWork = frontEnd - frontStart;
-  const backWork = backEnd - backStart;
+  const frontWork = Math.max(0, frontEnd - frontStart);
+  const backWork = Math.max(0, backEnd - backStart);
 
-  const total拘束 = end - start;
+  const total拘束 = Math.max(0, end - start);
   const total実働 = frontWork + backWork;
-  const restMin = total拘束 - total実働;
+  const 休憩 = Math.max(0, total拘束 - total実働);
 
- let restQuality = '標準';
-if (休憩 >= 120) restQuality = '余裕あり';
-else if (休憩 < 60) restQuality = 'タイト';
+  let restQuality = '標準';
+  if (休憩 >= 120) restQuality = '余裕あり';
+  else if (休憩 < 60) restQuality = 'タイト';
+
   return {
     front: minutesToTime(frontWork),
     back: minutesToTime(backWork),
-    rest: minutesToTime(restMin),
+    rest: minutesToTime(休憩),
     restQuality
   };
 }
@@ -671,7 +673,7 @@ function renderDutyHtml(dutyNo, duty) {
         </div>
       </div>
 
-    <div class="summary-grid">
+<div class="summary-grid">
   <div class="summary-box">
     <div class="summary-label">前半実働</div>
     <div class="summary-value">${summary.front}</div>
