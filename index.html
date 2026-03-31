@@ -186,11 +186,12 @@ body{
   border-radius:12px;
   padding:12px;
 }
-.time-card{display:grid; gap:10px;}
-.result h3{
-  margin:0;
-  font-size:22px;
-  color:var(--accent-strong);
+.time-card {
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 0 1px rgba(57,196,141,0.08);
 }
 .duty-head{
   display:flex;
@@ -238,9 +239,10 @@ body{
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
 .compact-summary {
-  margin-top: 10px;
-  margin-bottom: 12px;
+  margin-top: 6px;
+  margin-bottom: 10px;
 }
+
 
 .compact-summary .summary-box {
   min-height: 70px;
@@ -252,27 +254,29 @@ body{
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
   
-.summary-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
-.summary-box{
-  background:rgba(255,255,255,0.03);
-  border:1px solid var(--line-soft);
-  border-radius:10px;
-  padding:10px;
+.summary-box {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  padding: 8px 8px;
+  min-height: auto;
 }
-.summary-label{
-  font-size:10px;
-  color:var(--muted);
-  margin-bottom:4px;
-  letter-spacing:0.08em;
+.summary-label {
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 3px;
+  letter-spacing: 0.04em;
 }
-.summary-value{
-  font-family:"JetBrains Mono",monospace;
-  font-size:18px;
-  font-weight:700;
+
+.summary-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 700;
 }
 .item-list{display:grid; gap:8px;}
 .item{
@@ -297,10 +301,18 @@ body{
   border-left:4px solid #26a06f;
   font-weight:700;
 }
-.item-label{color:var(--muted);}
+.item-label {
+  color: #cfe9dd;
+  font-weight: 500;
+}
+
 .item.primary .item-label,
 .item.secondary .item-label{color:#eafff5;}
-.item-value{font-family:"JetBrains Mono",monospace; font-weight:700;}
+.item-value {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  font-size: 15px;
+}
 .info-sections{
   display:grid;
   gap:10px;
