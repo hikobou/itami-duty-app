@@ -350,6 +350,31 @@ body{
   border:1px solid var(--line);
   border-radius:14px;
 }
+
+.search-type-toggle{
+  display:inline-flex;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:rgba(255,255,255,0.02);
+  margin-top:16px;
+  margin-bottom:10px;
+}
+
+.search-type-toggle button{
+  padding:10px 16px;
+  background:transparent;
+  border:none;
+  color:var(--muted);
+  font-size:14px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.search-type-toggle button.active{
+  background:var(--accent);
+  color:#fff;
+}  
 .footer{
   display:flex;
   justify-content:center;
@@ -390,6 +415,10 @@ body{
         <div class="system-badge-value" id="modeLabel">WEEKDAY</div>
       </div>
     </div>
+<div class="search-type-toggle">
+  <button id="dutySearchBtn" class="active" type="button">勤番検索</button>
+  <button id="vehicleSearchBtn" type="button">車両検索</button>
+</div>
 
     <div class="toolbar">
       <div class="mode-toggle">
@@ -426,7 +455,10 @@ const clearBtn = document.getElementById('clearBtn');
 const result = document.getElementById('result');
 const modeLabel = document.getElementById('modeLabel');
 const resultStatus = document.getElementById('resultStatus');
+const dutySearchBtn = document.getElementById('dutySearchBtn');
+const vehicleSearchBtn = document.getElementById('vehicleSearchBtn');
 
+let searchType = 'duty';
 let vehicleDb = {};
 let dutyVehicleDb = { weekday: {}, holiday: {} };
 let dutyHardnessDb = { weekday: {}, holiday: {} };
@@ -628,17 +660,33 @@ function setMode(nextMode) {
 
 weekdayBtn.onclick = () => setMode('weekday');
 holidayBtn.onclick = () => setMode('holiday');
-searchBtn.onclick = () => searchDuty();
+searchBtn.onclick = () => runSearch();
 clearBtn.onclick = () => {
   searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
   searchInput.focus();
 };
+dutySearchBtn.onclick = () => {
+  searchType = 'duty';
+  dutySearchBtn.classList.add('active');
+  vehicleSearchBtn.classList.remove('active');
+  searchInput.placeholder = '例: 39';
+  result.innerHTML = '';
+  resultStatus.textContent = '待機中';
+  searchInput.focus();
+};
 
-searchInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') searchDuty();
-});
+vehicleSearchBtn.onclick = () => {
+  searchType = 'vehicle';
+  vehicleSearchBtn.classList.add('active');
+  dutySearchBtn.classList.remove('active');
+  searchInput.placeholder = '例: 5810 / ブレーキ / 暖房 / MT';
+  result.innerHTML = '';
+  resultStatus.textContent = '待機中';
+  searchInput.focus();
+};
+searchBtn.onclick = () => runSearch();
 
 searchInput.addEventListener('input', () => {
   searchInput.value = searchInput.value.replace(/[^0-9A-Za-z]/g, '').slice(0, 4);
@@ -648,9 +696,40 @@ searchInput.addEventListener('input', () => {
     resultStatus.textContent = '待機中';
     return;
   }
-  if (value.length >= 1) searchDuty();
+  if (value.length >= 1) runSearch();
 });
+function renderVehicleSearchResult(carNo, vehicle) {
+  const mission = vehicle.ミッション || '不明';
+  const missionClass = mission === 'MT' ? 'mt' : 'at';
+  const traits = Array.isArray(vehicle.癖) ? vehicle.癖 : [];
+  const cautions = Array.isArray(vehicle.注意) ? vehicle.注意 : [];
+  const memo = vehicle.メモ || 'なし';
 
+  return `
+    <div class="result">
+      <div class="duty-head">
+        <div>
+          <h3>車番 ${carNo}</h3>
+          <div class="badges">
+            <span class="badge-mission ${missionClass}">${mission}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-main" style="margin-top:12px;">
+        <div class="info-card">
+          <div class="info-card-title">車両特性</div>
+          <div class="info-card-grid">
+            <div class="info-row"><span class="info-label">ミッション</span><span class="info-value">${mission}</span></div>
+            <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
+            <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : 'なし'}</span></div>
+            <div class="info-row"><span class="info-label">メモ</span><span class="info-value">${memo}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
 function renderVehicleList(assignments) {
   if (!assignments.length) {
     return '<div class="info-row"><span class="info-label">割付</span><span class="info-value">なし</span></div>';
@@ -684,6 +763,48 @@ const notes = [];
   }).join('');
 }
 
+function searchVehicle() {
+  const input = searchInput.value.trim();
+  if (!input) {
+    result.innerHTML = '';
+    resultStatus.textContent = '待機中';
+    return;
+  }
+
+  if (vehicleDb[input]) {
+    result.innerHTML = renderVehicleSearchResult(input, vehicleDb[input]);
+    resultStatus.textContent = `車番 ${input} を表示中`;
+    return;
+  }
+
+  const keyword = input.toLowerCase();
+  const matched = Object.entries(vehicleDb).filter(([carNo, vehicle]) => {
+    const traits = Array.isArray(vehicle.癖) ? vehicle.癖.join(' ') : '';
+    const cautions = Array.isArray(vehicle.注意) ? vehicle.注意.join(' ') : '';
+    const memo = vehicle.メモ || '';
+    const mission = vehicle.ミッション || '';
+    const text = `${carNo} ${traits} ${cautions} ${memo} ${mission}`.toLowerCase();
+    return text.includes(keyword);
+  });
+
+  if (!matched.length) {
+    result.innerHTML = '<div class="empty">該当する車両はありません</div>';
+    resultStatus.textContent = '該当なし';
+    return;
+  }
+
+  result.innerHTML = matched.map(([carNo, vehicle]) => renderVehicleSearchResult(carNo, vehicle)).join('');
+  resultStatus.textContent = `${matched.length}件の車両が見つかりました`;
+}
+
+function runSearch() {
+  if (searchType === 'vehicle') {
+    searchVehicle();
+  } else {
+    searchDuty();
+  }
+}
+  
 function renderDutyHtml(dutyNo, duty) {
   const start = duty['出勤'] || '―';
   const end = duty['退勤'] || '';
