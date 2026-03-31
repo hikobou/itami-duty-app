@@ -685,24 +685,7 @@ function renderDutyHtml(dutyNo, duty) {
     <div class="result">
     
       <div class="duty-head">
-      <div class="summary-grid compact-summary">
-  <div class="summary-box">
-    <div class="summary-label">前半実働</div>
-    <div class="summary-value">${summary.front}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">後半実働</div>
-    <div class="summary-value">${summary.back}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩時間</div>
-    <div class="summary-value">${summary.rest}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩の質</div>
-    <div class="summary-value">${summary.restQuality}</div>
-  </div>
-</div>
+      
         <div>
           <h3>${dutyNo}勤</h3>
          <div class="badges">
@@ -722,6 +705,26 @@ function renderDutyHtml(dutyNo, duty) {
 
 
       <div class="result-main" style="margin-top:12px;">
+<div class="summary-grid compact-summary">
+  <div class="summary-box">
+    <div class="summary-label">前半実働</div>
+    <div class="summary-value">${summary.front}</div>
+  </div>
+  <div class="summary-box">
+    <div class="summary-label">後半実働</div>
+    <div class="summary-value">${summary.back}</div>
+  </div>
+  <div class="summary-box">
+    <div class="summary-label">休憩時間</div>
+    <div class="summary-value">${summary.rest}</div>
+  </div>
+  <div class="summary-box">
+    <div class="summary-label">休憩の質</div>
+    <div class="summary-value">${summary.restQuality}</div>
+  </div>
+</div>
+
+      
         <div class="time-card">
           <div class="info-card-title">時間情報</div>
           <div class="item-list">
