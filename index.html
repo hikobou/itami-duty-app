@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -427,7 +426,7 @@ body{
       </div>
 
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="例: 39" inputmode="numeric" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="例: 39 / 26-2" inputmode="text" autocomplete="off">
         <button id="searchBtn" type="button">検索</button>
       </div>
 
@@ -650,28 +649,24 @@ function calcSummary(duty) {
   };
 }
 
-function setMode(nextMode) {
-  mode = nextMode;
-  weekdayBtn.classList.toggle('active', mode === 'weekday');
-  holidayBtn.classList.toggle('active', mode === 'holiday');
-  modeLabel.textContent = mode === 'weekday' ? 'WEEKDAY' : 'HOLIDAY';
-  if (searchInput.value.trim()) searchDuty();
-}
-
 weekdayBtn.onclick = () => setMode('weekday');
 holidayBtn.onclick = () => setMode('holiday');
+
 searchBtn.onclick = () => runSearch();
+
 clearBtn.onclick = () => {
   searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
   searchInput.focus();
 };
+
 dutySearchBtn.onclick = () => {
   searchType = 'duty';
   dutySearchBtn.classList.add('active');
   vehicleSearchBtn.classList.remove('active');
-  searchInput.placeholder = '例: 39';
+  searchInput.placeholder = '例: 39 / 26-2';
+  searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
   searchInput.focus();
@@ -682,22 +677,33 @@ vehicleSearchBtn.onclick = () => {
   vehicleSearchBtn.classList.add('active');
   dutySearchBtn.classList.remove('active');
   searchInput.placeholder = '例: 5810 / ブレーキ / 暖房 / MT';
+  searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
   searchInput.focus();
 };
-searchBtn.onclick = () => runSearch();
+
+searchInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') runSearch();
+});
 
 searchInput.addEventListener('input', () => {
-  searchInput.value = searchInput.value.replace(/[^0-9A-Za-z]/g, '').slice(0, 4);
+  if (searchType === 'duty') {
+    searchInput.value = searchInput.value.replace(/[^0-9A-Za-z-]/g, '').slice(0, 8);
+  } else {
+    searchInput.value = searchInput.value.trimStart();
+  }
+
   const value = searchInput.value.trim();
   if (!value) {
     result.innerHTML = '';
     resultStatus.textContent = '待機中';
     return;
   }
-  if (value.length >= 1) runSearch();
+
+  runSearch();
 });
+
 function renderVehicleSearchResult(carNo, vehicle) {
   const mission = vehicle.ミッション || '不明';
   const missionClass = mission === 'MT' ? 'mt' : 'at';
@@ -819,14 +825,14 @@ function renderDutyHtml(dutyNo, duty) {
 
       <div class="duty-head">
         <div>
-          <h3>${dutyNo}勤</h3>
+          <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
           <div class="badges">
-            ${isMid ? '<span class="badge-mid">中休</span>' : ''}
-            <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
-            <span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>
-            <span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>
-            <span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>
-          </div>
+  ${isMid ? '<span class="badge-mid">中休</span>' : ''}
+  <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
+  ${fatigueInfo.疲労度 !== '―' ? `<span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>` : ''}
+  ${fatigueInfo.障害者対応 !== '―' ? `<span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>` : ''}
+  ${fatigueInfo.スロープ対応 !== '―' ? `<span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>` : ''}
+</div>
         </div>
 
         <div>
@@ -917,18 +923,31 @@ function searchDuty() {
     return;
   }
 
+  const normalizedInput = input.replace(/勤$/i, '');
   const data = datasets[mode] || {};
-  const duty = data[input];
+
+  let duty = data[normalizedInput];
+  let dutyKey = normalizedInput;
+
+  if (!duty && normalizedInput.endsWith('-1')) {
+    duty = data[normalizedInput];
+    dutyKey = normalizedInput;
+  }
+
+  if (!duty && normalizedInput.endsWith('-2')) {
+    duty = data[normalizedInput];
+    dutyKey = normalizedInput;
+  }
+
   if (!duty) {
     result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
     resultStatus.textContent = '未登録';
     return;
   }
 
-  result.innerHTML = renderDutyHtml(input, duty);
-  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${input}勤を表示中`;
+  result.innerHTML = renderDutyHtml(dutyKey, duty);
+  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey}勤を表示中`;
 }
-
 function runSelfTests() {
   console.assert(typeof renderDutyHtml === 'function', 'renderDutyHtml should exist');
   console.assert(typeof loadExternalData === 'function', 'loadExternalData should exist');
