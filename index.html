@@ -553,31 +553,32 @@ function minutesToTime(min){
   return `${h}時間${m}分`;
 }
 
-function calcSummary(duty, fatigueInfo) {
-  const start = timeToMinutes(duty['出勤']);
-  const end = timeToMinutes(duty['退勤']);
+function calcSummary(duty) {
+  if (!duty) return { front:'―', back:'―', rest:'―', restQuality:'―' };
 
-  const frontStart = timeToMinutes(duty['前半出庫']);
-  const frontEnd = timeToMinutes(duty['前半入庫']);
+  const frontStart = timeToMinutes(duty['前半出庫'] || '0:00');
+  const frontEnd = timeToMinutes(duty['前半入庫'] || '0:00');
+  const backStart = timeToMinutes(duty['後半出庫'] || '0:00');
+  const backEnd = timeToMinutes(duty['後半入庫'] || '0:00');
 
-  const backStart = timeToMinutes(duty['後半出庫']);
-  const backEnd = timeToMinutes(duty['後半入庫']);
+  const start = timeToMinutes(duty['出勤'] || '0:00');
+  const end = timeToMinutes(duty['退勤'] || '0:00');
 
   const frontWork = frontEnd - frontStart;
   const backWork = backEnd - backStart;
 
   const total拘束 = end - start;
   const total実働 = frontWork + backWork;
-  const 休憩 = total拘束 - total実働;
+  const restMin = total拘束 - total実働;
 
   let restQuality = '普通';
-  if (休憩 >= 120) restQuality = '長い';
-  else if (休憩 < 60) restQuality = '短い';
+  if (restMin >= 120) restQuality = '長い';
+  else if (restMin < 60) restQuality = '短い';
 
   return {
     front: minutesToTime(frontWork),
     back: minutesToTime(backWork),
-    rest: minutesToTime(休憩),
+    rest: minutesToTime(restMin),
     restQuality
   };
 }
