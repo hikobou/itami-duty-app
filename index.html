@@ -541,11 +541,44 @@ function getFatigueClass(level) {
   return 'low';
 }
 
+function timeToMinutes(t){
+  if(!t || !t.includes(':')) return 0;
+  const [h,m]=t.split(':').map(Number);
+  return h*60+m;
+}
+
+function minutesToTime(min){
+  const h=Math.floor(min/60);
+  const m=min%60;
+  return `${h}時間${m}分`;
+}
+
 function calcSummary(duty, fatigueInfo) {
+  const start = timeToMinutes(duty['出勤']);
+  const end = timeToMinutes(duty['退勤']);
+
+  const frontStart = timeToMinutes(duty['前半出庫']);
+  const frontEnd = timeToMinutes(duty['前半入庫']);
+
+  const backStart = timeToMinutes(duty['後半出庫']);
+  const backEnd = timeToMinutes(duty['後半入庫']);
+
+  const frontWork = frontEnd - frontStart;
+  const backWork = backEnd - backStart;
+
+  const total拘束 = end - start;
+  const total実働 = frontWork + backWork;
+  const 休憩 = total拘束 - total実働;
+
+  let restQuality = '普通';
+  if (休憩 >= 120) restQuality = '長い';
+  else if (休憩 < 60) restQuality = '短い';
+
   return {
-    steps: Object.keys(duty).length,
-    fatigue: fatigueInfo.疲労度 || '―',
-    ramp: fatigueInfo.スロープ対応 || '―'
+    front: minutesToTime(frontWork),
+    back: minutesToTime(backWork),
+    rest: minutesToTime(休憩),
+    restQuality
   };
 }
 
@@ -640,7 +673,22 @@ function renderDutyHtml(dutyNo, duty) {
 
       <div class="summary-grid">
         <div class="summary-box">
-          <div class="summary-label">項目数</div>
+          <div class="summary-label">前半実働</div>
+          <div class="summary-value">${summary.front}</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">後半実働</div>
+          <div class="summary-value">${summary.back}</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">休憩時間</div>
+          <div class="summary-value">${summary.rest}</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">休憩の質</div>
+          <div class="summary-value">${summary.restQuality}</div>
+        </div>
+      </div>
           <div class="summary-value">${summary.steps}</div>
         </div>
         <div class="summary-box">
