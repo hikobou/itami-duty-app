@@ -236,6 +236,15 @@ body{
 .badge-mode { background: #0f766e; }
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
+.compact-summary {
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.compact-summary .summary-box {
+  min-height: 70px;
+}
+
 .badge-rest.long { background: #166534; }
 .badge-rest.normal { background: #a16207; }
 .badge-rest.tight { background: #b91c1c; }
@@ -673,6 +682,7 @@ function renderDutyHtml(dutyNo, duty) {
 
   let html = `
     <div class="result">
+    
       <div class="duty-head">
         <div>
           <h3>${dutyNo}勤</h3>
@@ -690,7 +700,7 @@ function renderDutyHtml(dutyNo, duty) {
         </div>
       </div>
 
-<div class="summary-grid">
+<div class="summary-grid compact-summary">
   <div class="summary-box">
     <div class="summary-label">前半実働</div>
     <div class="summary-value">${summary.front}</div>
