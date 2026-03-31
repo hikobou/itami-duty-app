@@ -756,7 +756,11 @@ vehicleSearchBtn.onclick = () => {
   resultStatus.textContent = '待機中';
   searchInput.focus();
 };
-searchBtn.onclick = () => runSearch();
+searchBtn.onclick = () => searchDuty();
+
+searchInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') searchDuty();
+});
 
 searchInput.addEventListener('input', () => {
   searchInput.value = searchInput.value.replace(/[^0-9A-Za-z]/g, '').slice(0, 4);
@@ -766,9 +770,8 @@ searchInput.addEventListener('input', () => {
     resultStatus.textContent = '待機中';
     return;
   }
-  if (value.length >= 1) runSearch();
+  if (value.length >= 1) searchDuty();
 });
-
 function getVehicleEdits() {
   return JSON.parse(localStorage.getItem('vehicleEdits') || '{}');
 }
