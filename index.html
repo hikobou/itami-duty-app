@@ -1,837 +1,769 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>伊丹市交通局 勤番検索</title>
-<style>
-:root{
-  --bg:#0d241b;
-  --bg2:#0a1a14;
-  --panel:#163629;
-  --panel2:#1a4031;
-  --panel3:#204c3b;
-  --accent:#2aa876;
-  --accent-strong:#39c48d;
-  --line:#2a5f4c;
-  --line-soft:rgba(255,255,255,0.06);
-  --text:#e8f5ef;
-  --muted:#9fc5b5;
-  --danger:#dc2626;
-  --warn:#d97706;
-  --info:#2563eb;
-  --ok:#15803d;
-  --shadow:0 20px 40px rgba(0,0,0,0.18);
-}
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:"Noto Sans JP",sans-serif;
-  background:linear-gradient(180deg,var(--bg),var(--bg2));
-  color:var(--text);
-}
-.container{
-  max-width:940px;
-  margin:0 auto;
-  padding:20px 16px 40px;
-}
-.hero{
-  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:18px;
-  box-shadow:var(--shadow);
-  margin-bottom:16px;
-}
-.hero-top{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:flex-start;
-}
-.header{
-  font-size:30px;
-  font-weight:800;
-  letter-spacing:0.04em;
-  line-height:1.2;
-  margin-bottom:6px;
-  font-family:"Orbitron","Noto Sans JP",sans-serif;
-}
-.header .line2{
-  display:block;
-  font-size:36px;
-  font-weight:800;
-  letter-spacing:0.08em;
-}
-.sub{
-  font-size:12px;
-  color:var(--muted);
-  margin:0;
-}
-.system-badge{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,0.03);
-  border-radius:10px;
-  padding:10px 12px;
-  min-width:132px;
-}
-.system-badge-title{
-  font-size:10px;
-  color:var(--muted);
-  letter-spacing:0.08em;
-  margin-bottom:4px;
-}
-.system-badge-value{
-  font-family:"JetBrains Mono",monospace;
-  font-size:18px;
-  font-weight:700;
-}
-.toolbar{
-  display:grid;
-  grid-template-columns:180px 1fr 92px;
-  gap:10px;
-  margin-top:16px;
-}
-.mode-toggle{
-  display:flex;
-  border:1px solid var(--line);
-  border-radius:10px;
-  overflow:hidden;
-  background:rgba(255,255,255,0.02);
-}
-.mode-toggle button{
-  flex:1;
-  padding:12px;
-  background:transparent;
-  border:none;
-  color:var(--muted);
-  font-size:14px;
-  cursor:pointer;
-  font-weight:700;
-}
-.mode-toggle button.active{
-  background:var(--accent);
-  color:#fff;
-}
-.search-box{
-  display:flex;
-  gap:10px;
-}
-.search-box input{
-  flex:1;
-  height:46px;
-  padding:0 14px;
-  border-radius:10px;
-  border:1px solid #d1d5db;
-  background:#ffffff;
-  color:#111827;
-  font-size:17px;
-  font-family:"JetBrains Mono",monospace;
-  font-weight:700;
-}
-.search-box input::placeholder{color:#9ca3af;}
-.search-box input:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(42,168,118,0.15);
-}
-.search-box button,
-.action-btn{
-  height:46px;
-  padding:0 16px;
-  border:none;
-  border-radius:10px;
-  background:var(--accent);
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
-}
-.action-btn{
-  background:var(--panel3);
-  border:1px solid var(--line);
-}
-.result-headline{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:16px 2px 8px;
-}
-.result-title{
-  font-size:13px;
-  color:var(--muted);
-  letter-spacing:0.08em;
-}
-.result-status{
-  font-size:12px;
-  color:var(--muted);
-}
-.result{
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:14px;
-  box-shadow:var(--shadow);
-}
-.result-main{
-  display:grid;
-  grid-template-columns:1.3fr 0.9fr;
-  gap:12px;
-}
-.time-card,
-.info-card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px;
-}
-.time-card{display:grid; gap:10px;}
-.result h3{
-  margin:0;
-  font-size:22px;
-  color:var(--accent-strong);
-}
-.duty-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  margin-bottom:12px;
-}
-.badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
-.start-time,
-.end-time{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:110px;
-  font-family:"JetBrains Mono",monospace;
-  font-size:16px;
-  font-weight:700;
-  color:#c8f5df;
-  background:rgba(38,160,111,0.15);
-  padding:6px 10px;
-  border-radius:8px;
-  border:1px solid var(--line);
-}
-.end-time{margin-left:6px;}
-.badge-mid,
-.badge-fatigue,
-.badge-access,
-.badge-ramp{
-  font-size:11px;
-  color:#fff;
-  padding:3px 7px;
-  border-radius:999px;
-}
-.badge-mid { background: var(--warn); }
-.badge-fatigue.high { background: var(--danger); }
-.badge-fatigue.mid { background: #ca8a04; }
-.badge-fatigue.low { background: var(--ok); }
-.badge-access { background: #7c3aed; }
-.badge-ramp { background: var(--info); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>伊丹市交通局 勤番検索システム２</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-/* ←ここに追加 */
+    body {
+      margin: 0;
+      padding: 24px 16px 40px;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
 
-.badge-mode { background: #0f766e; }
-.badge-mission.at { background: #475569; }
-.badge-mission.mt { background: #b45309; }
-.compact-summary {
-  margin-top: 10px;
-  margin-bottom: 12px;
-}
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
 
-.compact-summary .summary-box {
-  min-height: 70px;
-}
+    .app-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 18px;
+      text-align: center;
+    }
 
-.badge-rest.long { background: #166534; }
-.badge-rest.normal { background: #a16207; }
-.badge-rest.tight { background: #b91c1c; }
-.badge-mission.at { background: #475569; }
-.badge-mission.mt { background: #b45309; }
-  
-.summary-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-}
-.summary-box{
-  background:rgba(255,255,255,0.03);
-  border:1px solid var(--line-soft);
-  border-radius:10px;
-  padding:10px;
-}
-.summary-label{
-  font-size:10px;
-  color:var(--muted);
-  margin-bottom:4px;
-  letter-spacing:0.08em;
-}
-.summary-value{
-  font-family:"JetBrains Mono",monospace;
-  font-size:18px;
-  font-weight:700;
-}
-.item-list{display:grid; gap:8px;}
-.item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:10px 12px;
-  border:1px solid var(--line-soft);
-  border-radius:10px;
-  font-size:14px;
-  background:rgba(255,255,255,0.02);
-}
-.item.primary{
-  background:linear-gradient(135deg,#1f7a5a,#26a06f);
-  color:#fff;
-  font-weight:700;
-  border-color:transparent;
-}
-.item.secondary{
-  background:rgba(38,160,111,0.15);
-  border-left:4px solid #26a06f;
-  font-weight:700;
-}
-.item-label{color:var(--muted);}
-.item.primary .item-label,
-.item.secondary .item-label{color:#eafff5;}
-.item-value{font-family:"JetBrains Mono",monospace; font-weight:700;}
-.info-sections{
-  display:grid;
-  gap:10px;
-}
-.info-card-title{
-  font-size:11px;
-  color:var(--muted);
-  margin-bottom:8px;
-  letter-spacing:0.08em;
-}
-.info-card-grid{display:grid; gap:6px;}
-.info-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:6px 0;
-  border-bottom:1px solid var(--line-soft);
-  font-size:13px;
-}
-.info-row:last-child{border-bottom:none;}
-.info-label{color:var(--muted);}
-.info-value{font-weight:700; text-align:right;}
-.note-list{
-  margin:0;
-  padding-left:18px;
-  display:grid;
-  gap:6px;
-}
-.note-list li{line-height:1.5;}
-.empty{
-  color:var(--muted);
-  padding:18px;
-  text-align:center;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:14px;
-}
-.footer{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:10px;
-  color:#ffffff;
-  margin-top:20px;
-  opacity:0.8;
-  white-space:nowrap;
-  letter-spacing:0.02em;
-}
-@media(max-width:760px){
-  .toolbar{grid-template-columns:1fr;}
-  .result-main{grid-template-columns:1fr;}
-  .hero-top{flex-direction:column;}
-}
-@media(max-width:520px){
-  .container{padding:14px 12px 28px;}
-  .header{font-size:24px;}
-  .header .line2{font-size:28px;}
-  .duty-head{flex-direction:column;}
-  .summary-grid{grid-template-columns:1fr;}
-  .start-time,.end-time{min-width:unset; width:auto;}
-  .footer{font-size:9px;}
-}
-</style>
+    .search-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-width: 220px;
+      padding: 14px 16px;
+      border: 1px solid #d8dee9;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-row button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .search-row button:hover {
+      background: #1d4ed8;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .result-area {
+      margin-top: 16px;
+    }
+
+    .duty-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .duty-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .duty-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .duty-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .duty-subtitle {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .duty-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .badge-weekday {
+      background: #e8f1ff;
+      color: #1d4ed8;
+    }
+
+    .badge-holiday {
+      background: #ffe9ee;
+      color: #be123c;
+    }
+
+    .badge-mt {
+      background: #eefcf3;
+      color: #15803d;
+    }
+
+    .badge-at {
+      background: #fff7e8;
+      color: #b45309;
+    }
+
+    .badge-tight {
+      background: #ffe9ee;
+      color: #be123c;
+    }
+
+    .badge-standard {
+      background: #fff7db;
+      color: #92400e;
+    }
+
+    .badge-relaxed {
+      background: #e9fbf0;
+      color: #047857;
+    }
+
+    .badge-hard {
+      background: #ffe4e6;
+      color: #be123c;
+    }
+
+    .badge-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-light {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .result-main {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+
+    .result-left,
+    .result-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .compact-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-item {
+      background: #f7f9fc;
+      border: 1px solid #e3e8f0;
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #667085;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1f2937;
+    }
+
+    .time-card,
+    .info-card {
+      background: #f9fbff;
+      border: 1px solid #e5ebf5;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #1f2937;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .time-item {
+      background: #fff;
+      border: 1px solid #e7ebf2;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .time-label {
+      font-size: 12px;
+      color: #667085;
+      margin-bottom: 4px;
+    }
+
+    .time-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e7ebf2;
+      border-radius: 12px;
+    }
+
+    .info-key {
+      font-size: 13px;
+      color: #667085;
+      flex-shrink: 0;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .empty,
+    .error {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      color: #444;
+    }
+
+    .error {
+      color: #b42318;
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+    }
+
+    @media (max-width: 768px) {
+      .result-main {
+        grid-template-columns: 1fr;
+      }
+
+      .compact-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .time-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .compact-summary,
+      .time-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .duty-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .duty-badges {
+        justify-content: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="hero">
-    <div class="hero-top">
-      <div>
-        <div class="header">伊丹市交通局<br><span class="line2">勤番検索システム２</span></div>
-        <p class="sub">Duty Search System / Professional Edition</p>
+  <div class="container">
+    <h1 class="app-title">伊丹市交通局 勤番検索システム２</h1>
+
+    <div class="search-box">
+      <div class="search-row">
+        <input id="searchInput" type="text" placeholder="例：39勤 / 109勤 / 227勤" />
+        <button id="searchButton">検索</button>
       </div>
-      <div class="system-badge">
-        <div class="system-badge-title">CURRENT MODE</div>
-        <div class="system-badge-value" id="modeLabel">WEEKDAY</div>
-      </div>
+      <div class="hint">勤務番号だけでも検索可能。例：「39」「39勤」どちらでもOK</div>
     </div>
 
-    <div class="toolbar">
-      <div class="mode-toggle">
-        <button id="weekdayBtn" class="active" type="button">平日</button>
-        <button id="holidayBtn" type="button">休日</button>
-      </div>
-
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="例: 39" inputmode="numeric" autocomplete="off">
-        <button id="searchBtn" type="button">検索</button>
-      </div>
-
-      <button id="clearBtn" class="action-btn" type="button">クリア</button>
+    <div id="resultArea" class="result-area">
+      <div class="empty">勤務番号を入力して検索してください。</div>
     </div>
   </div>
 
-  <div class="result-headline">
-    <div class="result-title">検索結果</div>
-    <div class="result-status" id="resultStatus">待機中</div>
-  </div>
-  <div id="result"></div>
-</div>
+  <script>
+    let weekdayData = [];
+    let holidayData = [];
+    let dutyVehicleData = [];
+    let dutyHardnessData = [];
+    let vehicleData = [];
 
-<div class="footer">© 2026 Itami Duty System | Developed by Sanei Co., Ltd.</div>
-
-<script>
-let mode = 'weekday';
-
-const weekdayBtn = document.getElementById('weekdayBtn');
-const holidayBtn = document.getElementById('holidayBtn');
-const searchInput = document.getElementById('searchInput');
-const searchBtn = document.getElementById('searchBtn');
-const clearBtn = document.getElementById('clearBtn');
-const result = document.getElementById('result');
-const modeLabel = document.getElementById('modeLabel');
-const resultStatus = document.getElementById('resultStatus');
-
-let vehicleDb = {};
-let dutyVehicleDb = { weekday: {}, holiday: {} };
-let dutyHardnessDb = { weekday: {}, holiday: {} };
-let datasets = { weekday: {}, holiday: {} };
-
-const DATA_FILES = {
-  weekday: './data/weekday.json',
-  holiday: './data/holiday.json',
-  vehicle: './data/vehicle.json',
-  dutyVehicle: './data/dutyVehicle.json',
-  dutyHardness: './data/dutyHardness.json'
-};
-
-const FALLBACK_DATA = {
-  vehicle: {
-    '5394': {
-      'ミッション': 'AT',
-      '癖': ['素直で運転しやすい', '排気ブレーキ推奨'],
-      '注意': [],
-      'メモ': 'サンプル'
-    }
-  },
-  dutyVehicle: {
-    weekday: {
-      '39': { 前半: [{ 車番: '4645' }], 後半: [{ 車番: '5394' }] },
-      '109': { 前半: [{ 車番: '4439' }], 後半: [{ 車番: '5888' }] }
-    },
-    holiday: {
-      '39': { 前半: [{ 車番: '4441' }], 後半: [{ 車番: '5477' }] }
-    }
-  },
-  dutyHardness: {
-    weekday: {
-      '39': {
-        疲労度: '高',
-        障害者対応: '多い',
-        スロープ対応: 'あり',
-        メモ: ['高齢者多い', 'バスマニア対応あり']
-      },
-      '109': {
-        疲労度: '高',
-        障害者対応: '少しあり',
-        スロープ対応: '多い',
-        メモ: ['連続スロープ対応で疲れる']
+    async function loadJson(path) {
+      const res = await fetch(path);
+      if (!res.ok) {
+        throw new Error(path + ' の読み込みに失敗しました');
       }
-    },
-    holiday: {
-      '39': {
-        疲労度: '中',
-        障害者対応: '少しあり',
-        スロープ対応: 'あり',
-        メモ: []
+      return await res.json();
+    }
+
+    async function init() {
+      try {
+        const [
+          weekday,
+          holiday,
+          dutyVehicle,
+          dutyHardness,
+          vehicle
+        ] = await Promise.all([
+          loadJson('./data/weekday.json'),
+          loadJson('./data/holiday.json'),
+          loadJson('./data/dutyVehicle.json'),
+          loadJson('./data/dutyHardness.json'),
+          loadJson('./data/vehicle.json')
+        ]);
+
+        weekdayData = Array.isArray(weekday) ? weekday : [];
+        holidayData = Array.isArray(holiday) ? holiday : [];
+        dutyVehicleData = Array.isArray(dutyVehicle) ? dutyVehicle : [];
+        dutyHardnessData = Array.isArray(dutyHardness) ? dutyHardness : [];
+        vehicleData = Array.isArray(vehicle) ? vehicle : [];
+
+      } catch (err) {
+        document.getElementById('resultArea').innerHTML = `
+          <div class="error">初期データの読み込みに失敗しました。<br>${escapeHtml(err.message)}</div>
+        `;
+        console.error(err);
       }
     }
-  },
-  weekday: {
-    '39': { 出勤: '7:24', 前半出庫: '7:49', 前半入庫: '11:24', 後半出庫: '13:02', 後半入庫: '15:52', 退勤: '16:02' },
-    '109': { 出勤: '12:54', 前半出庫: '13:19', 前半入庫: '16:30', 後半出庫: '17:39', 後半入庫: '21:19', 退勤: '21:29' }
-  },
-  holiday: {
-    '39': { 出勤: '8:45', 前半出庫: '9:10', 前半入庫: '12:26', 後半出庫: '14:13', 後半入庫: '17:13', 退勤: '17:23' }
-  }
-};
 
-function normalizeDutyData(data) {
-  return data && typeof data === 'object' ? data : {};
-}
+    function normalizeDutyNumber(input) {
+      if (!input) return '';
+      return String(input).replace(/\s+/g, '').replace(/勤/g, '');
+    }
 
-function normalizeVehicleData(data) {
-  return data && typeof data === 'object' ? data : {};
-}
+    function safe(val) {
+      if (val === undefined || val === null || val === '') return '―';
+      return String(val);
+    }
 
-function normalizeModeMapData(data) {
-  if (!data || typeof data !== 'object') {
-    return { weekday: {}, holiday: {} };
-  }
-  return {
-    weekday: data.weekday && typeof data.weekday === 'object' ? data.weekday : {},
-    holiday: data.holiday && typeof data.holiday === 'object' ? data.holiday : {}
-  };
-}
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
-function normalizeVehicleAssignment(entry) {
-  if (!entry || typeof entry !== 'object') return { 前半: [], 後半: [] };
-  return {
-    前半: Array.isArray(entry.前半) ? entry.前半 : [],
-    後半: Array.isArray(entry.後半) ? entry.後半 : []
-  };
-}
+    function findDutyRecord(source, dutyNo) {
+      return source.find(row => {
+        const values = Object.values(row || {}).map(v => String(v ?? '').trim());
+        return values.includes(dutyNo) || values.includes(dutyNo + '勤');
+      }) || null;
+    }
 
-function normalizeHardnessEntry(entry) {
-  if (!entry || typeof entry !== 'object') {
-    return { 疲労度: '―', 障害者対応: '―', スロープ対応: '―', メモ: [] };
-  }
-  return {
-    疲労度: entry.疲労度 || '―',
-    障害者対応: entry.障害者対応 || '―',
-    スロープ対応: entry.スロープ対応 || '―',
-    メモ: Array.isArray(entry.メモ) ? entry.メモ : []
-  };
-}
+    function findDutyVehicleRecord(dutyNo) {
+      return dutyVehicleData.find(row => {
+        const values = Object.values(row || {}).map(v => String(v ?? '').trim());
+        return values.includes(dutyNo) || values.includes(dutyNo + '勤');
+      }) || null;
+    }
 
-async function fetchJson(path) {
-  const response = await fetch(path, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`${path} の読込に失敗 (${response.status})`);
-  }
-  return response.json();
-}
+    function findDutyHardnessRecord(dutyNo) {
+      return dutyHardnessData.find(row => {
+        const values = Object.values(row || {}).map(v => String(v ?? '').trim());
+        return values.includes(dutyNo) || values.includes(dutyNo + '勤');
+      }) || null;
+    }
 
-async function loadExternalData() {
-  resultStatus.textContent = 'DB読込中';
-  try {
-    const [weekdayJson, holidayJson, vehicleJson, dutyVehicleJson, dutyHardnessJson] = await Promise.all([
-      fetchJson(DATA_FILES.weekday),
-      fetchJson(DATA_FILES.holiday),
-      fetchJson(DATA_FILES.vehicle),
-      fetchJson(DATA_FILES.dutyVehicle),
-      fetchJson(DATA_FILES.dutyHardness)
-    ]);
+    function findVehicleRecord(vehicleNo) {
+      if (!vehicleNo || vehicleNo === '―') return null;
+      return vehicleData.find(row => {
+        const values = Object.values(row || {}).map(v => String(v ?? '').trim());
+        return values.includes(String(vehicleNo).trim());
+      }) || null;
+    }
 
-    datasets = {
-      weekday: normalizeDutyData(weekdayJson),
-      holiday: normalizeDutyData(holidayJson)
-    };
-    vehicleDb = normalizeVehicleData(vehicleJson);
-    dutyVehicleDb = normalizeModeMapData(dutyVehicleJson);
-    dutyHardnessDb = normalizeModeMapData(dutyHardnessJson);
-    resultStatus.textContent = 'DB読込完了';
-  } catch (error) {
-    console.warn('外部JSON読込失敗。フォールバックDBを使用します。', error);
-    datasets = {
-      weekday: FALLBACK_DATA.weekday,
-      holiday: FALLBACK_DATA.holiday
-    };
-    vehicleDb = FALLBACK_DATA.vehicle;
-    dutyVehicleDb = FALLBACK_DATA.dutyVehicle;
-    dutyHardnessDb = FALLBACK_DATA.dutyHardness;
-    resultStatus.textContent = 'サンプルDB使用中';
-  }
-}
+    function getTimeValue(record, keys) {
+      for (const key of keys) {
+        if (record && record[key] !== undefined && record[key] !== null && record[key] !== '') {
+          return String(record[key]).trim();
+        }
+      }
+      return '―';
+    }
 
-function getFatigueClass(level) {
-  if (level === '高') return 'high';
-  if (level === '中') return 'mid';
-  return 'low';
-}
+    function getAnyValue(record, keys) {
+      for (const key of keys) {
+        if (record && record[key] !== undefined && record[key] !== null && record[key] !== '') {
+          return record[key];
+        }
+      }
+      return null;
+    }
 
-function timeToMinutes(t) {
-  if (!t || typeof t !== 'string' || !t.includes(':')) return 0;
-  const [h, m] = t.split(':').map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return 0;
-  return h * 60 + m;
-}
+    function toMinutes(hhmm) {
+      if (!hhmm || hhmm === '―') return null;
+      const m = String(hhmm).match(/^(\d{1,2})[:：](\d{2})$/);
+      if (!m) return null;
+      return Number(m[1]) * 60 + Number(m[2]);
+    }
 
-function minutesToTime(min) {
-  if (!Number.isFinite(min) || min < 0) return '―';
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${h}時間${m}分`;
-}
+    function formatMinutes(mins) {
+      if (mins === null || mins === undefined || isNaN(mins)) return '―';
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${h}時間${m}分`;
+    }
 
-function calcSummary(duty) {
-  const start = timeToMinutes(duty['出勤']);
-  const end = timeToMinutes(duty['退勤']);
+    function getRestQuality(restMinutes) {
+      if (restMinutes === null || restMinutes === undefined || isNaN(restMinutes)) {
+        return { label: '―', className: '' };
+      }
+      if (restMinutes >= 120) {
+        return { label: '余裕あり', className: 'badge-relaxed' };
+      } else if (restMinutes < 60) {
+        return { label: 'タイト', className: 'badge-tight' };
+      } else {
+        return { label: '標準', className: 'badge-standard' };
+      }
+    }
 
-  const frontStart = timeToMinutes(duty['前半出庫']);
-  const frontEnd = timeToMinutes(duty['前半入庫']);
+    function getHardnessBadgeClass(value) {
+      const text = String(value ?? '').trim();
+      if (!text || text === '―') return '';
 
-  const backStart = timeToMinutes(duty['後半出庫']);
-  const backEnd = timeToMinutes(duty['後半入庫']);
+      if (
+        text.includes('しんど') ||
+        text.includes('高') ||
+        text.includes('重') ||
+        text === 'A'
+      ) {
+        return 'badge-hard';
+      }
 
-  const frontWork = Math.max(0, frontEnd - frontStart);
-  const backWork = Math.max(0, backEnd - backStart);
+      if (
+        text.includes('中') ||
+        text === 'B'
+      ) {
+        return 'badge-medium';
+      }
 
-  const total拘束 = Math.max(0, end - start);
-  const total実働 = frontWork + backWork;
-  const 休憩 = Math.max(0, total拘束 - total実働);
+      return 'badge-light';
+    }
 
-  let restQuality = '標準';
-  if (休憩 >= 120) restQuality = '余裕あり';
-  else if (休憩 < 60) restQuality = 'タイト';
+    function calculateSummary(record) {
+      const start = getTimeValue(record, ['出勤']);
+      const firstOut = getTimeValue(record, ['前半出庫', '出庫', '出庫①']);
+      const firstIn = getTimeValue(record, ['前半入庫', '入庫', '入庫①']);
+      const secondStart = getTimeValue(record, ['後半出勤時間']);
+      const secondOut = getTimeValue(record, ['後半出庫', '出庫②']);
+      const secondIn = getTimeValue(record, ['後半入庫', '入庫②']);
+      const end = getTimeValue(record, ['退勤']);
 
-  return {
-    front: minutesToTime(frontWork),
-    back: minutesToTime(backWork),
-    rest: minutesToTime(休憩),
-    restQuality
-  };
-}
+      const startMin = toMinutes(start);
+      const firstInMin = toMinutes(firstIn);
+      const secondStartMin = toMinutes(secondStart);
+      const endMin = toMinutes(end);
 
-function setMode(nextMode) {
-  mode = nextMode;
-  weekdayBtn.classList.toggle('active', mode === 'weekday');
-  holidayBtn.classList.toggle('active', mode === 'holiday');
-  modeLabel.textContent = mode === 'weekday' ? 'WEEKDAY' : 'HOLIDAY';
-  if (searchInput.value.trim()) searchDuty();
-}
+      let actualWork = null;
+      let restTime = null;
 
-weekdayBtn.onclick = () => setMode('weekday');
-holidayBtn.onclick = () => setMode('holiday');
-searchBtn.onclick = () => searchDuty();
-clearBtn.onclick = () => {
-  searchInput.value = '';
-  result.innerHTML = '';
-  resultStatus.textContent = '待機中';
-  searchInput.focus();
-};
+      if (startMin !== null && endMin !== null) {
+        if (firstInMin !== null && secondStartMin !== null) {
+          actualWork = (firstInMin - startMin) + (endMin - secondStartMin);
+          restTime = secondStartMin - firstInMin;
+        } else {
+          actualWork = endMin - startMin;
+          restTime = 0;
+        }
+      }
 
-searchInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') searchDuty();
-});
+      return {
+        start,
+        firstOut,
+        firstIn,
+        secondStart,
+        secondOut,
+        secondIn,
+        end,
+        actualWork,
+        restTime,
+        restQuality: getRestQuality(restTime)
+      };
+    }
 
-searchInput.addEventListener('input', () => {
-  searchInput.value = searchInput.value.replace(/[^0-9A-Za-z]/g, '').slice(0, 4);
-  const value = searchInput.value.trim();
-  if (!value) {
-    result.innerHTML = '';
-    resultStatus.textContent = '待機中';
-    return;
-  }
-  if (value.length >= 1) searchDuty();
-});
+    function renderDutyHtml(record, options) {
+      const {
+        dayType,
+        dutyNo,
+        dutyVehicleRecord,
+        dutyHardnessRecord,
+        vehicleRecord
+      } = options;
 
-function renderVehicleList(assignments) {
-  if (!assignments.length) {
-    return '<div class="info-row"><span class="info-label">割付</span><span class="info-value">なし</span></div>';
-  }
+      const summary = calculateSummary(record);
 
-  return assignments.map((item, index) => {
-    const carNo = item.車番 || '-';
-const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
-const mission = vehicle.ミッション || '不明';
-const missionClass = mission === 'MT' ? 'mt' : 'at';
-const notes = [];
-    if (item.注記) notes.push(item.注記);
-    if (item.条件) notes.push(item.条件);
+      const vehicleNo = safe(
+        getAnyValue(dutyVehicleRecord, ['車両', '車番', '車号', '車両番号'])
+      );
 
-    const traits = Array.isArray(vehicle.癖) ? vehicle.癖 : [];
-    const cautions = Array.isArray(vehicle.注意) ? vehicle.注意 : [];
+      const transmission = safe(
+        getAnyValue(vehicleRecord, ['MTAT', '変速', 'ミッション', 'mission', 'AT/MT'])
+      );
 
-    return `
-<div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
-     <div class="info-card-title">車番 ${carNo}</div>
-　　　<div class="badges" style="margin-bottom:8px;">
-  　　<span class="badge-mission ${missionClass}">${mission}</span>
-　　　</div>
-<div class="info-card-grid">
-          <div class="info-row"><span class="info-label">区分</span><span class="info-value">${notes.join(' / ') || '―'}</span></div>
-          <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
-          <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : (vehicle.メモ || 'なし')}</span></div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+      const hardness = safe(
+        getAnyValue(dutyHardnessRecord, ['しんどさ', 'hardness', '評価', 'ランク'])
+      );
 
-function renderDutyHtml(dutyNo, duty) {
-  const start = duty['出勤'] || '―';
-  const end = duty['退勤'] || '';
-  const isMid = !!duty['前半退勤'];
-  const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
-  const fatigueInfo = normalizeHardnessEntry(dutyHardnessDb[mode]?.[dutyNo]);
-  const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
-  const summary = calcSummary(duty);
+      const badges = [];
 
-  let html = `
-    <div class="result">
-    
-      <div class="duty-head">
-      <div class="summary-grid compact-summary">
-  <div class="summary-box">
-    <div class="summary-label">前半実働</div>
-    <div class="summary-value">${summary.front}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">後半実働</div>
-    <div class="summary-value">${summary.back}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩時間</div>
-    <div class="summary-value">${summary.rest}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">休憩の質</div>
-    <div class="summary-value">${summary.restQuality}</div>
-  </div>
-</div>
-        <div>
-          <h3>${dutyNo}勤</h3>
-         <div class="badges">
-  ${isMid ? '<span class="badge-mid">中休</span>' : ''}
-  <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
-  <span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>
-  <span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>
-  <span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>
-</div>
-        </div>
-        <div>
-          <span class="start-time">出勤 ${start}</span>
-          ${end ? `<span class="end-time">退勤 ${end}</span>` : ''}
-        </div>
-      </div>
+      badges.push(
+        `<span class="badge ${dayType === 'holiday' ? 'badge-holiday' : 'badge-weekday'}">${dayType === 'holiday' ? '休日' : '平日'}</span>`
+      );
 
+      if (transmission !== '―') {
+        if (String(transmission).toUpperCase().includes('MT')) {
+          badges.push(`<span class="badge badge-mt">MT</span>`);
+        } else if (String(transmission).toUpperCase().includes('AT')) {
+          badges.push(`<span class="badge badge-at">AT</span>`);
+        }
+      }
 
+      if (hardness !== '―') {
+        badges.push(
+          `<span class="badge ${getHardnessBadgeClass(hardness)}">しんどさ ${escapeHtml(hardness)}</span>`
+        );
+      }
 
-      <div class="result-main" style="margin-top:12px;">
-        <div class="time-card">
-          <div class="info-card-title">時間情報</div>
-          <div class="item-list">
-  `;
-
-  for (const key in duty) {
-    let cls = 'item';
-    if (key === '出勤') cls += ' primary';
-    if (key === '後半出勤') cls += ' secondary';
-    html += `<div class="${cls}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
-  }
-
-  html += `
-          </div>
-        </div>
-
-        <div class="info-sections">
-          <div class="info-card">
-            <div class="info-card-title">前半車両情報</div>
-            ${renderVehicleList(vehicleAssign.前半)}
-          </div>
-
-          <div class="info-card">
-            <div class="info-card-title">後半車両情報</div>
-            ${renderVehicleList(vehicleAssign.後半)}
-          </div>
-
-          <div class="info-card">
-            <div class="info-card-title">勤務特性</div>
-            <div class="info-card-grid">
-              <div class="info-row"><span class="info-label">疲労度</span><span class="info-value">${fatigueInfo.疲労度}</span></div>
-              <div class="info-row"><span class="info-label">障害者対応</span><span class="info-value">${fatigueInfo.障害者対応}</span></div>
-              <div class="info-row"><span class="info-label">スロープ対応</span><span class="info-value">${fatigueInfo.スロープ対応}</span></div>
+      return `
+        <div class="duty-card">
+          <div class="duty-head">
+            <div class="duty-title-wrap">
+              <div class="duty-title">${escapeHtml(dutyNo)}勤</div>
+              <div class="duty-subtitle">勤務情報を表示しています</div>
             </div>
-            ${fatigueInfo.メモ.length ? `<div class="info-card-title" style="margin-top:12px;">メモ</div><ul class="note-list">${fatigueInfo.メモ.map(line => `<li>${line}</li>`).join('')}</ul>` : ''}
+            <div class="duty-badges">
+              ${badges.join('')}
+            </div>
+          </div>
+
+          <div class="result-main">
+            <div class="result-left">
+
+              <div class="compact-summary">
+                <div class="summary-item">
+                  <div class="summary-label">勤務区分</div>
+                  <div class="summary-value">${dayType === 'holiday' ? '休日' : '平日'}</div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-label">実働時間</div>
+                  <div class="summary-value">${escapeHtml(formatMinutes(summary.actualWork))}</div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-label">休憩時間</div>
+                  <div class="summary-value">${escapeHtml(formatMinutes(summary.restTime))}</div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-label">休憩の質</div>
+                  <div class="summary-value">
+                    ${summary.restQuality.label === '―'
+                      ? '―'
+                      : `<span class="badge ${summary.restQuality.className}">${escapeHtml(summary.restQuality.label)}</span>`
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="time-card">
+                <div class="card-title">時間情報</div>
+                <div class="time-grid">
+                  <div class="time-item">
+                    <div class="time-label">出勤</div>
+                    <div class="time-value">${escapeHtml(summary.start)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">前半出庫</div>
+                    <div class="time-value">${escapeHtml(summary.firstOut)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">前半入庫</div>
+                    <div class="time-value">${escapeHtml(summary.firstIn)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">前半退勤 / 後半出勤</div>
+                    <div class="time-value">${escapeHtml(summary.secondStart)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">後半出庫</div>
+                    <div class="time-value">${escapeHtml(summary.secondOut)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">後半入庫</div>
+                    <div class="time-value">${escapeHtml(summary.secondIn)}</div>
+                  </div>
+                  <div class="time-item">
+                    <div class="time-label">退勤</div>
+                    <div class="time-value">${escapeHtml(summary.end)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-right">
+              <div class="info-card">
+                <div class="card-title">補足情報</div>
+                <div class="info-list">
+                  <div class="info-row">
+                    <div class="info-key">車両</div>
+                    <div class="info-value">${escapeHtml(vehicleNo)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-key">変速</div>
+                    <div class="info-value">${escapeHtml(transmission)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-key">しんどさ</div>
+                    <div class="info-value">${escapeHtml(hardness)}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-card">
+                <div class="card-title">元データ確認</div>
+                <div class="info-list">
+                  ${Object.entries(record).map(([key, val]) => `
+                    <div class="info-row">
+                      <div class="info-key">${escapeHtml(key)}</div>
+                      <div class="info-value">${escapeHtml(safe(val))}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  `;
+      `;
+    }
 
-  return html;
-}
+    function searchDuty() {
+      const input = document.getElementById('searchInput').value;
+      const dutyNo = normalizeDutyNumber(input);
+      const resultArea = document.getElementById('resultArea');
 
-function searchDuty() {
-  const input = searchInput.value.trim();
-  if (!input) {
-    result.innerHTML = '';
-    resultStatus.textContent = '待機中';
-    return;
-  }
+      if (!dutyNo) {
+        resultArea.innerHTML = `<div class="empty">勤務番号を入力してください。</div>`;
+        return;
+      }
 
-  const data = datasets[mode] || {};
-  const duty = data[input];
-  if (!duty) {
-    result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
-    resultStatus.textContent = '未登録';
-    return;
-  }
+      const weekdayRecord = findDutyRecord(weekdayData, dutyNo);
+      const holidayRecord = findDutyRecord(holidayData, dutyNo);
 
-  result.innerHTML = renderDutyHtml(input, duty);
-  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${input}勤を表示中`;
-}
+      let record = null;
+      let dayType = 'weekday';
 
-function runSelfTests() {
-  console.assert(typeof renderDutyHtml === 'function', 'renderDutyHtml should exist');
-  console.assert(typeof loadExternalData === 'function', 'loadExternalData should exist');
-  console.assert(DATA_FILES.dutyHardness.includes('dutyHardness.json'), 'dutyHardness path should be configured');
+      if (weekdayRecord) {
+        record = weekdayRecord;
+        dayType = 'weekday';
+      } else if (holidayRecord) {
+        record = holidayRecord;
+        dayType = 'holiday';
+      }
 
-  const originalVehicleDb = vehicleDb;
-  const originalDutyVehicleDb = dutyVehicleDb;
-  const originalDutyHardnessDb = dutyHardnessDb;
-  const originalMode = mode;
+      if (!record) {
+        resultArea.innerHTML = `<div class="empty">${escapeHtml(dutyNo)}勤 は見つかりませんでした。</div>`;
+        return;
+      }
 
-  try {
-    vehicleDb = structuredClone(FALLBACK_DATA.vehicle);
-    dutyVehicleDb = structuredClone(FALLBACK_DATA.dutyVehicle);
-    dutyHardnessDb = structuredClone(FALLBACK_DATA.dutyHardness);
-    mode = 'weekday';
+      const dutyVehicleRecord = findDutyVehicleRecord(dutyNo);
+      const dutyHardnessRecord = findDutyHardnessRecord(dutyNo);
 
-    const html = renderDutyHtml('39', FALLBACK_DATA.weekday['39']);
-    console.assert(html.includes('前半車両情報'), 'should render front vehicle card');
-    console.assert(html.includes('後半車両情報'), 'should render rear vehicle card');
-    console.assert(html.includes('勤務特性'), 'should render duty traits card');
-    console.assert(html.includes('疲労度 高'), 'should render fatigue badge');
-    console.assert(html.includes('障害者対応 多い'), 'should render accessibility badge');
-    console.assert(html.includes('スロープ あり'), 'should render ramp badge');
-    console.assert(html.includes('4645'), 'should render assigned front vehicle');
-    console.assert(html.includes('5394'), 'should render assigned rear vehicle');
+      const vehicleNo = safe(
+        getAnyValue(dutyVehicleRecord, ['車両', '車番', '車号', '車両番号'])
+      );
+      const vehicleRecord = findVehicleRecord(vehicleNo);
 
-    const normalizedTraits = normalizeHardnessEntry(null);
-    console.assert(normalizedTraits.疲労度 === '―', 'normalizeHardnessEntry should return default fatigue');
-    console.assert(Array.isArray(normalizedTraits.メモ), 'normalizeHardnessEntry should return notes array');
+      resultArea.innerHTML = renderDutyHtml(record, {
+        dayType,
+        dutyNo,
+        dutyVehicleRecord,
+        dutyHardnessRecord,
+        vehicleRecord
+      });
+    }
 
-    const normalizedVehicles = normalizeVehicleAssignment(null);
-    console.assert(Array.isArray(normalizedVehicles.前半), 'normalizeVehicleAssignment should return front array');
-    console.assert(Array.isArray(normalizedVehicles.後半), 'normalizeVehicleAssignment should return rear array');
-  } finally {
-    vehicleDb = originalVehicleDb;
-    dutyVehicleDb = originalDutyVehicleDb;
-    dutyHardnessDb = originalDutyHardnessDb;
-    mode = originalMode;
-  }
-}
+    document.getElementById('searchButton').addEventListener('click', searchDuty);
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        searchDuty();
+      }
+    });
 
-async function initializeApp() {
-  await loadExternalData();
-  runSelfTests();
-}
-
-initializeApp();
-</script>
+    init();
+  </script>
 </body>
 </html>
