@@ -462,6 +462,10 @@ let vehicleDb = {};
 let dutyVehicleDb = { weekday: {}, holiday: {} };
 let dutyHardnessDb = { weekday: {}, holiday: {} };
 let datasets = { weekday: {}, holiday: {} };
+let weekdayLoaded = false;
+let vehicleLoaded = false;
+let dutyVehicleLoaded = false;
+let dutyHardnessLoaded = false;
 
 const DATA_FILES = {
   weekday: './data/weekday.json',
@@ -570,34 +574,75 @@ async function fetchJson(path) {
 
 async function loadExternalData() {
   resultStatus.textContent = 'DB読込中';
+
+  // 初期化
+  weekdayLoaded = false;
+  vehicleLoaded = false;
+  dutyVehicleLoaded = false;
+  dutyHardnessLoaded = false;
+
+  // 勤務DB
   try {
-    const [weekdayJson, holidayJson, vehicleJson, dutyVehicleJson, dutyHardnessJson] = await Promise.all([
-      fetchJson(DATA_FILES.weekday),
-      fetchJson(DATA_FILES.holiday),
-      fetchJson(DATA_FILES.vehicle),
-      fetchJson(DATA_FILES.dutyVehicle),
-      fetchJson(DATA_FILES.dutyHardness)
-    ]);
+    const weekdayJson = await fetchJson(DATA_FILES.weekday);
+    const holidayJson = await fetchJson(DATA_FILES.holiday);
 
     datasets = {
       weekday: normalizeDutyData(weekdayJson),
       holiday: normalizeDutyData(holidayJson)
     };
-    vehicleDb = normalizeVehicleData(vehicleJson);
-    dutyVehicleDb = normalizeModeMapData(dutyVehicleJson);
-    dutyHardnessDb = normalizeModeMapData(dutyHardnessJson);
-    resultStatus.textContent = 'DB読込完了';
-  } catch (error) {
-    console.warn('外部JSON読込失敗。フォールバックDBを使用します。', error);
+
+    weekdayLoaded = true;
+  } catch (e) {
+    console.error('勤務DB読込失敗', e);
     datasets = {
-      weekday: FALLBACK_DATA.weekday,
-      holiday: FALLBACK_DATA.holiday
+      weekday: {},
+      holiday: {}
     };
-    vehicleDb = FALLBACK_DATA.vehicle;
-    dutyVehicleDb = FALLBACK_DATA.dutyVehicle;
-    dutyHardnessDb = FALLBACK_DATA.dutyHardness;
-    resultStatus.textContent = 'サンプルDB使用中';
   }
+
+  // 車両DB
+  try {
+    const vehicleJson = await fetchJson(DATA_FILES.vehicle);
+    vehicleDb = normalizeVehicleData(vehicleJson);
+    vehicleLoaded = true;
+  } catch (e) {
+    console.error('車両DB読込失敗', e);
+    vehicleDb = {};
+  }
+
+  // 割付DB
+  try {
+    const dutyVehicleJson = await fetchJson(DATA_FILES.dutyVehicle);
+    dutyVehicleDb = normalizeModeMapData(dutyVehicleJson);
+    dutyVehicleLoaded = true;
+  } catch (e) {
+    console.error('割付DB読込失敗', e);
+    dutyVehicleDb = { weekday: {}, holiday: {} };
+  }
+
+  // しんどさDB
+  try {
+    const dutyHardnessJson = await fetchJson(DATA_FILES.dutyHardness);
+    dutyHardnessDb = normalizeModeMapData(dutyHardnessJson);
+    dutyHardnessLoaded = true;
+  } catch (e) {
+    console.error('しんどさDB読込失敗', e);
+    dutyHardnessDb = { weekday: {}, holiday: {} };
+  }
+
+  // 状態表示
+  const dbStatus = [];
+
+  if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗");
+  if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
+  if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
+  if (!dutyHardnessLoaded) dbStatus.push("しんどさDB読込失敗");
+
+  const statusText = dbStatus.length === 0
+    ? "SUCCESS"
+    : dbStatus.join(" / ");
+
+  resultStatus.textContent = "DB状態：" + statusText;
 }
 
 function getFatigueClass(level) {
