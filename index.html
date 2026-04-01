@@ -711,8 +711,27 @@ function calcSummary(duty) {
   };
 }
 
-weekdayBtn.onclick = () => setMode('weekday');
-holidayBtn.onclick = () => setMode('holiday');
+weekdayBtn.onclick = () => {
+  mode = 'weekday';
+  weekdayBtn.classList.add('active');
+  holidayBtn.classList.remove('active');
+  modeLabel.textContent = 'WEEKDAY';
+
+  if (searchInput.value.trim()) {
+    runSearch();
+  }
+};
+
+holidayBtn.onclick = () => {
+  mode = 'holiday';
+  holidayBtn.classList.add('active');
+  weekdayBtn.classList.remove('active');
+  modeLabel.textContent = 'HOLIDAY';
+
+  if (searchInput.value.trim()) {
+    runSearch();
+  }
+};
 
 searchBtn.onclick = () => runSearch();
 
