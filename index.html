@@ -1135,12 +1135,20 @@ const fatigueInfo = normalizeHardnessEntry(
 }
 
 function searchDuty() {
-  const input = searchInput.value.trim();
+  let input = searchInput.value.trim();
   if (!input) {
     result.innerHTML = '';
     resultStatus.textContent = '待機中';
     return;
   }
+
+  // 全角数字→半角
+  input = input.replace(/[０-９]/g, s =>
+    String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
+  );
+
+  // ハイフンを半角に統一
+  input = input.replace(/[ー－―]/g, '-');
 
   const normalizedInput = input.replace(/勤$/i, '');
   const data = datasets[mode] || {};
@@ -1148,14 +1156,19 @@ function searchDuty() {
   let duty = data[normalizedInput];
   let dutyKey = normalizedInput;
 
-  if (!duty && normalizedInput.endsWith('-1')) {
-    duty = data[normalizedInput];
-    dutyKey = normalizedInput;
-  }
+  const baseInput = normalizedInput.split('-')[0];
 
-  if (!duty && normalizedInput.endsWith('-2')) {
-    duty = data[normalizedInput];
-    dutyKey = normalizedInput;
+  if (!duty) {
+    if (data[baseInput]) {
+      duty = data[baseInput];
+      dutyKey = baseInput;
+    } else if (data[`${baseInput}-1`]) {
+      duty = data[`${baseInput}-1`];
+      dutyKey = `${baseInput}-1`;
+    } else if (data[`${baseInput}-2`]) {
+      duty = data[`${baseInput}-2`];
+      dutyKey = `${baseInput}-2`;
+    }
   }
 
   if (!duty) {
@@ -1165,7 +1178,7 @@ function searchDuty() {
   }
 
   result.innerHTML = renderDutyHtml(dutyKey, duty);
-  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey}勤を表示中`;
+  resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
 }
 function runSelfTests() {
   console.assert(typeof renderDutyHtml === 'function', 'renderDutyHtml should exist');
