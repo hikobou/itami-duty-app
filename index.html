@@ -822,7 +822,7 @@ function renderVehicleList(assignments) {
     車番
     ${
       carNo !== '-'
-        ? `<button type="button" class="vehicle-link" onclick="openVehicleFromDuty('${carNo}')">${carNo}</button>`
+        ? `<button type="button" class="vehicle-link" onclick="openVehicleUsageFromDuty('${carNo}')">${carNo}</button>`
         : '-'
     }
   </div>
@@ -874,6 +874,116 @@ function searchVehicle() {
   result.innerHTML = matched.map(([carNo, vehicle]) => renderVehicleSearchResult(carNo, vehicle)).join('');
   resultStatus.textContent = `${matched.length}件の車両が見つかりました`;
 }
+function findDutiesByVehicle(carNo) {
+  const results = [];
+
+  ['weekday', 'holiday'].forEach(modeKey => {
+    const modeLabel = modeKey === 'weekday' ? '平日' : '休日';
+    const modeData = dutyVehicleDb[modeKey] || {};
+
+    Object.entries(modeData).forEach(([dutyNo, assignment]) => {
+      const normalized = normalizeVehicleAssignment(assignment);
+
+      const frontHit = normalized.前半.some(item => String(item.車番 || '') === String(carNo));
+      const backHit = normalized.後半.some(item => String(item.車番 || '') === String(carNo));
+
+      if (frontHit) {
+        results.push({
+          mode: modeKey,
+          modeLabel,
+          dutyNo,
+          part: '前半'
+        });
+      }
+
+      if (backHit) {
+        results.push({
+          mode: modeKey,
+          modeLabel,
+          dutyNo,
+          part: '後半'
+        });
+      }
+    });
+  });
+
+  return results;
+}
+
+function renderVehicleDutyUsage(carNo) {
+  const usages = findDutiesByVehicle(carNo);
+
+  if (!usages.length) {
+    return `
+      <div class="info-card">
+        <div class="info-card-title">この車が使われる勤務</div>
+        <div class="info-row">
+          <span class="info-label">検索結果</span>
+          <span class="info-value">該当なし</span>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="info-card">
+      <div class="info-card-title">この車が使われる勤務</div>
+      <div class="info-card-grid">
+        ${usages.map(item => `
+          <div class="info-row">
+            <span class="info-label">${item.modeLabel}</span>
+            <span class="info-value">${item.dutyNo}${item.dutyNo.includes('-') ? '' : '勤'} / ${item.part}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function openVehicleUsageFromDuty(carNo) {
+  if (!carNo || carNo === '-') return;
+
+  const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
+  const usageHtml = renderVehicleDutyUsage(carNo);
+  const mission = vehicle.ミッション || '不明';
+  const missionClass = mission === 'MT' ? 'mt' : 'at';
+  const traits = Array.isArray(vehicle.癖) ? vehicle.癖 : [];
+  const cautions = Array.isArray(vehicle.注意) ? vehicle.注意 : [];
+  const memo = vehicle.メモ || 'なし';
+
+  result.innerHTML = `
+    <div class="result">
+      <div class="duty-head">
+        <div>
+          <h3>車番 ${carNo}</h3>
+          <div class="badges">
+            <span class="badge-mission ${missionClass}">${mission}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-main" style="margin-top:12px;">
+        <div class="info-card">
+          <div class="info-card-title">車両特性</div>
+          <div class="info-card-grid">
+            <div class="info-row"><span class="info-label">ミッション</span><span class="info-value">${mission}</span></div>
+            <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
+            <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : 'なし'}</span></div>
+            <div class="info-row"><span class="info-label">メモ</span><span class="info-value">${memo}</span></div>
+          </div>
+        </div>
+
+        <div class="info-sections">
+          ${usageHtml}
+        </div>
+      </div>
+    </div>
+  `;
+
+  resultStatus.textContent = `車番 ${carNo} の使用勤務一覧を表示中`;
+}
+  
+
 function openVehicleFromDuty(carNo) {
   if (!carNo || carNo === '-') return;
 
