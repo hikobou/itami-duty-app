@@ -816,7 +816,10 @@ function renderDutyHtml(dutyNo, duty) {
   const end = duty['退勤'] || '';
   const isMid = !!duty['前半退勤'];
   const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
-  const fatigueInfo = normalizeHardnessEntry(dutyHardnessDb[mode]?.[dutyNo]);
+ const baseDutyNo = dutyNo.split('-')[0];
+const fatigueInfo = normalizeHardnessEntry(
+  dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
+);
   const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
   const summary = calcSummary(duty);
 
