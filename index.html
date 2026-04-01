@@ -660,6 +660,12 @@ async function loadExternalData() {
     : dbStatus.join(" / ");
 
   resultStatus.textContent = "DB状態：" + statusText;
+if (statusText === "SUCCESS") {
+  resultStatus.style.color = "#10b981"; // 緑
+} else {
+  resultStatus.style.color = "#ef4444"; // 赤
+}
+
 }
 
 function getFatigueClass(level) {
@@ -764,8 +770,10 @@ vehicleSearchBtn.onclick = () => {
   searchInput.focus();
 };
 
-searchInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') runSearch();
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    runSearch();
+  }
 });
 
 searchInput.addEventListener('input', () => {
