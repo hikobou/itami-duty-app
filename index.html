@@ -237,6 +237,23 @@ body{
 .badge-mode { background: #0f766e; }
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
+.vehicle-link{
+  background:none;
+  border:none;
+  padding:0;
+  margin:0;
+  color:var(--accent-strong);
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+.vehicle-link:hover{
+  opacity:0.85;
+}
+  
+  
 .compact-summary {
   margin-top: 6px;
   margin-bottom: 10px;
@@ -788,10 +805,11 @@ function renderVehicleList(assignments) {
 
   return assignments.map((item, index) => {
     const carNo = item.車番 || '-';
-const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
-const mission = vehicle.ミッション || '不明';
-const missionClass = mission === 'MT' ? 'mt' : 'at';
-const notes = [];
+    const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
+    const mission = vehicle.ミッション || '不明';
+    const missionClass = mission === 'MT' ? 'mt' : 'at';
+    const notes = [];
+
     if (item.注記) notes.push(item.注記);
     if (item.条件) notes.push(item.条件);
 
@@ -800,16 +818,25 @@ const notes = [];
 
     return `
 <div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
-     <div class="info-card-title">車番 ${carNo}</div>
-　　　<div class="badges" style="margin-bottom:8px;">
-  　　<span class="badge-mission ${missionClass}">${mission}</span>
-　　　</div>
-<div class="info-card-grid">
-          <div class="info-row"><span class="info-label">区分</span><span class="info-value">${notes.join(' / ') || '―'}</span></div>
-          <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
-          <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : (vehicle.メモ || 'なし')}</span></div>
-        </div>
-      </div>
+  <div class="info-card-title">
+    車番
+    ${
+      carNo !== '-'
+        ? `<button type="button" class="vehicle-link" onclick="openVehicleFromDuty('${carNo}')">${carNo}</button>`
+        : '-'
+    }
+  </div>
+
+  <div class="badges" style="margin-bottom:8px;">
+    <span class="badge-mission ${missionClass}">${mission}</span>
+  </div>
+
+  <div class="info-card-grid">
+    <div class="info-row"><span class="info-label">区分</span><span class="info-value">${notes.join(' / ') || '―'}</span></div>
+    <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
+    <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : (vehicle.メモ || 'なし')}</span></div>
+  </div>
+</div>
     `;
   }).join('');
 }
@@ -847,7 +874,22 @@ function searchVehicle() {
   result.innerHTML = matched.map(([carNo, vehicle]) => renderVehicleSearchResult(carNo, vehicle)).join('');
   resultStatus.textContent = `${matched.length}件の車両が見つかりました`;
 }
+function openVehicleFromDuty(carNo) {
+  if (!carNo || carNo === '-') return;
 
+  searchType = 'vehicle';
+  vehicleSearchBtn.classList.add('active');
+  dutySearchBtn.classList.remove('active');
+
+  searchInput.value = carNo;
+  searchInput.placeholder = '例: 5810 / ブレーキ / 暖房 / MT';
+
+  searchVehicle();
+}
+
+
+
+  
 function runSearch() {
   if (searchType === 'vehicle') {
     searchVehicle();
