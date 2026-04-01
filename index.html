@@ -476,11 +476,14 @@ const vehicleSearchBtn = document.getElementById('vehicleSearchBtn');
 
 let searchType = 'duty';
 let vehicleDb = {};
+let slopeStopsDb = {};
 let dutyVehicleDb = { weekday: {}, holiday: {} };
 let dutyHardnessDb = { weekday: {}, holiday: {} };
 let datasets = { weekday: {}, holiday: {} };
+
 let weekdayLoaded = false;
 let vehicleLoaded = false;
+let slopeStopsLoaded = false;
 let dutyVehicleLoaded = false;
 let dutyHardnessLoaded = false;
 
@@ -488,6 +491,7 @@ const DATA_FILES = {
   weekday: './data/weekday.json',
   holiday: './data/holiday.json',
   vehicle: './data/vehicle.json',
+  slopeStops: './data/slope_stops.json',
   dutyVehicle: './data/dutyVehicle.json',
   dutyHardness: './data/dutyHardness.json'
 };
@@ -500,6 +504,11 @@ const FALLBACK_DATA = {
       '注意': [],
       'メモ': 'サンプル'
     }
+  },
+  slopeStops: {
+    '39': ['伊丹中央', '昆陽里'],
+    '109': ['阪急伊丹'],
+    '227': ['瑞穂小学校前']
   },
   dutyVehicle: {
     weekday: {
@@ -542,7 +551,6 @@ const FALLBACK_DATA = {
     '39': { 出勤: '8:45', 前半出庫: '9:10', 前半入庫: '12:26', 後半出庫: '14:13', 後半入庫: '17:13', 退勤: '17:23' }
   }
 };
-
 function normalizeDutyData(data) {
   return data && typeof data === 'object' ? data : {};
 }
@@ -626,7 +634,20 @@ async function loadExternalData() {
     console.error('車両DB読込失敗', e);
     vehicleDb = {};
   }
+  // スロープ停留所DB
+try {
+  const res = await fetch(DATA_FILES.slopeStops);
+  if (!res.ok) throw new Error('slope_stops.json 読込失敗');
+  slopeStopsDb = await res.json();
+  slopeStopsLoaded = true;
+} catch (err) {
+  console.error('slopeStops DB load error:', err);
+  slopeStopsDb = FALLBACK_DATA.slopeStops || {};
+  slopeStopsLoaded = false;
+}
 
+
+  
   // 割付DB
   try {
     const dutyVehicleJson = await fetchJson(DATA_FILES.dutyVehicle);
@@ -647,13 +668,17 @@ async function loadExternalData() {
     dutyHardnessDb = { weekday: {}, holiday: {} };
   }
 
-  // 状態表示
-  const dbStatus = [];
 
-  if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗");
-  if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
-  if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
-  if (!dutyHardnessLoaded) dbStatus.push("しんどさDB読込失敗");
+
+  
+ // 状態表示
+const dbStatus = [];
+
+if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗");
+if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
+if (!slopeStopsLoaded) dbStatus.push("スロープ停留所DB読込失敗");
+if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
+if (!dutyHardnessLoaded) dbStatus.push("しんどさDB読込失敗");
 
   const statusText = dbStatus.length === 0
     ? "SUCCESS"
@@ -1035,17 +1060,30 @@ function runSearch() {
   }
 }
   
-function renderDutyHtml(dutyNo, duty) {
+function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
   const start = duty['出勤'] || '―';
   const end = duty['退勤'] || '';
   const isMid = !!duty['前半退勤'];
   const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
- const baseDutyNo = dutyNo.split('-')[0];
-const fatigueInfo = normalizeHardnessEntry(
-  dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
-);
+
+  const baseDutyNo = dutyNo.split('-')[0];
+  const fatigueInfo = normalizeHardnessEntry(
+    dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
+  );
+
   const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
   const summary = calcSummary(duty);
+
+  const slopeHtml = slopeStops && slopeStops.length
+    ? `
+      <div class="info-card">
+        <div class="info-card-title">スロープ対応が多い停留所</div>
+        <div class="badges">
+          ${slopeStops.map(stop => `<span class="badge-ramp">${stop}</span>`).join('')}
+        </div>
+      </div>
+    `
+    : '';
 
   let html = `
     <div class="result">
@@ -1054,12 +1092,12 @@ const fatigueInfo = normalizeHardnessEntry(
         <div>
           <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
           <div class="badges">
-  ${isMid ? '<span class="badge-mid">中休</span>' : ''}
-  <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
-  ${fatigueInfo.疲労度 !== '―' ? `<span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>` : ''}
-  ${fatigueInfo.障害者対応 !== '―' ? `<span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>` : ''}
-  ${fatigueInfo.スロープ対応 !== '―' ? `<span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>` : ''}
-</div>
+            ${isMid ? '<span class="badge-mid">中休</span>' : ''}
+            <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
+            ${fatigueInfo.疲労度 !== '―' ? `<span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>` : ''}
+            ${fatigueInfo.障害者対応 !== '―' ? `<span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>` : ''}
+            ${fatigueInfo.スロープ対応 !== '―' ? `<span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>` : ''}
+          </div>
         </div>
 
         <div>
@@ -1090,7 +1128,7 @@ const fatigueInfo = normalizeHardnessEntry(
             </div>
           </div>
 
-          <!-- ★補助：summary（時間の下に配置） -->
+          <!-- ★補助：summary -->
           <div class="summary-grid compact-summary">
             <div class="summary-box">
               <div class="summary-label">前半実働</div>
@@ -1114,6 +1152,8 @@ const fatigueInfo = normalizeHardnessEntry(
 
         <!-- 右カラム -->
         <div class="info-sections">
+          ${slopeHtml}
+
           <div class="info-card">
             <div class="info-card-title">前半車両情報</div>
             ${renderVehicleList(vehicleAssign.前半)}
@@ -1150,12 +1190,10 @@ function searchDuty() {
     return;
   }
 
-  // 全角数字→半角
   input = input.replace(/[０-９]/g, s =>
     String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
   );
 
-  // ハイフンを半角に統一
   input = input.replace(/[ー－―]/g, '-');
 
   const normalizedInput = input.replace(/勤$/i, '');
@@ -1185,7 +1223,12 @@ function searchDuty() {
     return;
   }
 
-  result.innerHTML = renderDutyHtml(dutyKey, duty);
+  const baseDutyNo = dutyKey.split('-')[0];
+  const slopeStops = slopeStopsDb[dutyKey] || slopeStopsDb[baseDutyNo] || [];
+  const hardness = dutyHardnessDb[mode]?.[dutyKey] || dutyHardnessDb[mode]?.[baseDutyNo];
+  const vehicle = dutyVehicleDb[mode]?.[dutyKey] || dutyVehicleDb[mode]?.[baseDutyNo];
+
+  result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
 }
 function runSelfTests() {
