@@ -994,6 +994,11 @@ function runSelfTests() {
 
 async function initializeApp() {
   await loadExternalData();
+
+  // ↓ここに追加（この位置）
+  console.log('weekday keys =', Object.keys(datasets.weekday));
+  console.log('weekday 26 =', datasets.weekday['26']);
+
   runSelfTests();
 }
 
