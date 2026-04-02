@@ -1233,7 +1233,9 @@ function searchDuty() {
   }
 
   const baseDutyNo = dutyKey.split('-')[0];
-  const slopeStops = slopeStopsDb[dutyKey] || slopeStopsDb[baseDutyNo] || [];
+  const slopeStops = slopeStopsDb[mode]?.[dutyKey] 
+    || slopeStopsDb[mode]?.[baseDutyNo] 
+    || [];
   const hardness = dutyHardnessDb[mode]?.[dutyKey] || dutyHardnessDb[mode]?.[baseDutyNo];
   const vehicle = dutyVehicleDb[mode]?.[dutyKey] || dutyVehicleDb[mode]?.[baseDutyNo];
 
