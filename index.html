@@ -1507,14 +1507,14 @@ function startTicker(duty) {
       }
     }
 
-    if (isBeforeStart) {
-     const today = new Date();
-     const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
+   if (isBeforeStart) {
+  const today = new Date();
+  const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
 
-     updateTicker(`📅 ${dateText}です。本日も『安全運行』で稼ぎましょう！🚍`);
-   } else {
-     updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
-   }
+  updateTicker(`📅 ${dateText}です。本日も『安全運行』で稼ぎましょう！🚍　出勤まであと ${min}分${sec}秒`);
+} else {
+  updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
+}
 
     if (status) {
       if (
