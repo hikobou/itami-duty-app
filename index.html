@@ -569,17 +569,18 @@ body{
     </div>
   </div>
 
-  <div class="result-headline">
+ <div class="result-headline">
     <div class="result-title">検索結果</div>
     <div class="result-status" id="resultStatus">待機中</div>
   </div>
-  <div id="result"></div>
-</div>
 
-<div id="tickerWrap" class="ticker-wrap">
-  <div class="ticker">
-    <div id="tickerText" class="ticker-inner"></div>
+  <div id="tickerWrap" class="ticker-wrap" style="display:none;">
+    <div class="ticker">
+      <div id="tickerText" class="ticker-inner">待機中</div>
+    </div>
   </div>
+
+  <div id="result"></div>
 </div>
   
 <div class="dev-diff-panel">
@@ -1212,15 +1213,11 @@ function openVehicleUsageFromDuty(carNo) {
   
 
 function openVehicleFromDuty(carNo) {
-  if (!carNo || carNo === '-') return;
-
   searchType = 'vehicle';
   vehicleSearchBtn.classList.add('active');
   dutySearchBtn.classList.remove('active');
-
+  stopTicker(); 
   searchInput.value = carNo;
-  searchInput.placeholder = '例: 5810 / ブレーキ / 暖房 / MT';
-
   searchVehicle();
 }
 
