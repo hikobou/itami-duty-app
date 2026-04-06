@@ -1388,18 +1388,7 @@ function updateTicker(text) {
 
 function getNextEvent(duty) {
   const now = new Date();
-  const startTime = duty.出勤;
-let isBeforeStart = false;
-
-if (startTime) {
-  const [h, m] = startTime.split(':').map(Number);
-  const startDate = new Date();
-  startDate.setHours(h, m, 0, 0);
-
-  if (now < startDate) {
-    isBeforeStart = true;
-  }
-}
+  
   const events = [
     { label: '出勤', time: duty.出勤 },
     { label: '前半出庫', time: duty.前半出庫 },
@@ -1471,7 +1460,20 @@ function startTicker(duty) {
     const progressWrap = document.getElementById('progressWrap');
     const progressFill = document.getElementById('progressFill');
     const progressLabel = document.getElementById('progressLabel');
+    const now = new Date();
 
+    const startTime = duty.出勤;
+    let isBeforeStart = false;
+
+  if (startTime) {
+    const [h, m] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(h, m, 0, 0);
+
+  if (now < startDate) {
+    isBeforeStart = true;
+  }
+}
     if (!eventInfo) {
       updateTicker('本日の勤務は終了しました 👍');
       if (status) status.textContent = '現在：勤務終了';
