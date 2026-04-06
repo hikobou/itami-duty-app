@@ -1388,7 +1388,18 @@ function updateTicker(text) {
 
 function getNextEvent(duty) {
   const now = new Date();
+  const startTime = duty.出勤;
+let isBeforeStart = false;
 
+if (startTime) {
+  const [h, m] = startTime.split(':').map(Number);
+  const startDate = new Date();
+  startDate.setHours(h, m, 0, 0);
+
+  if (now < startDate) {
+    isBeforeStart = true;
+  }
+}
   const events = [
     { label: '出勤', time: duty.出勤 },
     { label: '前半出庫', time: duty.前半出庫 },
@@ -1496,7 +1507,14 @@ function startTicker(duty) {
       }
     }
 
-    updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
+    if (isBeforeStart) {
+     const today = new Date();
+     const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
+
+     updateTicker(`📅 ${dateText}です。本日も『安全運行』で稼ぎましょう！🚍`);
+   } else {
+     updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
+   }
 
     if (status) {
       if (
