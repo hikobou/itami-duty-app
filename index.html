@@ -1335,7 +1335,7 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
   for (const key in duty) {
     let cls = 'item';
     if (key === '出勤') cls += ' primary';
-    if (key === '後半出勤') cls += ' secondary';
+    if (key === '後半出勤時間') cls += ' secondary';
     html += `<div class="${cls}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
   }
 
@@ -1477,7 +1477,8 @@ if (!duty) {
 
   result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
-startTicker(duty);
+
+  startTicker(duty);
 }
   
 function updateTicker(text) {
@@ -1562,62 +1563,61 @@ function startTicker(duty) {
     const progressLabel = document.getElementById('progressLabel');
 
     if (!eventInfo) {
-  updateTicker('本日の勤務は終了しました 👍');
-  if (status) status.textContent = '現在：勤務終了';
-  if (wrap) wrap.classList.remove('urgent');
-  if (progressWrap) progressWrap.style.display = 'none';
-  if (progressFill) progressFill.style.width = '100%';
-  if (progressLabel) progressLabel.textContent = '勤務完了';
-  return;
-}
+      updateTicker('本日の勤務は終了しました 👍');
+      if (status) status.textContent = '現在：勤務終了';
+      if (wrap) wrap.classList.remove('urgent');
+      if (progressWrap) progressWrap.style.display = 'none';
+      if (progressFill) progressFill.style.width = '100%';
+      if (progressLabel) progressLabel.textContent = '勤務完了';
+      return;
+    }
+
     const now = new Date();
-    const diff = next.date - now;
     const next = eventInfo.next;
     const prev = eventInfo.prev;
+    const diff = next.date - now;
 
     const min = Math.floor(diff / 60000);
     const sec = Math.floor((diff % 60000) / 1000);
-    const remainMinutes = Math.max(0, diff / 60000);
-    const percent = Math.max(0, Math.min(100, ((totalMinutes - remainMinutes) / totalMinutes) * 100));
-let percent = 0;
 
-if (prev) {
-  const total = next.date - prev.date;
-  const passed = now - prev.date;
-  percent = Math.max(0, Math.min(100, (passed / total) * 100));
-}
+    let percent = 0;
+    if (prev) {
+      const total = next.date - prev.date;
+      const passed = now - prev.date;
+      percent = Math.max(0, Math.min(100, (passed / total) * 100));
+    }
+
     if (progressWrap) progressWrap.style.display = 'block';
     if (progressFill) progressFill.style.width = `${percent}%`;
-    if (progressLabel) progressLabel.textContent = `次イベントまでの進行率 ${Math.round(percent)}%`;
+    if (progressLabel) {
+      if (prev) {
+        progressLabel.textContent = `${prev.label} → ${next.label}　${Math.round(percent)}%`;
+      } else {
+        progressLabel.textContent = `${next.label} まで ${Math.round(percent)}%`;
+      }
+    }
 
     updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
-if (progressLabel) {
-  if (prev) {
-    progressLabel.textContent = `${prev.label} → ${next.label}　${Math.round(percent)}%`;
-  } else {
-    progressLabel.textContent = `${next.label} まで ${Math.round(percent)}%`;
-  }
-}
-    
-if (status) {
-  if (
-    next.label === '前半出庫' ||
-    next.label === '前半入庫' ||
-    next.label === '前半退勤' ||
-    next.label === '後半入庫' ||
-    next.label === '退勤'
-  ) {
-    status.textContent = '現在：勤務中';
-  } else if (
-    next.label === '後半出勤時間' ||
-    next.label === '後半出庫'
-  ) {
-    status.textContent = '現在：休憩中';
-  } else {
-    status.textContent = '現在：進行中';
-  }
-}
-    
+
+    if (status) {
+      if (
+        next.label === '前半出庫' ||
+        next.label === '前半入庫' ||
+        next.label === '前半退勤' ||
+        next.label === '後半入庫' ||
+        next.label === '退勤'
+      ) {
+        status.textContent = '現在：勤務中';
+      } else if (
+        next.label === '後半出勤時間' ||
+        next.label === '後半出庫'
+      ) {
+        status.textContent = '現在：休憩中';
+      } else {
+        status.textContent = '現在：進行中';
+      }
+    }
+
     if (wrap) {
       if (diff <= 5 * 60 * 1000) {
         wrap.classList.add('urgent');
