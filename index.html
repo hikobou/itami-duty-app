@@ -1483,8 +1483,6 @@ function startTicker(duty) {
       if (progressLabel) progressLabel.textContent = '勤務完了';
       return;
     }
-
-    const now = new Date();
     const next = eventInfo.next;
     const prev = eventInfo.prev;
     const diff = next.date - now;
