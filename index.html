@@ -525,7 +525,33 @@ body{
   color: #dff7df;
   letter-spacing: 0.04em;
 }
+.progress-wrap {
+  margin-top: 8px;
+}
 
+.progress-label {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #cfe9cf;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7CFC00, #00FF7F);
+  transition: width 0.5s linear;
+}
+
+
+  
   
 @keyframes tickerMove {
   0% { transform: translateX(0); }
@@ -582,10 +608,17 @@ body{
     <div class="result-status" id="resultStatus">待機中</div>
   </div>
 
-  <div id="tickerWrap" class="ticker-wrap" style="display:none;">
+<div id="tickerWrap" class="ticker-wrap" style="display:none;">
   <div id="tickerStatus" class="ticker-status">待機中</div>
   <div class="ticker">
     <div id="tickerText" class="ticker-inner">待機中</div>
+  </div>
+
+  <div id="progressWrap" class="progress-wrap" style="display:none;">
+    <div class="progress-label" id="progressLabel">進行状況</div>
+    <div class="progress-bar">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
   </div>
 </div>
 
@@ -1487,10 +1520,14 @@ function stopTicker() {
   }
 
   const wrap = document.getElementById('tickerWrap');
+  const status = document.getElementById('tickerStatus');
+
   if (wrap) {
     wrap.style.display = 'none';
     wrap.classList.remove('urgent');
   }
+
+  if (status) status.textContent = '待機中';
 }
   
 function startTicker(duty) {
@@ -1520,15 +1557,24 @@ function startTicker(duty) {
     const sec = Math.floor((diff % 60000) / 1000);
 
     updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
- if (status) {
-    if (next.label === '前半入庫' || next.label === '後半入庫' || next.label === '退勤') {
-      status.textContent = '現在：勤務中';
-    } else if (next.label === '後半出庫' || next.label === '前半退勤') {
-      status.textContent = '現在：休憩中';
-    } else {
-      status.textContent = '現在：進行中';
-    }
+if (status) {
+  if (
+    next.label === '前半出庫' ||
+    next.label === '前半入庫' ||
+    next.label === '前半退勤' ||
+    next.label === '後半入庫' ||
+    next.label === '退勤'
+  ) {
+    status.textContent = '現在：勤務中';
+  } else if (
+    next.label === '後半出勤時間' ||
+    next.label === '後半出庫'
+  ) {
+    status.textContent = '現在：休憩中';
+  } else {
+    status.textContent = '現在：進行中';
   }
+}
     
     if (wrap) {
       if (diff <= 5 * 60 * 1000) {
