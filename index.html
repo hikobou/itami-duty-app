@@ -498,7 +498,36 @@ body{
   }
 }
 
+.ticker-wrap {
+  overflow: hidden;
+  background: #000;
+  color: #00ff66;
+  font-weight: bold;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  padding: 6px 0;
+}
 
+.ticker {
+  width: 100%;
+}
+
+.ticker-inner {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: tickerMove 12s linear infinite;
+}
+
+@keyframes tickerMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* 緊急時 */
+.ticker-wrap.urgent {
+  color: #ff2b2b;
+}
 
   
 </style>
@@ -545,6 +574,12 @@ body{
     <div class="result-status" id="resultStatus">待機中</div>
   </div>
   <div id="result"></div>
+</div>
+
+<div id="tickerWrap" class="ticker-wrap">
+  <div class="ticker">
+    <div id="tickerText" class="ticker-inner"></div>
+  </div>
 </div>
   
 <div class="dev-diff-panel">
@@ -1394,7 +1429,76 @@ function searchDuty() {
 
   result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
+startTicker(duty);
 }
+  
+function updateTicker(text) {
+  const el = document.getElementById('tickerText');
+  if (!el) return;
+  el.textContent = text;
+}
+
+function getNextEvent(duty) {
+  const now = new Date();
+
+  const events = [
+    { label: '出勤', time: duty.出勤 },
+    { label: '前半出庫', time: duty.前半出庫 },
+    { label: '前半入庫', time: duty.前半入庫 },
+    { label: '前半退勤', time: duty.前半退勤 },
+    { label: '後半出勤', time: duty.後半出勤 },
+    { label: '後半出庫', time: duty.後半出庫 },
+    { label: '後半入庫', time: duty.後半入庫 },
+    { label: '退勤', time: duty.退勤 }
+  ].filter(e => e.time);
+
+  const upcoming = events
+    .map(e => {
+      const [h, m] = e.time.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return { ...e, date: d };
+    })
+    .filter(e => e.date > now)
+    .sort((a, b) => a.date - b.date);
+
+  return upcoming[0] || null;
+}
+let tickerTimer = null;
+
+function startTicker(duty) {
+  if (tickerTimer) clearInterval(tickerTimer);
+
+  tickerTimer = setInterval(() => {
+    const next = getNextEvent(duty);
+    const wrap = document.getElementById('tickerWrap');
+
+    if (!next) {
+      updateTicker('本日の勤務は終了しました 👍');
+      wrap.classList.remove('urgent');
+      return;
+    }
+
+    const now = new Date();
+    const diff = next.date - now;
+
+    const min = Math.floor(diff / 60000);
+    const sec = Math.floor((diff % 60000) / 1000);
+
+    updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
+
+    // 5分以内で赤
+    if (diff <= 5 * 60 * 1000) {
+      wrap.classList.add('urgent');
+    } else {
+      wrap.classList.remove('urgent');
+    }
+
+  }, 1000);
+}
+
+
+  
 function runSelfTests() {
   console.assert(typeof renderDutyHtml === 'function', 'renderDutyHtml should exist');
   console.assert(typeof loadExternalData === 'function', 'loadExternalData should exist');
