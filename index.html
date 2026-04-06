@@ -1498,20 +1498,28 @@ function getNextEvent(duty) {
     { label: '後半出庫', time: duty.後半出庫 },
     { label: '後半入庫', time: duty.後半入庫 },
     { label: '退勤', time: duty.退勤 }
-  ].filter(e => e.time);
-
-  const upcoming = events
+  ]
+    .filter(e => e.time)
     .map(e => {
       const [h, m] = e.time.split(':').map(Number);
       const d = new Date();
       d.setHours(h, m, 0, 0);
       return { ...e, date: d };
     })
-    .filter(e => e.date > now)
     .sort((a, b) => a.date - b.date);
 
-  return upcoming[0] || null;
+  for (let i = 0; i < events.length; i++) {
+    if (events[i].date > now) {
+      return {
+        next: events[i],
+        prev: events[i - 1] || null
+      };
+    }
+  }
+
+  return null;
 }
+  
 let tickerTimer = null;
   
 function stopTicker() {
@@ -1546,14 +1554,14 @@ function startTicker(duty) {
   }
 
   function renderTickerNow() {
-    const next = getNextEvent(duty);
+    const eventInfo = getNextEvent(duty);
     const wrap = document.getElementById('tickerWrap');
     const status = document.getElementById('tickerStatus');
     const progressWrap = document.getElementById('progressWrap');
     const progressFill = document.getElementById('progressFill');
     const progressLabel = document.getElementById('progressLabel');
 
-    if (!next) {
+    if (!eventInfo) {
   updateTicker('本日の勤務は終了しました 👍');
   if (status) status.textContent = '現在：勤務終了';
   if (wrap) wrap.classList.remove('urgent');
@@ -1564,18 +1572,33 @@ function startTicker(duty) {
 }
     const now = new Date();
     const diff = next.date - now;
+    const next = eventInfo.next;
+    const prev = eventInfo.prev;
 
     const min = Math.floor(diff / 60000);
     const sec = Math.floor((diff % 60000) / 1000);
-    const totalMinutes = 60;
     const remainMinutes = Math.max(0, diff / 60000);
     const percent = Math.max(0, Math.min(100, ((totalMinutes - remainMinutes) / totalMinutes) * 100));
+let percent = 0;
 
+if (prev) {
+  const total = next.date - prev.date;
+  const passed = now - prev.date;
+  percent = Math.max(0, Math.min(100, (passed / total) * 100));
+}
     if (progressWrap) progressWrap.style.display = 'block';
     if (progressFill) progressFill.style.width = `${percent}%`;
     if (progressLabel) progressLabel.textContent = `次イベントまでの進行率 ${Math.round(percent)}%`;
 
     updateTicker(`次：${next.label} ${next.time}　あと ${min}分${sec}秒`);
+if (progressLabel) {
+  if (prev) {
+    progressLabel.textContent = `${prev.label} → ${next.label}　${Math.round(percent)}%`;
+  } else {
+    progressLabel.textContent = `${next.label} まで ${Math.round(percent)}%`;
+  }
+}
+    
 if (status) {
   if (
     next.label === '前半出庫' ||
