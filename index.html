@@ -1095,6 +1095,9 @@ function searchVehicle() {
   result.innerHTML = matched.map(([carNo, vehicle]) => renderVehicleSearchResult(carNo, vehicle)).join('');
   resultStatus.textContent = `${matched.length}件の車両が見つかりました`;
 }
+
+
+  
 function findDutiesByVehicle(carNo) {
   const results = [];
 
@@ -1381,11 +1384,12 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
 function searchDuty() {
   let input = searchInput.value.trim();
-  if (!input) {
-    result.innerHTML = '';
-    resultStatus.textContent = '待機中';
-    return;
-  }
+ if (!input) {
+  result.innerHTML = '';
+  resultStatus.textContent = '待機中';
+  stopTicker();
+  return;
+}
 
   input = input.replace(/[０-９]/g, s =>
     String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
@@ -1414,11 +1418,12 @@ function searchDuty() {
     }
   }
 
-  if (!duty) {
-    result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
-    resultStatus.textContent = '未登録';
-    return;
-  }
+if (!duty) {
+  result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
+  resultStatus.textContent = '未登録';
+  stopTicker();
+  return;
+}
 
   const baseDutyNo = dutyKey.split('-')[0];
   const slopeStops = slopeStopsDb?.[dutyKey] 
@@ -1446,7 +1451,7 @@ function getNextEvent(duty) {
     { label: '前半出庫', time: duty.前半出庫 },
     { label: '前半入庫', time: duty.前半入庫 },
     { label: '前半退勤', time: duty.前半退勤 },
-    { label: '後半出勤', time: duty.後半出勤 },
+    { label: '後半出勤時間', time: duty.後半出勤時間 },
     { label: '後半出庫', time: duty.後半出庫 },
     { label: '後半入庫', time: duty.後半入庫 },
     { label: '退勤', time: duty.退勤 }
@@ -1465,7 +1470,20 @@ function getNextEvent(duty) {
   return upcoming[0] || null;
 }
 let tickerTimer = null;
+  
+function stopTicker() {
+  if (tickerTimer) {
+    clearInterval(tickerTimer);
+    tickerTimer = null;
+  }
 
+  const wrap = document.getElementById('tickerWrap');
+  if (wrap) {
+    wrap.style.display = 'none';
+    wrap.classList.remove('urgent');
+  }
+}
+  
 function startTicker(duty) {
   if (tickerTimer) clearInterval(tickerTimer);
 
