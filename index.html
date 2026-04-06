@@ -587,14 +587,17 @@ let vehicleLoaded = false;
 let slopeStopsLoaded = false;
 let dutyVehicleLoaded = false;
 let dutyHardnessLoaded = false;
-
+let dutyDetailDb = { weekday: {}, holiday: {} };
+let dutyDetailLoaded = false;
+  
 const DATA_FILES = {
   weekday: './data/weekday.json',
   holiday: './data/holiday.json',
   vehicle: './data/vehicle.json',
   slopeStops: './data/slope_stops.json',
   dutyVehicle: './data/dutyVehicle.json',
-  dutyHardness: './data/dutyHardness.json'
+  dutyHardness: './data/dutyHardness.json',
+  dutyDetail: './data/dutyDetail.json'
 };
 
 const FALLBACK_DATA = {
@@ -780,7 +783,15 @@ try {
     dutyHardnessDb = { weekday: {}, holiday: {} };
   }
 
-
+  // 運行詳細DB
+  try {
+    const dutyDetailJson = await fetchJson(DATA_FILES.dutyDetail);
+    dutyDetailDb = normalizeModeMapData(dutyDetailJson);
+    dutyDetailLoaded = true;
+  } catch (e) {
+    console.error('運行詳細DB読込失敗', e);
+    dutyDetailDb = { weekday: {}, holiday: {} };
+  }
 
   
  // 状態表示
@@ -791,7 +802,8 @@ if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
 if (!slopeStopsLoaded) dbStatus.push("スロープ停留所DB読込失敗");
 if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
 if (!dutyHardnessLoaded) dbStatus.push("しんどさDB読込失敗");
-
+if (!dutyDetailLoaded) dbStatus.push("運行詳細DB読込失敗");
+  
   const statusText = dbStatus.length === 0
     ? "SUCCESS"
     : dbStatus.join(" / ");
@@ -951,7 +963,7 @@ function renderVehicleSearchResult(carNo, vehicle) {
         </div>
       </div>
 
-      <div class="result-main" style="margin-top:12px;">
+      " style="margin-top:12px;">
         <div class="info-card">
           <div class="info-card-title">車両特性</div>
           <div class="info-card-grid">
@@ -1007,7 +1019,37 @@ function renderVehicleList(assignments) {
     `;
   }).join('');
 }
+function renderDutyDetailList(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return '<div class="info-row"><span class="info-label">運行詳細</span><span class="info-value">なし</span></div>';
+  }
 
+  return items.map((item, index) => {
+    const type = item.種別 || '―';
+    const line = item.系統 ? `${item.系統}系統` : '―';
+    const from = item.発 || '―';
+    const to = item.着 || '―';
+    const dep = item.発時刻 || '―';
+    const arr = item.着時刻 || '―';
+    const wait = item.待機 !== undefined ? `${item.待機}分` : '―';
+
+    return `
+<div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
+  <div class="info-card-title">${type}${item.系統 ? ` / ${line}` : ''}</div>
+  <div class="info-card-grid">
+    <div class="info-row"><span class="info-label">発</span><span class="info-value">${from}</span></div>
+    <div class="info-row"><span class="info-label">着</span><span class="info-value">${to}</span></div>
+    <div class="info-row"><span class="info-label">発時刻</span><span class="info-value">${dep}</span></div>
+    <div class="info-row"><span class="info-label">着時刻</span><span class="info-value">${arr}</span></div>
+    <div class="info-row"><span class="info-label">待機</span><span class="info-value">${wait}</span></div>
+  </div>
+</div>
+    `;
+  }).join('');
+}
+
+
+  
 function searchVehicle() {
   const input = searchInput.value.trim();
   if (!input) {
@@ -1142,6 +1184,16 @@ function openVehicleUsageFromDuty(carNo) {
             <div class="info-row"><span class="info-label">メモ</span><span class="info-value">${memo}</span></div>
           </div>
         </div>
+        
+        <div class="info-card">
+  <div class="info-card-title">運行詳細（前半）</div>
+  ${renderDutyDetailList(dutyDetail.前半)}
+</div>
+
+<div class="info-card">
+  <div class="info-card-title">運行詳細（後半）</div>
+  ${renderDutyDetailList(dutyDetail.後半)}
+</div>
 
         <div class="info-sections">
           ${usageHtml}
@@ -1175,18 +1227,19 @@ function runSearch() {
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
-  const start = duty['出勤'] || '―';
-  const end = duty['退勤'] || '';
-  const isMid = !!duty['前半退勤'];
-  const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
+const start = duty['出勤'] || '―';
+const end = duty['退勤'] || '';
+const isMid = !!duty['前半退勤'];
+const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
 
-  const baseDutyNo = dutyNo.split('-')[0];
-  const fatigueInfo = normalizeHardnessEntry(
-    dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
-  );
+const baseDutyNo = dutyNo.split('-')[0];
+const fatigueInfo = normalizeHardnessEntry(
+  dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
+);
+const dutyDetail = dutyDetailDb[mode]?.[dutyNo] || dutyDetailDb[mode]?.[baseDutyNo] || { 前半: [], 後半: [] };
 
-  const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
-  const summary = calcSummary(duty);
+const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
+const summary = calcSummary(duty);
 
   const slopeHtml = slopeStops && slopeStops.length
     ? `
