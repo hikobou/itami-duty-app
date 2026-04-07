@@ -1311,6 +1311,15 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
           </div>
         </div>
 
+<div class="info-card">
+  <div class="info-card-title">運行詳細（前半）</div>
+  ${renderDutyDetailTable(dutyDetail.前半)}
+</div>
+
+<div class="info-card">
+  <div class="info-card-title">運行詳細（後半）</div>
+  ${renderDutyDetailTable(dutyDetail.後半)}
+</div>
         <div class="info-sections">
           ${slopeHtml}
 
@@ -1324,16 +1333,7 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
             ${renderVehicleList(vehicleAssign.後半)}
           </div>
 
-          <div class="info-card">
-            <div class="info-card-title">運行詳細（前半）</div>
-            ${renderDutyDetailList(dutyDetail.前半)}
-          </div>
-
-          <div class="info-card">
-            <div class="info-card-title">運行詳細（後半）</div>
-            ${renderDutyDetailList(dutyDetail.後半)}
-          </div>
-
+          
           <div class="info-card">
             <div class="info-card-title">勤務特性</div>
             <div class="info-card-grid">
