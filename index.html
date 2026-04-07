@@ -1021,34 +1021,6 @@ function renderVehicleList(assignments) {
     `;
   }).join('');
 }
-function renderDutyDetailList(items) {
-  if (!Array.isArray(items) || !items.length) {
-    return '<div class="info-row"><span class="info-label">運行詳細</span><span class="info-value">なし</span></div>';
-  }
-
-  return items.map((item, index) => {
-    const type = item.種別 || '―';
-    const line = item.系統 ? `${item.系統}系統` : '―';
-    const from = item.発 || '―';
-    const to = item.着 || '―';
-    const dep = item.発時刻 || '―';
-    const arr = item.着時刻 || '―';
-    const wait = item.待機 !== undefined ? `${item.待機}分` : '―';
-
-    return `
-<div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
-  <div class="info-card-title">${type}${item.系統 ? ` / ${line}` : ''}</div>
-  <div class="info-card-grid">
-    <div class="info-row"><span class="info-label">発</span><span class="info-value">${from}</span></div>
-    <div class="info-row"><span class="info-label">着</span><span class="info-value">${to}</span></div>
-    <div class="info-row"><span class="info-label">発時刻</span><span class="info-value">${dep}</span></div>
-    <div class="info-row"><span class="info-label">着時刻</span><span class="info-value">${arr}</span></div>
-    <div class="info-row"><span class="info-label">待機</span><span class="info-value">${wait}</span></div>
-  </div>
-</div>
-    `;
-  }).join('');
-}
 
 function renderDutyDetailTable(list) {
   if (!list || !list.length) {
