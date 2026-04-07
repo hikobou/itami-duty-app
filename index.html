@@ -495,7 +495,24 @@ body{
   color: #ff2b2b;
 }
 
-  
+.duty-detail-table tr.current-run td {
+  background: rgba(57, 196, 141, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(57,196,141,0.35);
+  color: #f3fff9;
+  font-weight: 700;
+}
+
+.duty-detail-table tr.next-run td {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.duty-detail-table tr.kaisou td {
+  opacity: 0.88;
+}
+
+.duty-detail-table tr.current-run td:first-child {
+  border-left: 4px solid #39c48d;
+}  
 </style>
 </head>
 
@@ -944,7 +961,28 @@ searchInput.addEventListener('input', () => {
 
   runSearch();
 });
+function getRunRowClass(item) {
+  const dep = item.発時刻;
+  const arr = item.着時刻;
 
+  if (!dep || !arr) return '';
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  const depMin = timeToMinutes(dep);
+  const arrMin = timeToMinutes(arr);
+
+  if (nowMin >= depMin && nowMin <= arrMin) {
+    return 'current-run';
+  }
+
+  if (nowMin < depMin) {
+    return 'next-run';
+  }
+
+  return '';
+}
 function renderVehicleSearchResult(carNo, vehicle) {
   const mission = vehicle.ミッション || '不明';
   const missionClass = mission === 'MT' ? 'mt' : 'at';
@@ -1040,7 +1078,7 @@ function renderDutyDetailTable(list) {
         </thead>
         <tbody>
           ${list.map(item => `
-            <tr>
+            <tr class="${getRunRowClass(item)} ${item.種別 === '回送' ? 'kaisou' : ''}">
               <td>${item.種別 || '―'}</td>
               <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
               <td>
