@@ -1254,7 +1254,6 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
   let html = `
     <div class="result">
-  `;
       <div class="duty-head">
         <div>
           <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
@@ -1275,10 +1274,7 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
       <div class="result-main" style="margin-top:12px;">
 
-        <!-- 左カラム -->
         <div>
-
-          <!-- ★主役：時間情報 -->
           <div class="time-card">
             <div class="info-card-title">時間情報</div>
             <div class="item-list">
@@ -1295,7 +1291,6 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
             </div>
           </div>
 
-          <!-- ★補助：summary -->
           <div class="summary-grid compact-summary">
             <div class="summary-box">
               <div class="summary-label">前半実働</div>
@@ -1314,10 +1309,8 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
               <div class="summary-value">${summary.restQuality}</div>
             </div>
           </div>
-
         </div>
 
-        <!-- 右カラム -->
         <div class="info-sections">
           ${slopeHtml}
 
@@ -1327,61 +1320,60 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
           </div>
 
           <div class="info-card">
-  <div class="info-card-title">後半車両情報</div>
-  ${renderVehicleList(vehicleAssign.後半)}
-</div>
+            <div class="info-card-title">後半車両情報</div>
+            ${renderVehicleList(vehicleAssign.後半)}
+          </div>
 
-<div class="info-card">
-  <div class="info-card-title">運行詳細（前半）</div>
-  ${renderDutyDetailList(dutyDetail.前半)}
-</div>
+          <div class="info-card">
+            <div class="info-card-title">運行詳細（前半）</div>
+            ${renderDutyDetailList(dutyDetail.前半)}
+          </div>
 
-<div class="info-card">
-  <div class="info-card-title">運行詳細（後半）</div>
-  ${renderDutyDetailList(dutyDetail.後半)}
-</div>
+          <div class="info-card">
+            <div class="info-card-title">運行詳細（後半）</div>
+            ${renderDutyDetailList(dutyDetail.後半)}
+          </div>
 
-<div class="info-card">
-  <div class="info-card-title">勤務特性</div>
-  <div class="info-card-grid">
-    <div class="info-row">
-      <span class="info-label">疲労度</span>
-      <span class="info-value">${fatigueInfo.疲労度}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">障害者対応</span>
-      <span class="info-value">${fatigueInfo.障害者対応}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">スロープ対応</span>
-      <span class="info-value">${fatigueInfo.スロープ対応}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">系統</span>
-      <span class="info-value">${fatigueInfo.系統.length ? fatigueInfo.系統.join('、') : '―'}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">乗車バス停</span>
-      <span class="info-value">${fatigueInfo.乗車バス停.length ? fatigueInfo.乗車バス停.join('、') : '―'}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">乗客特長</span>
-      <span class="info-value">${fatigueInfo.乗客特長.length ? fatigueInfo.乗客特長.join('、') : '―'}</span>
-    </div>
-  </div>
-  ${
-    fatigueInfo.メモ.length
-      ? `<div class="info-card-title" style="margin-top:12px;">メモ</div>
-         <ul class="note-list">
-           ${fatigueInfo.メモ.map(line => `<li>${line}</li>`).join('')}
-         </ul>`
-      : ''
-  }
-</div>
+          <div class="info-card">
+            <div class="info-card-title">勤務特性</div>
+            <div class="info-card-grid">
+              <div class="info-row">
+                <span class="info-label">疲労度</span>
+                <span class="info-value">${fatigueInfo.疲労度}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">障害者対応</span>
+                <span class="info-value">${fatigueInfo.障害者対応}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">スロープ対応</span>
+                <span class="info-value">${fatigueInfo.スロープ対応}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">系統</span>
+                <span class="info-value">${fatigueInfo.系統.length ? fatigueInfo.系統.join('、') : '―'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">乗車バス停</span>
+                <span class="info-value">${fatigueInfo.乗車バス停.length ? fatigueInfo.乗車バス停.join('、') : '―'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">乗客特長</span>
+                <span class="info-value">${fatigueInfo.乗客特長.length ? fatigueInfo.乗客特長.join('、') : '―'}</span>
+              </div>
+            </div>
+            ${
+              fatigueInfo.メモ.length
+                ? `<div class="info-card-title" style="margin-top:12px;">メモ</div>
+                   <ul class="note-list">
+                     ${fatigueInfo.メモ.map(line => `<li>${line}</li>`).join('')}
+                   </ul>`
+                : ''
+            }
+          </div>
+        </div>
       </div>
-
- </div>
- </div>
+    </div>
   `;
 
   return html;
