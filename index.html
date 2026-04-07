@@ -1219,28 +1219,27 @@ function runSearch() {
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
-const start = duty['出勤'] || '―';
-const end = duty['退勤'] || '';
-const isMid = !!duty['前半退勤'];
-const vehicleAssign = normalizeVehicleAssignment(dutyVehicleDb[mode]?.[dutyNo]);
+  const start = duty['出勤'] || '―';
+  const end = duty['退勤'] || '';
+  const isMid = !!duty['前半退勤'];
 
-const baseDutyNo = dutyNo.split('-')[0];
+  const baseDutyNo = dutyNo.split('-')[0];
 
-const vehicleAssign = normalizeVehicleAssignment(
-  dutyVehicleDb[mode]?.[dutyNo] || dutyVehicleDb[mode]?.[baseDutyNo]
-);
+  const vehicleAssign = normalizeVehicleAssignment(
+    dutyVehicleDb[mode]?.[dutyNo] || dutyVehicleDb[mode]?.[baseDutyNo]
+  );
 
-const fatigueInfo = normalizeHardnessEntry(
-  dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
-);
+  const fatigueInfo = normalizeHardnessEntry(
+    dutyHardnessDb[mode]?.[dutyNo] || dutyHardnessDb[mode]?.[baseDutyNo]
+  );
 
-const dutyDetail =
-  dutyDetailDb[mode]?.[dutyNo] ||
-  dutyDetailDb[mode]?.[baseDutyNo] ||
-  { 前半: [], 後半: [] };
+  const dutyDetail =
+    dutyDetailDb[mode]?.[dutyNo] ||
+    dutyDetailDb[mode]?.[baseDutyNo] ||
+    { 前半: [], 後半: [] };
 
-const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
-const summary = calcSummary(duty);
+  const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
+  const summary = calcSummary(duty);
 
   const slopeHtml = slopeStops && slopeStops.length
     ? `
@@ -1255,7 +1254,7 @@ const summary = calcSummary(duty);
 
   let html = `
     <div class="result">
-
+  `;
       <div class="duty-head">
         <div>
           <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
