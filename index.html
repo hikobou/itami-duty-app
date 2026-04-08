@@ -573,9 +573,6 @@ body{
   color: #000 !important;
 }
 
-.item.next-step {
-  background: rgba(37, 99, 235, 0.18) !important;
-}
 
   
 </style>
@@ -913,7 +910,10 @@ function timeToMinutes(t) {
 }
 function getDutyStepClass(label, duty) {
   const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // この勤番を検索した日の 0:00 を基準日にする
+  const baseDate = currentDutyBaseDate ? new Date(currentDutyBaseDate) : new Date();
+  baseDate.setHours(0, 0, 0, 0);
 
   const events = [
     { label: '出勤', time: duty['出勤'] },
@@ -924,38 +924,45 @@ function getDutyStepClass(label, duty) {
     { label: '後半出庫', time: duty['後半出庫'] },
     { label: '後半入庫', time: duty['後半入庫'] },
     { label: '退勤', time: duty['退勤'] }
-  ].filter(e => e.time);
+  ]
+    .filter(e => e.time)
+    .map(e => {
+      const [h, m] = e.time.split(':').map(Number);
+      const d = new Date(baseDate);
+      d.setHours(h, m, 0, 0);
+      return { ...e, date: d };
+    });
 
-  const index = events.findIndex(e => e.label === label);
-  if (index === -1) return '';
+  if (!events.length) return '';
 
-  const currentMin = timeToMinutes(events[index].time);
-  const prevMin = index > 0 ? timeToMinutes(events[index - 1].time) : null;
-  const nextMin = index < events.length - 1 ? timeToMinutes(events[index + 1].time) : null;
+  // 翌日 0:00 になったらハイライト終了
+  const nextDay = new Date(baseDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
 
-  if (prevMin !== null && nowMin >= prevMin && nowMin < currentMin) {
-    return 'next-step';
+  if (now >= nextDay) {
+    return '';
   }
 
-  if (nextMin !== null && nowMin >= currentMin && nowMin < nextMin) {
-    return 'current-step';
+  // 当日 0:00 ～ 最初のイベント直前 → 最初のイベントだけ光らせる
+  if (now < events[0].date) {
+    return label === events[0].label ? 'current-step' : '';
   }
 
-  if (nextMin === null && nowMin >= currentMin) {
-    return 'current-step';
+  // 各イベント時刻になった瞬間、次のイベントだけ光らせる
+  for (let i = 0; i < events.length - 1; i++) {
+    if (now >= events[i].date && now < events[i + 1].date) {
+      return label === events[i + 1].label ? 'current-step' : 'done-step';
+    }
   }
 
-  if (nowMin >= currentMin) {
-    return 'done-step';
+  // 最後のイベント（退勤）は、その日が終わるまで光らせる
+  if (now >= events[events.length - 1].date && now < nextDay) {
+    return label === events[events.length - 1].label ? 'current-step' : 'done-step';
   }
 
   return '';
 }
-  
-  
-  
-  
-  
   function getRunRowClass(item) {
   const dep = item.発時刻 || '';
   const arr = item.着時刻 || '';
@@ -1592,6 +1599,8 @@ currentDutyData = duty;
 currentSlopeStops = slopeStops;
 currentHardness = hardness;
 currentVehicle = vehicle;
+currentDutyBaseDate = new Date();
+currentDutyBaseDate.setHours(0, 0, 0, 0);  
 
 result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
@@ -1646,6 +1655,7 @@ let currentDutyData = null;
 let currentSlopeStops = [];
 let currentHardness = null;
 let currentVehicle = null;
+let currentDutyBaseDate = null;
   
 function stopTicker() {
   if (tickerTimer) {
