@@ -525,9 +525,6 @@ body{
   border-left: 8px solid #facc15 !important;
 }
 
-.duty-detail-table tr.next-run td {
-  background: rgba(37, 99, 235, 0.28) !important;
-}
 
 .duty-detail-table tr.kaisou td {
   opacity: 0.8;
@@ -986,30 +983,86 @@ function getDutyStepClass(label, duty) {
 
   return '';
 }
-  function getRunRowClass(item) {
-  const dep = item.発時刻 || '';
-  const arr = item.着時刻 || '';
-
-  // 時刻フォーマットチェック
-  if (!dep.includes(':') || !arr.includes(':')) return '';
+function getDutyDetailHighlightIndex(list, duty) {
+  if (!Array.isArray(list) || !list.length) return -1;
 
   const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  const depMin = timeToMinutes(dep);
-  const arrMin = timeToMinutes(arr);
+  const baseDate = currentDutyBaseDate ? new Date(currentDutyBaseDate) : new Date();
+  baseDate.setHours(0, 0, 0, 0);
 
-  // ★ちょい広めに判定
-  if (nowMin >= depMin - 2 && nowMin <= arrMin + 2) {
-    return 'current-run';
+  const nextDay = new Date(baseDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
+
+  if (now >= nextDay) return -1;
+
+  // 最初の便は「出勤時刻になった瞬間」から光らせる
+  const dutyStartStr = duty?.['出勤'];
+  let dutyStartDate = null;
+
+  if (dutyStartStr && dutyStartStr.includes(':')) {
+    const [sh, sm] = dutyStartStr.split(':').map(Number);
+    dutyStartDate = new Date(baseDate);
+    dutyStartDate.setHours(sh, sm, 0, 0);
   }
 
-  if (nowMin < depMin) {
-    return 'next-run';
+  const runs = list.map((item, index) => {
+    const dep = item.発時刻 || '';
+    const arr = item.着時刻 || '';
+
+    if (!dep.includes(':') || !arr.includes(':')) {
+      return { index, item, depDate: null, arrDate: null };
+    }
+
+    const [dh, dm] = dep.split(':').map(Number);
+    const [ah, am] = arr.split(':').map(Number);
+
+    const depDate = new Date(baseDate);
+    depDate.setHours(dh, dm, 0, 0);
+
+    const arrDate = new Date(baseDate);
+    arrDate.setHours(ah, am, 0, 0);
+
+    return { index, item, depDate, arrDate };
+  }).filter(run => run.depDate && run.arrDate);
+
+  if (!runs.length) return -1;
+
+  // 出勤前は何も光らせない
+  if (dutyStartDate && now < dutyStartDate) {
+    return -1;
   }
 
+  // 最初の便：出勤時刻〜その便の着時刻未満
+  if (dutyStartDate && now >= dutyStartDate && now < runs[0].arrDate) {
+    return runs[0].index;
+  }
+
+  // 2本目以降：前便の着時刻になった瞬間に次便へ切替
+  for (let i = 1; i < runs.length; i++) {
+    if (now >= runs[i - 1].arrDate && now < runs[i].arrDate) {
+      return runs[i].index;
+    }
+  }
+
+  // 最後の便の着時刻を過ぎたら消灯
+  if (now >= runs[runs.length - 1].arrDate) {
+    return -1;
+  }
+
+  return -1;
+}
+
+function getDutyDetailRowClass(index, highlightIndex, item) {
+  if (index === highlightIndex) return 'current-run';
+  if (item.種別 === '回送') return 'kaisou';
   return '';
 }
+
+
+
+  
 function minutesToTime(min) {
   if (!Number.isFinite(min) || min < 0) return '―';
   const h = Math.floor(min / 60);
@@ -1202,10 +1255,11 @@ function renderVehicleList(assignments) {
   }).join('');
 }
 
-function renderDutyDetailTable(list) {
+function renderDutyDetailTable(list, duty) {
   if (!list || !list.length) {
     return '<div class="info-empty">なし</div>';
   }
+  const highlightIndex = getDutyDetailHighlightIndex(list, duty);
 
   return `
     <div class="duty-table-wrap">
@@ -1219,17 +1273,17 @@ function renderDutyDetailTable(list) {
           </tr>
         </thead>
         <tbody>
-          ${list.map(item => `
-            <tr class="${getRunRowClass(item)} ${item.種別 === '回送' ? 'kaisou' : ''}">
-              <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
-              <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
-              <td class="route-cell">
-                <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
-                <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
-              </td>
-              <td>${item.待機 ? `${item.待機}分` : '―'}</td>
-            </tr>
-          `).join('')}
+${list.map((item, index) => `
+  <tr class="${getDutyDetailRowClass(index, highlightIndex, item)}">
+    <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
+    <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
+    <td class="route-cell">
+      <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
+      <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
+    </td>
+    <td>${item.待機 ? `${item.待機}分` : '―'}</td>
+  </tr>
+`).join('')}
         </tbody>
       </table>
     </div>
@@ -1499,12 +1553,12 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
           <div class="info-card">
             <div class="info-card-title">運行詳細（前半）</div>
-            ${renderDutyDetailTable(dutyDetail.前半)}
+            ${renderDutyDetailTable(dutyDetail.前半, duty)}
           </div>
 
           <div class="info-card">
             <div class="info-card-title">運行詳細（後半）</div>
-            ${renderDutyDetailTable(dutyDetail.後半)}
+            ${renderDutyDetailTable(dutyDetail.後半, duty)}
           </div>
         </div>
 
