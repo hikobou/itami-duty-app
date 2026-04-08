@@ -911,20 +911,36 @@ function timeToMinutes(t) {
 function getDutyStepClass(label, duty) {
   const now = new Date();
 
-  // この勤番を検索した日の 0:00 を基準日にする
   const baseDate = currentDutyBaseDate ? new Date(currentDutyBaseDate) : new Date();
   baseDate.setHours(0, 0, 0, 0);
 
-  const events = [
-    { label: '出勤', time: duty['出勤'] },
-    { label: '前半出庫', time: duty['前半出庫'] },
-    { label: '前半入庫', time: duty['前半入庫'] },
-    { label: '前半退勤', time: duty['前半退勤'] },
-    { label: '後半出勤時間', time: duty['後半出勤時間'] },
-    { label: '後半出庫', time: duty['後半出庫'] },
-    { label: '後半入庫', time: duty['後半入庫'] },
-    { label: '退勤', time: duty['退勤'] }
-  ]
+  const nextDay = new Date(baseDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
+
+  const isMidShift = !!duty['前半退勤'];
+
+  const rawEvents = isMidShift
+    ? [
+        { label: '出勤', time: duty['出勤'] },
+        { label: '前半出庫', time: duty['前半出庫'] },
+        { label: '前半入庫', time: duty['前半入庫'] },
+        { label: '前半退勤', time: duty['前半退勤'] },
+        { label: '後半出勤時間', time: duty['後半出勤時間'] },
+        { label: '後半出庫', time: duty['後半出庫'] },
+        { label: '後半入庫', time: duty['後半入庫'] },
+        { label: '退勤', time: duty['退勤'] }
+      ]
+    : [
+        { label: '出勤', time: duty['出勤'] },
+        { label: '前半出庫', time: duty['前半出庫'] },
+        { label: '前半入庫', time: duty['前半入庫'] },
+        { label: '後半出庫', time: duty['後半出庫'] },
+        { label: '後半入庫', time: duty['後半入庫'] },
+        { label: '退勤', time: duty['退勤'] }
+      ];
+
+  const events = rawEvents
     .filter(e => e.time)
     .map(e => {
       const [h, m] = e.time.split(':').map(Number);
@@ -935,30 +951,37 @@ function getDutyStepClass(label, duty) {
 
   if (!events.length) return '';
 
-  // 翌日 0:00 になったらハイライト終了
-  const nextDay = new Date(baseDate);
-  nextDay.setDate(nextDay.getDate() + 1);
-  nextDay.setHours(0, 0, 0, 0);
-
+  // 翌日0:00を過ぎたらハイライト終了
   if (now >= nextDay) {
     return '';
   }
 
-  // 当日 0:00 ～ 最初のイベント直前 → 最初のイベントだけ光らせる
+  // 当日0:00〜最初のイベント直前 → 最初のイベントだけ光らせる
   if (now < events[0].date) {
-    return label === events[0].label ? 'current-step' : '';
+    if (label === events[0].label) return 'current-step';
+    return '';
   }
 
-  // 各イベント時刻になった瞬間、次のイベントだけ光らせる
+  // あるイベント時刻になった瞬間、次のイベントだけ光らせる
   for (let i = 0; i < events.length - 1; i++) {
     if (now >= events[i].date && now < events[i + 1].date) {
-      return label === events[i + 1].label ? 'current-step' : 'done-step';
+      if (label === events[i + 1].label) return 'current-step';
+
+      const labelIndex = events.findIndex(e => e.label === label);
+      if (labelIndex !== -1 && labelIndex <= i) return 'done-step';
+
+      return '';
     }
   }
 
-  // 最後のイベント（退勤）は、その日が終わるまで光らせる
+  // 最後のイベント以後は、その日が終わるまで最後のイベントを光らせる
   if (now >= events[events.length - 1].date && now < nextDay) {
-    return label === events[events.length - 1].label ? 'current-step' : 'done-step';
+    if (label === events[events.length - 1].label) return 'current-step';
+
+    const labelIndex = events.findIndex(e => e.label === label);
+    if (labelIndex !== -1 && labelIndex < events.length - 1) return 'done-step';
+
+    return '';
   }
 
   return '';
