@@ -513,6 +513,34 @@ body{
 .duty-detail-table tr.current-run td:first-child {
   border-left: 4px solid #39c48d;
 }  
+.duty-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.duty-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.duty-detail-table th,
+.duty-detail-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+  vertical-align: top;
+}
+
+.duty-detail-table th {
+  background: rgba(255,255,255,0.04);
+  font-size: 11px;
+  color: #cfeee3;
+}
+
+
+  
 </style>
 </head>
 
@@ -982,28 +1010,7 @@ searchInput.addEventListener('input', () => {
 
   runSearch();
 });
-function getRunRowClass(item) {
-  const dep = item.発時刻;
-  const arr = item.着時刻;
 
-  if (!dep || !arr) return '';
-
-  const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-
-  const depMin = timeToMinutes(dep);
-  const arrMin = timeToMinutes(arr);
-
-  if (nowMin >= depMin && nowMin <= arrMin) {
-    return 'current-run';
-  }
-
-  if (nowMin < depMin) {
-    return 'next-run';
-  }
-
-  return '';
-}
 function renderVehicleSearchResult(carNo, vehicle) {
   const mission = vehicle.ミッション || '不明';
   const missionClass = mission === 'MT' ? 'mt' : 'at';
