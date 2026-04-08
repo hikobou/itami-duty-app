@@ -589,7 +589,7 @@ body{
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール ver.4.5</span></div>
+        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール ver.4.6</span></div>
         <p class="sub">Duty Search System / Professional Edition</p>
       </div>
       <div class="system-badge">
@@ -1182,21 +1182,20 @@ function renderDutyDetailTable(list) {
       <table class="duty-detail-table">
         <thead>
           <tr>
-            <th>運行種別</th>
+            <th>種別</th>
             <th>系統</th>
-            <th>始発[時刻] → 終着[時刻]</th>
+            <th>始発(時刻) → 終着(時刻)</th>
             <th>待機</th>
           </tr>
         </thead>
         <tbody>
           ${list.map(item => `
             <tr class="${getRunRowClass(item)} ${item.種別 === '回送' ? 'kaisou' : ''}">
-             <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
+              <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
               <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
-              <td>
-                ${item.発 || '―'}[${item.発時刻 || '―'}]
-                →
-                ${item.着 || '―'}[${item.着時刻 || '―'}]
+              <td class="route-cell">
+                <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
+                <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
               </td>
               <td>${item.待機 ? `${item.待機}分` : '―'}</td>
             </tr>
