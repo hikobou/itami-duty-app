@@ -875,10 +875,11 @@ function timeToMinutes(t) {
   return h * 60 + m;
 }
 function getRunRowClass(item) {
-  const dep = item.発時刻;
-  const arr = item.着時刻;
+  const dep = item.発時刻 || '';
+  const arr = item.着時刻 || '';
 
-  if (!dep || !arr) return '';
+  // 時刻フォーマットチェック
+  if (!dep.includes(':') || !arr.includes(':')) return '';
 
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -886,7 +887,8 @@ function getRunRowClass(item) {
   const depMin = timeToMinutes(dep);
   const arrMin = timeToMinutes(arr);
 
-  if (nowMin >= depMin - 1 && nowMin <= arrMin + 1) {
+  // ★ちょい広めに判定
+  if (nowMin >= depMin - 2 && nowMin <= arrMin + 2) {
     return 'current-run';
   }
 
