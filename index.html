@@ -846,7 +846,28 @@ function timeToMinutes(t) {
   if (Number.isNaN(h) || Number.isNaN(m)) return 0;
   return h * 60 + m;
 }
+function getRunRowClass(item) {
+  const dep = item.発時刻;
+  const arr = item.着時刻;
 
+  if (!dep || !arr) return '';
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  const depMin = timeToMinutes(dep);
+  const arrMin = timeToMinutes(arr);
+
+  if (nowMin >= depMin - 1 && nowMin <= arrMin + 1) {
+    return 'current-run';
+  }
+
+  if (nowMin < depMin) {
+    return 'next-run';
+  }
+
+  return '';
+}
 function minutesToTime(min) {
   if (!Number.isFinite(min) || min < 0) return '―';
   const h = Math.floor(min / 60);
