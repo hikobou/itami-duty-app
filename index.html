@@ -1187,7 +1187,7 @@ function renderDutyDetailTable(list) {
         <tbody>
           ${list.map(item => `
             <tr class="${getRunRowClass(item)} ${item.種別 === '回送' ? 'kaisou' : ''}">
-              <td>${item.種別 || '―'}</td>
+             <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
               <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
               <td>
                 ${item.発 || '―'}[${item.発時刻 || '―'}]
