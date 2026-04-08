@@ -1466,14 +1466,20 @@ if (!duty) {
   return;
 }
 
-  const baseDutyNo = dutyKey.split('-')[0];
-  const slopeStops = slopeStopsDb?.[dutyKey] 
+const baseDutyNo = dutyKey.split('-')[0];
+const slopeStops = slopeStopsDb?.[dutyKey] 
   || slopeStopsDb?.[baseDutyNo] 
   || [];
-  const hardness = dutyHardnessDb[mode]?.[dutyKey] || dutyHardnessDb[mode]?.[baseDutyNo];
-  const vehicle = dutyVehicleDb[mode]?.[dutyKey] || dutyVehicleDb[mode]?.[baseDutyNo];
+const hardness = dutyHardnessDb[mode]?.[dutyKey] || dutyHardnessDb[mode]?.[baseDutyNo];
+const vehicle = dutyVehicleDb[mode]?.[dutyKey] || dutyVehicleDb[mode]?.[baseDutyNo];
 
-  result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
+currentDutyKey = dutyKey;
+currentDutyData = duty;
+currentSlopeStops = slopeStops;
+currentHardness = hardness;
+currentVehicle = vehicle;
+
+result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
 
   startTicker(duty);
@@ -1520,11 +1526,22 @@ function getNextEvent(duty) {
 }
   
 let tickerTimer = null;
+let redrawTimer = null;
+let currentDutyKey = null;
+let currentDutyData = null;
+let currentSlopeStops = [];
+let currentHardness = null;
+let currentVehicle = null;
   
 function stopTicker() {
   if (tickerTimer) {
     clearInterval(tickerTimer);
     tickerTimer = null;
+  }
+
+  if (redrawTimer) {
+    clearInterval(redrawTimer);
+    redrawTimer = null;
   }
 
   const wrap = document.getElementById('tickerWrap');
@@ -1551,7 +1568,21 @@ function startTicker(duty) {
   if (wrap) {
     wrap.style.display = 'block';
   }
+if (redrawTimer) clearInterval(redrawTimer);
 
+redrawTimer = setInterval(() => {
+  if (!currentDutyKey || !currentDutyData) return;
+  if (searchType !== 'duty') return;
+  if (!searchInput.value.trim()) return;
+
+  result.innerHTML = renderDutyHtml(
+    currentDutyKey,
+    currentDutyData,
+    currentHardness,
+    currentVehicle,
+    currentSlopeStops
+  );
+}, 60000);
   function renderTickerNow() {
     const eventInfo = getNextEvent(duty);
     const wrap = document.getElementById('tickerWrap');
