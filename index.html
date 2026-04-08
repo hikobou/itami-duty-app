@@ -537,7 +537,25 @@ body{
   font-size: 11px;
   color: #cfeee3;
 }
+.item.done-step {
+  opacity: 0.55;
+}
 
+.item.current-step {
+  background: #22c55e !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+  border-left: 6px solid #facc15 !important;
+}
+
+.item.current-step .item-label,
+.item.current-step .item-value {
+  color: #000 !important;
+}
+
+.item.next-step {
+  background: rgba(37, 99, 235, 0.18) !important;
+}
 
   
 </style>
@@ -873,7 +891,52 @@ function timeToMinutes(t) {
   if (Number.isNaN(h) || Number.isNaN(m)) return 0;
   return h * 60 + m;
 }
-function getRunRowClass(item) {
+function getDutyStepClass(label, duty) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  const events = [
+    { label: '出勤', time: duty['出勤'] },
+    { label: '前半出庫', time: duty['前半出庫'] },
+    { label: '前半入庫', time: duty['前半入庫'] },
+    { label: '前半退勤', time: duty['前半退勤'] },
+    { label: '後半出勤時間', time: duty['後半出勤時間'] },
+    { label: '後半出庫', time: duty['後半出庫'] },
+    { label: '後半入庫', time: duty['後半入庫'] },
+    { label: '退勤', time: duty['退勤'] }
+  ].filter(e => e.time);
+
+  const index = events.findIndex(e => e.label === label);
+  if (index === -1) return '';
+
+  const currentMin = timeToMinutes(events[index].time);
+  const prevMin = index > 0 ? timeToMinutes(events[index - 1].time) : null;
+  const nextMin = index < events.length - 1 ? timeToMinutes(events[index + 1].time) : null;
+
+  if (prevMin !== null && nowMin >= prevMin && nowMin < currentMin) {
+    return 'next-step';
+  }
+
+  if (nextMin !== null && nowMin >= currentMin && nowMin < nextMin) {
+    return 'current-step';
+  }
+
+  if (nextMin === null && nowMin >= currentMin) {
+    return 'current-step';
+  }
+
+  if (nowMin >= currentMin) {
+    return 'done-step';
+  }
+
+  return '';
+}
+  
+  
+  
+  
+  
+  function getRunRowClass(item) {
   const dep = item.発時刻 || '';
   const arr = item.着時刻 || '';
 
@@ -1353,11 +1416,14 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
   `;
 
   for (const key in duty) {
-    let cls = 'item';
-    if (key === '出勤') cls += ' primary';
-    if (key === '後半出勤時間') cls += ' secondary';
-    html += `<div class="${cls}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
-  }
+  let cls = 'item';
+  if (key === '出勤') cls += ' primary';
+  if (key === '後半出勤時間') cls += ' secondary';
+
+  const stepClass = getDutyStepClass(key, duty);
+
+  html += `<div class="${cls} ${stepClass}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
+}
 
   html += `
             </div>
