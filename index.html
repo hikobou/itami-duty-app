@@ -426,16 +426,20 @@ body{
 @media (max-width: 520px) {
   .route-cell {
     text-align: left;
+    word-break: keep-all;
   }
-  .stop-time {
+
+  .stop-time:first-of-type {
     display: block;
   }
+
   .route-arrow {
-    display: inline-block;
+    display: inline;
     margin-right: 4px;
     color: #22c55e;
     font-weight: 700;
   }
+
   .route-cell .stop-time:nth-of-type(2) {
     display: inline;
   }
