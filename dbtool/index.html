@@ -140,10 +140,41 @@ function saveDraft() {
   const key = `draft_${dutyType}_${dutyNumber}`;
 
   localStorage.setItem(key, JSON.stringify(draft));
-
+  loadDrafts(); // ←これも忘れずに
   alert('下書き保存したで👍');
 }
-</script>
+ function loadDrafts() {
+  const container = document.getElementById('draftList');
+  container.innerHTML = '';
 
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+
+    if (!key.startsWith('draft_')) continue;
+
+    const data = JSON.parse(localStorage.getItem(key));
+
+    container.innerHTML += `
+      <div class="card">
+        <b>${data.dutyType} - ${data.dutyNumber}</b><br>
+        行数: ${data.routes.length}<br>
+        <button onclick="deleteDraft('${key}')">削除</button>
+      </div>
+    `;
+  }
+}
+
+function deleteDraft(key) {
+  if (!confirm('削除する？')) return;
+
+  localStorage.removeItem(key);
+  loadDrafts();
+} 
+  window.onload = function() {
+  loadDrafts();
+}
+</script>
+<h3>下書き一覧</h3>
+<div id="draftList"></div>
 </body>
 </html>
