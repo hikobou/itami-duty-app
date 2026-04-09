@@ -4,8 +4,145 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>運行詳細DB作成ツール</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 16px;
+      background: #0f172a;
+      color: #fff;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 4px 0 12px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>運行詳細DB作成ツール</h1>
+
+<h2>運行詳細DB作成ツール</h2>
+
+<div class="card">
+  <label>区分</label>
+  <select id="dutyType">
+    <option value="weekday">平日</option>
+    <option value="holiday">休日</option>
+  </select>
+
+  <label>勤番番号</label>
+  <input id="dutyNumber" placeholder="例：39">
+
+  <label>メモ</label>
+  <input id="memo" placeholder="任意">
+</div>
+
+<h3>運行詳細</h3>
+
+<div id="routes"></div>
+
+<button onclick="addRoute()">＋運行を追加</button>
+
+<button onclick="saveDraft()">下書き保存</button>
+
+<script>
+let routes = [];
+
+function addRoute() {
+  const id = Date.now();
+
+  const route = {
+    id,
+    kind: '',
+    line: '',
+    from: '',
+    to: '',
+    departure: '',
+    arrival: '',
+    waitMinutes: '',
+    note: ''
+  };
+
+  routes.push(route);
+  renderRoutes();
+}
+
+function renderRoutes() {
+  const container = document.getElementById('routes');
+  container.innerHTML = '';
+
+  routes.forEach((r, index) => {
+    container.innerHTML += `
+      <div class="card">
+        <b>行 ${index + 1}</b>
+
+        <input placeholder="種別（営業運行/回送）" onchange="update(${r.id}, 'kind', this.value)">
+        <input placeholder="系統" onchange="update(${r.id}, 'line', this.value)">
+        <input placeholder="発地" onchange="update(${r.id}, 'from', this.value)">
+        <input placeholder="着地" onchange="update(${r.id}, 'to', this.value)">
+        <input placeholder="発時刻 例:7:49" onchange="update(${r.id}, 'departure', this.value)">
+        <input placeholder="着時刻" onchange="update(${r.id}, 'arrival', this.value)">
+        <input placeholder="待機分" onchange="update(${r.id}, 'waitMinutes', this.value)">
+        <input placeholder="備考" onchange="update(${r.id}, 'note', this.value)">
+      </div>
+    `;
+  });
+}
+
+function update(id, key, value) {
+  const r = routes.find(r => r.id === id);
+  if (r) r[key] = value;
+}
+
+function saveDraft() {
+  const dutyType = document.getElementById('dutyType').value;
+  const dutyNumber = document.getElementById('dutyNumber').value;
+  const memo = document.getElementById('memo').value;
+
+  if (!dutyNumber) {
+    alert('勤番番号を入力して');
+    return;
+  }
+
+  const draft = {
+    dutyNumber,
+    dutyType,
+    status: "draft",
+    locked: false,
+    createdAt: new Date().toISOString(),
+    memo,
+    routes
+  };
+
+  const key = `draft_${dutyType}_${dutyNumber}`;
+
+  localStorage.setItem(key, JSON.stringify(draft));
+
+  alert('下書き保存したで👍');
+}
+</script>
+
 </body>
 </html>
