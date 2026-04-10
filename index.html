@@ -1367,7 +1367,7 @@ function renderVehicleDutyUsage(carNo) {
   if (!usages.length) {
     return `
       <div class="info-card">
-        <div class="info-card-title">この車が使われる勤務</div>
+        <div class="info-card-title">配車可能性のある勤務</div>
         <div class="info-row">
           <span class="info-label">検索結果</span>
           <span class="info-value">該当なし</span>
@@ -1378,7 +1378,7 @@ function renderVehicleDutyUsage(carNo) {
 
   return `
     <div class="info-card">
-      <div class="info-card-title">この車が使われる勤務</div>
+      <div class="info-card-title">配車可能性のある勤務</div>
       <div class="info-card-grid">
         ${usages.map(item => `
           <div class="info-row">
@@ -1805,7 +1805,7 @@ redrawTimer = setInterval(() => {
   }
 }
     if (!eventInfo) {
-      updateTicker('お疲れさまでした、本日の勤務は無事終了しました 👍次の勤務も安全運行でよろぴく');
+      updateTicker('本日の勤務は終了しました 👍お疲れさまでした');
       if (status) status.textContent = '現在：勤務終了';
       if (wrap) wrap.classList.remove('urgent');
       if (progressWrap) progressWrap.style.display = 'none';
@@ -1844,9 +1844,9 @@ redrawTimer = setInterval(() => {
   const today = new Date();
   const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
 
-  updateTicker(`📅 ${dateText}です。本日も事故・ミスなく『安全運行第一』で稼ぎましょう！🚍・着座後の発進、割り込まれてもブチ切れない、多少の遅れ運行はしゃ～ない、回送先と運行経路再確認を！　出勤時間まであと ${remainText}`);
+  updateTicker(`📅 ${dateText}です。全国交通安全運動期間中🚍・着座確認励行、「事故る」より「遅れ運行」で　出勤時間まであと ${remainText}`);
 } else {
-  updateTicker(`次：${next.label} ${next.time}　あと ${remainText}`);
+  updateTicker(`次：${next.label} ${next.time}　あと ${remainText}です`);
 }
 
     if (status) {
