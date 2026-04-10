@@ -750,13 +750,42 @@ function normalizeModeMapData(data) {
 }
 
 function normalizeVehicleAssignment(entry) {
-  if (!entry || typeof entry !== 'object') return { 前半: [], 後半: [] };
+  if (!entry) {
+    return {
+      type: 'split',
+      前半: [],
+      後半: [],
+      通し: []
+    };
+  }
+
+  // 通常勤番：配列で持っている場合
+  if (Array.isArray(entry)) {
+    return {
+      type: 'single',
+      前半: [],
+      後半: [],
+      通し: entry
+    };
+  }
+
+  // 200番台など：前半/後半を持つ場合
+  if (typeof entry === 'object') {
+    return {
+      type: 'split',
+      前半: Array.isArray(entry.前半) ? entry.前半 : [],
+      後半: Array.isArray(entry.後半) ? entry.後半 : [],
+      通し: []
+    };
+  }
+
   return {
-    前半: Array.isArray(entry.前半) ? entry.前半 : [],
-    後半: Array.isArray(entry.後半) ? entry.後半 : []
+    type: 'split',
+    前半: [],
+    後半: [],
+    通し: []
   };
 }
-
 function normalizeHardnessEntry(entry) {
   if (!entry || typeof entry !== 'object') {
     return {
@@ -1212,22 +1241,25 @@ function renderVehicleSearchResult(carNo, vehicle) {
 
   
 function renderVehicleList(assignments) {
-  if (!assignments.length) {
+  if (!assignments || !assignments.length) {
     return '<div class="info-row"><span class="info-label">割付</span><span class="info-value">なし</span></div>';
   }
 
   return assignments.map((item, index) => {
     const carNo = item.車番 || '-';
-    const vehicle = vehicleDb[carNo] || { ミッション: '不明', 癖: [], 注意: [], メモ: '車両DB未登録' };
+    const vehicle = vehicleDb[carNo] || {
+      ミッション: '不明',
+      癖: [],
+      注意: [],
+      メモ: '車両DB未登録'
+    };
+
     const mission = vehicle.ミッション || '不明';
     const missionClass = mission === 'MT' ? 'mt' : 'at';
-    const notes = [];
-
-    if (item.注記) notes.push(item.注記);
-    if (item.条件) notes.push(item.条件);
 
     const traits = Array.isArray(vehicle.癖) ? vehicle.癖 : [];
     const cautions = Array.isArray(vehicle.注意) ? vehicle.注意 : [];
+    const memo = vehicle.メモ || 'なし';
 
     return `
 <div class="info-card" style="margin-top:${index === 0 ? '0' : '8px'};">
@@ -1245,9 +1277,10 @@ function renderVehicleList(assignments) {
   </div>
 
   <div class="info-card-grid">
-    <div class="info-row"><span class="info-label">運用</span><span class="info-value">${notes.join(' / ') || '―'}</span></div>
+    <div class="info-row"><span class="info-label">注記</span><span class="info-value">${item.注記 || '―'}</span></div>
+    ${item.条件 ? `<div class="info-row"><span class="info-label">条件</span><span class="info-value">${item.条件}</span></div>` : ''}
     <div class="info-row"><span class="info-label">癖</span><span class="info-value">${traits.length ? traits.join('、') : '特記事項なし'}</span></div>
-    <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : (vehicle.メモ || 'なし')}</span></div>
+    <div class="info-row"><span class="info-label">注意</span><span class="info-value">${cautions.length ? cautions.join('、') : memo}</span></div>
   </div>
 </div>
     `;
@@ -1563,16 +1596,27 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
         <div class="info-sections">
           ${slopeHtml}
+${
+  vehicleAssign.type === 'single'
+    ? `
+      <div class="info-card">
+        <div class="info-card-title">割付車両情報</div>
+        ${renderVehicleList(vehicleAssign.通し)}
+      </div>
+    `
+    : `
+      <div class="info-card">
+        <div class="info-card-title">前半車両情報</div>
+        ${renderVehicleList(vehicleAssign.前半)}
+      </div>
 
-          <div class="info-card">
-            <div class="info-card-title">前半車両情報</div>
-            ${renderVehicleList(vehicleAssign.前半)}
-          </div>
+      <div class="info-card">
+        <div class="info-card-title">後半車両情報</div>
+        ${renderVehicleList(vehicleAssign.後半)}
+      </div>
+    `
+}
 
-          <div class="info-card">
-            <div class="info-card-title">後半車両情報</div>
-            ${renderVehicleList(vehicleAssign.後半)}
-          </div>
 
           
           <div class="info-card">
@@ -1900,8 +1944,10 @@ function runSelfTests() {
     mode = 'weekday';
 
     const html = renderDutyHtml('39', FALLBACK_DATA.weekday['39']);
-    console.assert(html.includes('前半車両情報'), 'should render front vehicle card');
-    console.assert(html.includes('後半車両情報'), 'should render rear vehicle card');
+   console.assert(
+  html.includes('前半車両情報') || html.includes('割付車両情報'),
+  'should render vehicle card'
+);
     console.assert(html.includes('勤務特性'), 'should render duty traits card');
     console.assert(html.includes('疲労度 高'), 'should render fatigue badge');
     console.assert(html.includes('障害者対応 多い'), 'should render accessibility badge');
