@@ -1577,6 +1577,7 @@ orderedLabels.forEach((key) => {
   const stepClass = getDutyStepClass(key, duty);
 
   let subLabel = '';
+  
 
   if (key === '前半出庫' && firstFrontDestination) {
     subLabel = `回送先➤<span class="dest-highlight">${firstFrontDestination}</span>`;
