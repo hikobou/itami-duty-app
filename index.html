@@ -935,8 +935,8 @@ function timeToMinutes(t) {
   return h * 60 + m;
 }
 function getOrderedDutyEvents(duty) {
-  const rearStartLabel = duty['後半出勤時間']
-    ? '後半出勤時間'
+  const rearStartLabel = duty['後半出勤']
+    ? '後半出勤'
     : (duty['後半出勤'] ? '後半出勤' : null);
 
   const isMidShift = !!duty['前半退勤'];
@@ -1552,7 +1552,7 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
   orderedLabels.forEach((key) => {
     let cls = 'item';
     if (key === '出勤') cls += ' primary';
-    if (key === '後半出勤時間' || key === '後半出勤') cls += ' secondary';
+    if (key === '後半出勤' || key === '後半出勤') cls += ' secondary';
 
     const stepClass = getDutyStepClass(key, duty);
 
@@ -1892,7 +1892,7 @@ redrawTimer = setInterval(() => {
       ) {
         status.textContent = '現在：勤務中';
       } else if (
-        next.label === '後半出勤時間' ||
+        next.label === '後半出勤' ||
         next.label === '後半出庫'
       ) {
         status.textContent = '現在：休憩中';
