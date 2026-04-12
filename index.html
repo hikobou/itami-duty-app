@@ -569,7 +569,17 @@ body{
 .item.current-step .item-value {
   color: #000 !important;
 }
-
+.dest-highlight{
+  display:inline-block;
+  margin-left:4px;
+  padding:2px 8px;
+  border-radius:8px;
+  background:rgba(34,197,94,0.2);
+  border:1px solid rgba(34,197,94,0.6);
+  color:#b6ffda;
+  font-weight:800;
+  letter-spacing:0.5px;
+}
 
   
 </style>
@@ -1504,7 +1514,8 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
     dutyDetailDb[mode]?.[dutyNo] ||
     dutyDetailDb[mode]?.[baseDutyNo] ||
     { 前半: [], 後半: [] };
-
+const firstFrontDestination = dutyDetail?.前半?.[0]?.着 || '';
+const firstRearDestination = dutyDetail?.後半?.[0]?.着 || '';
   const fatigueClass = getFatigueClass(fatigueInfo.疲労度);
   const summary = calcSummary(duty);
 
@@ -1556,7 +1567,25 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
 
     const stepClass = getDutyStepClass(key, duty);
 
-    html += `<div class="${cls} ${stepClass}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
+    let subLabel = '';
+
+if (key === '前半出庫' && firstFrontDestination) {
+  subLabel = `回送先➤<span class="dest-highlight">${firstFrontDestination}</span>`;
+}
+
+if (key === '後半出庫' && firstRearDestination) {
+  subLabel = `回送先➤<span class="dest-highlight">${firstRearDestination}</span>`;
+}
+
+html += `
+  <div class="${cls} ${stepClass}">
+    <span class="item-label">
+      ${key}
+      ${subLabel ? `<span class="item-subdest">${subLabel}</span>` : ''}
+    </span>
+    <span class="item-value">${duty[key]}</span>
+  </div>
+`;
   });
 
   html += `
