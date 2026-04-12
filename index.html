@@ -934,6 +934,23 @@ function timeToMinutes(t) {
   if (Number.isNaN(h) || Number.isNaN(m)) return 0;
   return h * 60 + m;
 }
+function getOrderedDutyEvents(duty) {
+  const rearStartLabel = duty['後半出勤時間']
+    ? '後半出勤時間'
+    : (duty['後半出勤'] ? '後半出勤' : null);
+
+  const isMidShift = !!duty['前半退勤'];
+
+  const order = isMidShift
+    ? ['出勤', '前半出庫', '前半入庫', '前半退勤', rearStartLabel, '後半出庫', '後半入庫', '退勤']
+    : ['出勤', '前半出庫', '前半入庫', '後半出庫', '後半入庫', '退勤'];
+
+  return order
+    .filter(Boolean)
+    .filter(label => duty[label])
+    .map(label => ({ label, time: duty[label] }));
+}
+  
 function getDutyStepClass(label, duty) {
   const now = new Date();
 
@@ -944,27 +961,7 @@ function getDutyStepClass(label, duty) {
   nextDay.setDate(nextDay.getDate() + 1);
   nextDay.setHours(0, 0, 0, 0);
 
-  const isMidShift = !!duty['前半退勤'];
-
-  const rawEvents = isMidShift
-    ? [
-        { label: '出勤', time: duty['出勤'] },
-        { label: '前半出庫', time: duty['前半出庫'] },
-        { label: '前半入庫', time: duty['前半入庫'] },
-        { label: '前半退勤', time: duty['前半退勤'] },
-        { label: '後半出勤時間', time: duty['後半出勤時間'] },
-        { label: '後半出庫', time: duty['後半出庫'] },
-        { label: '後半入庫', time: duty['後半入庫'] },
-        { label: '退勤', time: duty['退勤'] }
-      ]
-    : [
-        { label: '出勤', time: duty['出勤'] },
-        { label: '前半出庫', time: duty['前半出庫'] },
-        { label: '前半入庫', time: duty['前半入庫'] },
-        { label: '後半出庫', time: duty['後半出庫'] },
-        { label: '後半入庫', time: duty['後半入庫'] },
-        { label: '退勤', time: duty['退勤'] }
-      ];
+  const rawEvents = getOrderedDutyEvents(duty);
 
   const events = rawEvents
     .filter(e => e.time)
@@ -1550,15 +1547,17 @@ function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
             <div class="item-list">
   `;
 
-  for (const key in duty) {
-  let cls = 'item';
-  if (key === '出勤') cls += ' primary';
-  if (key === '後半出勤時間') cls += ' secondary';
+ const orderedLabels = getOrderedDutyEvents(duty).map(e => e.label);
 
-  const stepClass = getDutyStepClass(key, duty);
+  orderedLabels.forEach((key) => {
+    let cls = 'item';
+    if (key === '出勤') cls += ' primary';
+    if (key === '後半出勤時間' || key === '後半出勤') cls += ' secondary';
 
-  html += `<div class="${cls} ${stepClass}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
-}
+    const stepClass = getDutyStepClass(key, duty);
+
+    html += `<div class="${cls} ${stepClass}"><span class="item-label">${key}</span><span class="item-value">${duty[key]}</span></div>`;
+  });
 
   html += `
             </div>
@@ -1737,17 +1736,7 @@ function updateTicker(text) {
 function getNextEvent(duty) {
   const now = new Date();
   
-  const events = [
-    { label: '出勤', time: duty.出勤 },
-    { label: '前半出庫', time: duty.前半出庫 },
-    { label: '前半入庫', time: duty.前半入庫 },
-    { label: '前半退勤', time: duty.前半退勤 },
-    { label: '後半出勤時間', time: duty.後半出勤時間 },
-    { label: '後半出庫', time: duty.後半出庫 },
-    { label: '後半入庫', time: duty.後半入庫 },
-    { label: '退勤', time: duty.退勤 }
-  ]
-    .filter(e => e.time)
+  const events = getOrderedDutyEvents(duty)
     .map(e => {
       const [h, m] = e.time.split(':').map(Number);
       const d = new Date();
