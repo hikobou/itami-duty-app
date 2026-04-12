@@ -1577,6 +1577,16 @@ if (key === '後半出庫' && firstRearDestination) {
   subLabel = `回送先➤<span class="dest-highlight">${firstRearDestination}</span>`;
 }
 
+let subLabel = '';
+
+if (key === '前半出庫' && firstFrontDestination) {
+  subLabel = `回送先➤<span class="dest-highlight">${firstFrontDestination}</span>`;
+}
+
+if (key === '後半出庫' && firstRearDestination) {
+  subLabel = `回送先➤<span class="dest-highlight">${firstRearDestination}</span>`;
+}
+
 html += `
   <div class="${cls} ${stepClass}">
     <span class="item-label">
