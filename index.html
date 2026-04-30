@@ -1555,7 +1555,7 @@ const stopBayRules = {
 };
   
 function getBay(stop, line) {
-  return stopBayRules?.[stop]?.[String(line)] || '?';
+  return stopBayRules?.[stop]?.[String(line)] || '';
 }
 function formatLineNumber(line) {
   return String(line).padStart(2, ' ');
@@ -1609,12 +1609,12 @@ function buildAutoTickerMessage(dutyNo, mode) {
         .sort((a, b) => timeToMinutes(a.発時刻) - timeToMinutes(b.発時刻))
         .map(t => {
           const bay = getBay(t.発, t.系統);
-          return `${bay}番【${formatLineNumber(t.系統)}】${t.発時刻}`;
+          return `${bay ? `${bay}番` : ''}【${formatLineNumber(t.系統)}】${t.発時刻}`;
         })
         .join('<br>');
 
       alerts.push(
-    `【${myTrip.発}】<br>${othersText}<br>自分 ${myBay}番【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}`
+   `【${myTrip.発}】<br>${othersText}<br>自分 ${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}`
       );
     }
   });
