@@ -1526,6 +1526,67 @@ function runSearch() {
     searchDuty();
   }
 }
+function timeToMinutes(t) {
+  if (!t || !t.includes(':')) return null;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function buildAutoTickerMessage(dutyNo, mode) {
+  const allDetails = dutyDetailDb?.[mode] || {};
+  const myDetail = allDetails?.[dutyNo];
+
+  if (!myDetail) {
+    return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
+  }
+
+  const myTrips = [...(myDetail.前半 || []), ...(myDetail.後半 || [])]
+    .filter(x => x.種別 === '営業運行');
+
+  const allTrips = [];
+
+  Object.entries(allDetails).forEach(([otherDutyNo, detail]) => {
+    [...(detail.前半 || []), ...(detail.後半 || [])].forEach(trip => {
+      if (trip.種別 === '営業運行') {
+        allTrips.push({
+          dutyNo: otherDutyNo,
+          ...trip
+        });
+      }
+    });
+  });
+
+  const alerts = [];
+
+  myTrips.forEach(myTrip => {
+    const myStart = timeToMinutes(myTrip.発時刻);
+    if (myStart === null) return;
+
+    allTrips.forEach(other => {
+      if (other.dutyNo === dutyNo) return;
+      if (other.着 !== myTrip.発) return;
+
+      const otherArrival = timeToMinutes(other.着時刻);
+      if (otherArrival === null) return;
+
+      const diff = otherArrival - myStart;
+
+      // 自分の発車10分前〜5分後に到着する便を拾う
+      if (diff >= -10 && diff <= 5) {
+        alerts.push(
+          `【${myTrip.発}注意】${other.系統}系統 ${other.着時刻}着 → あなた${myTrip.系統}系統 ${myTrip.発時刻}発`
+        );
+      }
+    });
+  });
+
+  if (!alerts.length) {
+    return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
+  }
+
+  return alerts.slice(0, 3).join('　｜　');
+}
+
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
   const start = duty['出勤'] || '―';
@@ -1563,7 +1624,7 @@ const slopeHtml = slopeStops && slopeStops.length
       </div>
     `
   : '';
-const tickerMessage = `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
+const tickerMessage = buildAutoTickerMessage(dutyNo.replace('勤', ''), mode);
 let html = `
   <div class="result">
 
