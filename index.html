@@ -1562,9 +1562,14 @@ const slopeHtml = slopeStops && slopeStops.length
       </div>
     `
   : '';
-
+const tickerMessage = `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
 let html = `
   <div class="result">
+
+    <div class="ticker-wrap">
+      <div class="ticker-text">${tickerMessage}</div>
+    </div>
+
     <div class="duty-head">
       <div>
         <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
