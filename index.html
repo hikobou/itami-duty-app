@@ -1581,26 +1581,7 @@ html += `
 
       <div class="info-sections">
         ${slopeHtml}
-${
-  vehicleAssign.type === 'single'
-    ? `
-      <div class="info-card">
-        <div class="info-card-title">割付車両情報</div>
-        ${renderVehicleList(vehicleAssign.通し)}
-      </div>
-    `
-    : `
-      <div class="info-card">
-        <div class="info-card-title">前半車両情報</div>
-        ${renderVehicleList(vehicleAssign.前半)}
-      </div>
 
-      <div class="info-card">
-        <div class="info-card-title">後半車両情報</div>
-        ${renderVehicleList(vehicleAssign.後半)}
-      </div>
-    `
-}
 
        <div class="info-card">
           <div class="info-card-title">メモ</div>
