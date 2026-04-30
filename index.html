@@ -1627,11 +1627,6 @@ const slopeHtml = slopeStops && slopeStops.length
 const tickerMessage = buildAutoTickerMessage(dutyNo.replace('勤', ''), mode);
 let html = `
   <div class="result">
-
-    <div class="ticker-wrap">
-      <div class="ticker-text">${tickerMessage}</div>
-    </div>
-
     <div class="duty-head">
       <div>
         <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
@@ -1693,6 +1688,9 @@ html += `
           </div>
         </div>
 
+ <div class="ticker-wrap">
+      <div class="ticker-text">${tickerMessage}</div>
+    </div>
       
 
         <div class="info-card">
