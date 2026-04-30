@@ -259,48 +259,14 @@ body{
 .vehicle-link:hover{
   opacity:0.85;
 }
-  
-  
-.compact-summary {
-  margin-top: 6px;
-  margin-bottom: 10px;
-}
+ 
+ 
 
-
-.compact-summary .summary-box {
-  min-height: 70px;
-}
-
-.badge-rest.long { background: #166534; }
-.badge-rest.normal { background: #a16207; }
-.badge-rest.tight { background: #b91c1c; }
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
   
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-.summary-box {
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  padding: 8px 8px;
-  min-height: auto;
-}
-.summary-label {
-  font-size: 9px;
-  color: var(--muted);
-  margin-bottom: 3px;
-  letter-spacing: 0.04em;
-}
 
-.summary-value {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 14px;
-  font-weight: 700;
-}
+
 .item-list{display:grid; gap:8px;}
 .item{
   display:flex;
@@ -1600,24 +1566,7 @@ html += `
           </div>
         </div>
 
-        <div class="summary-grid compact-summary">
-          <div class="summary-box">
-            <div class="summary-label">前半実働</div>
-            <div class="summary-value">${summary.front}</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">後半実働</div>
-            <div class="summary-value">${summary.back}</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">休憩時間</div>
-            <div class="summary-value">${summary.rest}</div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-label">休憩の質</div>
-            <div class="summary-value">${summary.restQuality}</div>
-          </div>
-        </div>
+      
 
         <div class="info-card">
           <div class="info-card-title">運行詳細（前半）</div>
