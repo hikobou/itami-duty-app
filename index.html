@@ -1591,8 +1591,14 @@ function buildAutoTickerMessage(dutyNo, mode) {
   const alerts = [];
 
   myTrips.forEach(myTrip => {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const myStart = timeToMinutes(myTrip.発時刻);
-    if (myStart === null) return;
+if (myStart === null) return;
+
+// 発車20分前〜発車後5分のみ表示
+const timeUntilStart = myStart - currentMinutes;
+if (timeUntilStart > 20 || timeUntilStart < -5) return;
 
     const myBay = getBay(myTrip.発, myTrip.系統);
 
@@ -1626,7 +1632,7 @@ function buildAutoTickerMessage(dutyNo, mode) {
     return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
   }
 
-  return alerts.slice(0, 3).join('<br><br>');
+  return alerts.slice(0, 1).join('<br><br>');
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
