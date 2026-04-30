@@ -551,7 +551,24 @@ body{
   background: rgba(0, 200, 255, 0.1);
   font-weight: 600;
 }
+.trip-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
 
+.trip-badge.first {
+  background: #2563eb;
+  color: #fff;
+}
+
+.trip-badge.last {
+  background: #dc2626;
+  color: #fff;
+}
   
 </style>
 </head>
@@ -1286,7 +1303,16 @@ function renderDutyDetailTable(list, duty, section = 'front') {
 ${list.map((item, index) => `
   <tr class="${getDutyDetailRowClass(index, highlightIndex, item)}">
     <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
-    <td>${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}</td>
+    <td>
+  ${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}
+  ${
+    item.便区分 === '始発'
+      ? '<span class="trip-badge first">始発</span>'
+      : item.便区分 === '最終'
+        ? '<span class="trip-badge last">最終</span>'
+        : ''
+  }
+</td>
     <td class="route-cell">
       <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
       <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
