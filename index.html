@@ -1617,7 +1617,7 @@ function buildAutoTickerMessage(dutyNo, mode) {
         .join('<br>');
 
       alerts.push(
-   `【${myTrip.発}】<br>${othersText}<br><span class="self-line">自分 ${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}</span>`
+   `【${myTrip.発}】<br>${othersText}<br><span class="self-line">${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}</span>`
       );
     }
   });
