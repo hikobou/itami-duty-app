@@ -682,16 +682,7 @@ const modeLabel = document.getElementById('modeLabel');
 const resultStatus = document.getElementById('resultStatus');
 const dutySearchBtn = document.getElementById('dutySearchBtn');
 const vehicleSearchBtn = document.getElementById('vehicleSearchBtn');
-const tickerAlerts = {
-  weekday: {
-    "39": "【鴻池東】始発前後の到着便に注意 → 鶴田団地・52系統確認",
-    "109": "【塚口】37系統遅延注意 → 待機2分・後続確認",
-    "51": "【JR伊丹1番】52系統との乗り場干渉注意"
-  },
-  holiday: {
-    "39": "【休日】鴻池東周辺注意"
-  }
-};  
+
 
 let searchType = 'duty';
 let vehicleDb = {};
@@ -1572,9 +1563,7 @@ const slopeHtml = slopeStops && slopeStops.length
       </div>
     `
   : '';
-const tickerMessage =
-  tickerAlerts[mode]?.[dutyNo.replace('勤','')] ||
-  `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
+const tickerMessage = `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
 let html = `
   <div class="result">
 
