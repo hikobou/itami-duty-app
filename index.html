@@ -593,7 +593,10 @@ body{
   line-height: 1.6;
   text-shadow: 0 0 8px rgba(34,197,94,.8);
 }
-
+.self-line {
+  color: white;
+  font-weight: 900;
+}
 @keyframes ticker-scroll {
   0% {
     transform: translateX(0);
@@ -1614,7 +1617,7 @@ function buildAutoTickerMessage(dutyNo, mode) {
         .join('<br>');
 
       alerts.push(
-   `【${myTrip.発}】<br>${othersText}<br>自分 ${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}`
+   `【${myTrip.発}】<br>${othersText}<br><span class="self-line">自分 ${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}</span>`
       );
     }
   });
@@ -1623,7 +1626,7 @@ function buildAutoTickerMessage(dutyNo, mode) {
     return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
   }
 
-  return alerts.slice(0, 2).join('　｜　');
+  return alerts.slice(0, 3).join('<br><br>');
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
