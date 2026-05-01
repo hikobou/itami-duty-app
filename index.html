@@ -1653,7 +1653,7 @@ if (timeUntilStart > 20 || timeUntilStart < -5) return;
   alerts.push(
     `【${myTrip.発}】<br>${linesText}`
   );
-}
+});
   if (!alerts.length) {
     return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
   }
