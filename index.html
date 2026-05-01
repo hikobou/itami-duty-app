@@ -1613,21 +1613,39 @@ if (timeUntilStart > 20 || timeUntilStart < -5) return;
       return diff <= 5;
     });
 
-    if (nearTrips.length) {
-      const othersText = nearTrips
-        .sort((a, b) => timeToMinutes(a.発時刻) - timeToMinutes(b.発時刻))
-        .map(t => {
-          const bay = getBay(t.発, t.系統);
-          return `${bay ? `${bay}番` : ''}【${formatLineNumber(t.系統)}】${t.発時刻}`;
-        })
-        .join('<br>');
+   if (nearTrips.length) {
 
-      alerts.push(
-   `【${myTrip.発}】<br>${othersText}<br><span class="self-line">${myBay ? `${myBay}番` : ''}【${formatLineNumber(myTrip.系統)}】${myTrip.発時刻}</span>`
-      );
+  const displayTrips = [
+    ...nearTrips,
+    {
+      ...myTrip,
+      isSelf: true
     }
-  });
+  ];
 
+  const linesText = displayTrips
+    .sort((a, b) => {
+      const bayA = Number(getBay(a.発, a.系統)) || 99;
+      const bayB = Number(getBay(b.発, b.系統)) || 99;
+
+      if (bayA !== bayB) return bayA - bayB;
+
+      return timeToMinutes(a.発時刻) - timeToMinutes(b.発時刻);
+    })
+    .map(t => {
+      const bay = getBay(t.発, t.系統);
+      const lineText = `${bay ? `${bay}番` : ''}【${formatLineNumber(t.系統)}】${t.発時刻}`;
+
+      return t.isSelf
+        ? `<span class="self-line">${lineText}</span>`
+        : lineText;
+    })
+    .join('<br>');
+
+  alerts.push(
+    `【${myTrip.発}】<br>${linesText}`
+  );
+}
   if (!alerts.length) {
     return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
   }
