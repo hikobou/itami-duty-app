@@ -1578,7 +1578,7 @@ function buildAutoTickerMessage(dutyNo, mode) {
   const myDetail = allDetails?.[dutyNo];
 
   if (!myDetail) {
-    return `【${mode === 'holiday' ? '休日' : '平日'}】本日も安全運行でお願いします`;
+    return `【${mode === 'holiday' ? '休日' : '平日'}】現在、近接系統はありません`;
   }
 
   const myTrips = [...(myDetail.前半 || []), ...(myDetail.後半 || [])]
