@@ -1519,7 +1519,10 @@ function searchRoster() {
     return;
   }
 
-  const parts = input.split(/\s+/);
+  const parts = input
+  .replace(/　/g, ' ')
+  .trim()
+  .split(/\s+/);
 
   if (parts.length < 2) {
     result.innerHTML = '<div class="empty">入力形式が違います</div>';
