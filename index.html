@@ -364,6 +364,14 @@ body{
   background:var(--accent);
   color:#fff;
 }  
+.duty-title-holiday {
+  color: #ff4da6;
+  font-weight: 900;
+  font-size: 1.15em;
+  text-shadow:
+    0 0 8px rgba(255, 77, 166, 0.8),
+    0 0 16px rgba(255, 77, 166, 0.5);
+}
 .footer{
   display:flex;
   justify-content:center;
@@ -1930,6 +1938,15 @@ if (timeUntilStart > 20 || timeUntilStart < -5) return;
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
+ const dutyTitle =
+  mode === 'holiday'
+    ? `休日${dutyKey}勤`
+    : `${dutyKey}勤`;
+
+const dutyTitleClass =
+  mode === 'holiday'
+    ? 'duty-title-holiday'
+    : '';  
   const start = duty['出勤'] || '―';
   const end = duty['退勤'] || '';
   const isMid = !!duty['前半退勤'];
@@ -1970,7 +1987,13 @@ let html = `
   <div class="result">
     <div class="duty-head">
       <div>
-        <h3>${dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`}</h3>
+        <h3 class="${mode === 'holiday' ? 'duty-title-holiday' : ''}">
+  ${
+    mode === 'holiday'
+      ? `休日${dutyNo}勤`
+      : (dutyNo.includes('-') ? dutyNo : `${dutyNo}勤`)
+  }
+</h3>
         <div class="badges">
           ${isMid ? '<span class="badge-mid">中休</span>' : ''}
           <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
