@@ -1539,8 +1539,23 @@ function searchRoster() {
     return;
   }
 
-  let name = parts[0];
-  const dateText = parts[1];
+const normalizedInput = input
+  .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+  .replace(/　/g, ' ')
+  .replace(/[／]/g, '/')
+  .trim();
+
+const dateMatch = normalizedInput.match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})日?/);
+
+if (!dateMatch) {
+  result.innerHTML = '<div class="empty">日付形式が違います</div>';
+  resultStatus.textContent = '日付エラー';
+  return;
+}
+
+let name = normalizedInput.replace(dateMatch[0], '').trim();
+
+const dateText = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`;
 
   // 上村本人は「ひこ坊」でしか検索できない
   if (name === "上村") {
@@ -1572,7 +1587,7 @@ function searchRoster() {
   const week = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
   const dateLabel = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${week}）`;
 
-  const displayName = parts[0] === "ひこ坊" ? "ひこ坊" : info.name;
+  const displayName = name === "上村" ? "ひこ坊" : info.name;
 
 const detailMode = isCalendarHoliday(date) ? 'holiday' : 'weekday';
 
