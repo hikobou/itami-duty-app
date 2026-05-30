@@ -1061,13 +1061,6 @@ Created by 株式会社三栄社
   </div>
 </div>
 
-document.getElementById('guideBtn').addEventListener('click', () => {
-  document.getElementById('guideModal').style.display = 'block';
-});
-
-function closeGuide() {
-  document.getElementById('guideModal').style.display = 'none';
-}  
 <script>
 let mode = 'weekday';
 
@@ -2795,7 +2788,13 @@ async function initializeApp() {
 
   runSelfTests();
 }
+document.getElementById('guideBtn').addEventListener('click', () => {
+  document.getElementById('guideModal').style.display = 'block';
+});
 
+function closeGuide() {
+  document.getElementById('guideModal').style.display = 'none';
+}
 initializeApp();
 
 </script>
