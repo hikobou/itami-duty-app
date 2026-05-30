@@ -1965,15 +1965,7 @@ if (timeUntilStart > 20 || timeUntilStart < -5) return;
 }
   
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
- const dutyTitle =
-  mode === 'holiday'
-    ? `休日${dutyKey}勤`
-    : `${dutyKey}勤`;
-
-const dutyTitleClass =
-  mode === 'holiday'
-    ? 'duty-title-holiday'
-    : '';  
+ 
   const start = duty['出勤'] || '―';
   const end = duty['退勤'] || '';
   const isMid = !!duty['前半退勤'];
