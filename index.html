@@ -383,6 +383,52 @@ body{
   white-space:nowrap;
   letter-spacing:0.02em;
 }
+
+
+
+.guide-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:99999;
+}
+
+.guide-content{
+  width:min(900px,95%);
+  max-height:90vh;
+  overflow-y:auto;
+  margin:20px auto;
+  background:#1d2a33;
+  color:#fff;
+  border-radius:12px;
+  padding:20px;
+}
+
+.guide-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.guide-header button{
+  background:#e53935;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.guide-body h3{
+  margin-top:20px;
+  color:#4fc3f7;
+}
+
+.guide-body{
+  line-height:1.7;
+}
+
 @media(max-width:760px){
   .toolbar{grid-template-columns:1fr;}
   .result-main{grid-template-columns:1fr;}
@@ -649,7 +695,9 @@ body{
 <button id="vehicleSearchBtn" type="button">車両検索</button>
 <button id="rosterSearchBtn" type="button">交番表検索</button>
 </div>
-
+<button id="guideBtn" class="action-btn" type="button">
+📖 利用ガイド
+</button>
     <div class="toolbar">
       <div class="mode-toggle">
         <button id="weekdayBtn" class="active" type="button">平日</button>
@@ -2418,8 +2466,46 @@ async function initializeApp() {
 
   runSelfTests();
 }
+<div id="guideModal" class="guide-modal" style="display:none;">
+  <div class="guide-content">
 
+    <div class="guide-header">
+      <h2>利用ガイド</h2>
+      <button onclick="closeGuide()">✕</button>
+    </div>
+
+    <div class="guide-body">
+
+      <!-- ここにマニュアル本文を貼る -->
+
+      <h3>伊丹市交通局 勤番検索システム</h3>
+
+      <p>
+      本システムは伊丹市交通局での変則勤務を迅速かつ正確に把握し推進することを目的とした私的支援ツールです。
+      </p>
+
+      <p>
+      勤番検索・車両検索・交番表検索・運行詳細表示などに対応しています。
+      </p>
+
+      <p>
+      詳細な使い方については本ガイドを参照してください。
+      </p>
+
+    </div>
+
+  </div>
+</div>
+
+document.getElementById('guideBtn').addEventListener('click', () => {
+  document.getElementById('guideModal').style.display = 'block';
+});
+
+function closeGuide() {
+  document.getElementById('guideModal').style.display = 'none';
+}  
 initializeApp();
+
 </script>
 </body>
 </html>
