@@ -814,8 +814,17 @@ const BASE_KAMIMURA_KOBAN_INDEX = 4 * 7 + 6;
 const BASE_KAMIMURA_CIRC_INDEX = 4 * 7 + 3;
 
 function normalizeDateInput(input) {
-  const s = input.replace(/[年月.]/g, '/').replace(/日/g, '').trim();
+  const normalized = String(input)
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+    .replace(/[／]/g, '/')
+    .replace(/[－ー―]/g, '-')
+    .replace(/[年月.]/g, '/')
+    .replace(/日/g, '')
+    .trim();
+
+  const s = normalized.replace(/-/g, '/');
   const parts = s.split('/');
+
   if (parts.length < 3) return null;
 
   const y = Number(parts[0]);
@@ -823,9 +832,9 @@ function normalizeDateInput(input) {
   const d = Number(parts[2]);
 
   if (!y || !m || !d) return null;
+
   return new Date(y, m - 1, d);
 }
-
 function findStaffIndex(name) {
   for (let r = 0; r < circulation2.length; r++) {
     for (let c = 0; c < circulation2[r].length; c++) {
