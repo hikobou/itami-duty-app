@@ -1546,32 +1546,75 @@ function searchRoster() {
 
   const displayName = parts[0] === "ひこ坊" ? "ひこ坊" : info.name;
 
+const detailMode = isCalendarHoliday(date) ? 'holiday' : 'weekday';
+
+const detailDutyNo = String(info.duty).replace(/[^0-9]/g, '');
+
+const detailDuty = datasets[detailMode]?.[detailDutyNo];
+
+mode = detailMode;
+
+if (!detailDuty) {
   result.innerHTML = `
     <div class="result">
-      <div class="duty-head">
-        <div>
-          <h3>${displayName}</h3>
-          <div class="badges">
-            <span class="badge-mode">第2交番表</span>
-            <span class="badge-ramp">${dateLabel}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-card" style="margin-top:12px;">
+      <div class="info-card">
         <div class="info-card-title">交番表検索結果</div>
         <div class="info-card-grid">
           <div class="info-row"><span class="info-label">勤務</span><span class="info-value">${info.display}</span></div>
-          <div class="info-row"><span class="info-label">表記</span><span class="info-value">${info.rawDuty}</span></div>
-          <div class="info-row"><span class="info-label">交番表位置</span><span class="info-value">${info.row}行目 ${info.col}列目</span></div>
         </div>
       </div>
     </div>
   `;
 
-  resultStatus.textContent = `${displayName} ${dateLabel} を表示中`;
+  resultStatus.textContent = `${displayName} ${dateLabel}`;
+  return;
 }
 
+const baseDutyNo = detailDutyNo.split('-')[0];
+
+const slopeStops =
+  slopeStopsDb?.[detailDutyNo] ||
+  slopeStopsDb?.[baseDutyNo] ||
+  [];
+
+const hardness =
+  dutyHardnessDb[detailMode]?.[detailDutyNo] ||
+  dutyHardnessDb[detailMode]?.[baseDutyNo];
+
+const vehicle =
+  dutyVehicleDb[detailMode]?.[detailDutyNo] ||
+  dutyVehicleDb[detailMode]?.[baseDutyNo];
+
+currentDutyKey = detailDutyNo;
+currentDutyData = detailDuty;
+currentSlopeStops = slopeStops;
+currentHardness = hardness;
+currentVehicle = vehicle;
+currentDutyBaseDate = date;
+
+result.innerHTML = `
+<div class="result">
+  <div class="info-card" style="margin-bottom:12px;">
+    <div class="info-card-title">交番表検索結果</div>
+    <div class="info-card-grid">
+      <div class="info-row">
+        <span class="info-label">勤務</span>
+        <span class="info-value">${info.display}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">位置</span>
+        <span class="info-value">${info.row}行 ${info.col}列</span>
+      </div>
+    </div>
+  </div>
+
+  ${renderDutyHtml(detailDutyNo, detailDuty, hardness, vehicle, slopeStops)}
+</div>
+`;
+
+resultStatus.textContent = `${displayName} ${dateLabel}`;
+
+startTicker(detailDuty);
 
 
 
