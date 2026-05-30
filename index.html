@@ -630,7 +630,8 @@ body{
     </div>
 <div class="search-type-toggle">
   <button id="dutySearchBtn" class="active" type="button">勤番検索</button>
-  <button id="vehicleSearchBtn" type="button">車両検索</button>
+<button id="vehicleSearchBtn" type="button">車両検索</button>
+<button id="rosterSearchBtn" type="button">交番表検索</button>
 </div>
 
     <div class="toolbar">
@@ -687,7 +688,7 @@ const modeLabel = document.getElementById('modeLabel');
 const resultStatus = document.getElementById('resultStatus');
 const dutySearchBtn = document.getElementById('dutySearchBtn');
 const vehicleSearchBtn = document.getElementById('vehicleSearchBtn');
-
+const rosterSearchBtn = document.getElementById('rosterSearchBtn');
 
 let searchType = 'duty';
 let vehicleDb = {};
@@ -769,6 +770,111 @@ const FALLBACK_DATA = {
     '39': { 出勤: '8:45', 前半出庫: '9:10', 前半入庫: '12:26', 後半出庫: '14:13', 後半入庫: '17:13', 退勤: '17:23' }
   }
 };
+
+const circulation2 = [
+  ["留岡", "清水", "中谷", "後藤", "井下", "欠", "欠"],
+  ["井形", "加藤", "井實", "藤本", "橋本", "小谷", "木下"],
+  ["幸田", "井上", "山下", "柳瀬", "伊藤", "多賀谷", "丸田"],
+  ["黒田", "森", "蔵元", "渋川", "大國", "小山", "福島"],
+  ["齊藤", "重里", "欠", "上村", "笹山", "臼井", "山下"],
+  ["吉井", "欠", "欠", "永井", "西澤", "矢野", "松井"],
+  ["西家", "欠", "欠", "塩月", "木原", "欠", "里見"],
+  ["欠", "欠", "欠", "欠", "欠", "谷田", "菊地"]
+];
+
+const koban2 = [
+  ["221/AS1", "30", "指定休", "12", "5", "週", "公"],
+  ["220/PS16", "112", "指定休", "226/PS23", "113", "週", "公"],
+  ["203", "35", "指定休", "16", "AS1/3", "週", "公"],
+  ["222/PS13", "111", "指定休", "227/PS17", "109", "週", "公"],
+  ["202", "33", "指定休", "25", "2", "週", "公"],
+  ["212", "PS6/PS12", "指定休", "225/PS14", "108", "週", "公"],
+  ["213", "39", "指定休", "AS2/4", "9", "週", "公"],
+  ["218/PS22", "110", "指定休", "215/PS21", "114", "週", "公"]
+];
+
+const BASE_DATE_ROSTER = new Date(2026, 4, 30);
+const BASE_KAMIMURA_KOBAN_INDEX = 4 * 7 + 6;
+const BASE_KAMIMURA_CIRC_INDEX = 4 * 7 + 3;
+
+function normalizeDateInput(input) {
+  const s = input.replace(/[年月.]/g, '/').replace(/日/g, '').trim();
+  const parts = s.split('/');
+  if (parts.length < 3) return null;
+
+  const y = Number(parts[0]);
+  const m = Number(parts[1]);
+  const d = Number(parts[2]);
+
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+function findStaffIndex(name) {
+  for (let r = 0; r < circulation2.length; r++) {
+    for (let c = 0; c < circulation2[r].length; c++) {
+      const staff = circulation2[r][c];
+      if (staff !== "欠" && staff.includes(name)) {
+        return r * 7 + c;
+      }
+    }
+  }
+  return null;
+}
+
+function isCalendarHoliday(date) {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
+function pickDutyByCalendar(rawDuty, date) {
+  if (!rawDuty.includes("/")) return rawDuty;
+  const [normalDuty, holidayDuty] = rawDuty.split("/");
+  return isCalendarHoliday(date) ? holidayDuty : normalDuty;
+}
+
+function getStaffRosterDuty(name, date) {
+  const staffIndex = findStaffIndex(name);
+  if (staffIndex === null) {
+    return { error: "該当職員なし" };
+  }
+
+  const diffDays = Math.floor((date - BASE_DATE_ROSTER) / 86400000);
+  const staffOffset = staffIndex - BASE_KAMIMURA_CIRC_INDEX;
+
+  const total = 8 * 7;
+  let kobanIndex = BASE_KAMIMURA_KOBAN_INDEX + diffDays + staffOffset;
+  kobanIndex = ((kobanIndex % total) + total) % total;
+
+  const row = Math.floor(kobanIndex / 7);
+  const col = kobanIndex % 7;
+
+  const rawDuty = koban2[row][col];
+  const duty = pickDutyByCalendar(rawDuty, date);
+
+  let display;
+  if (duty === "週") display = "週休日";
+  else if (duty === "公") display = "公休日";
+  else if (duty === "指定休") display = "指定休";
+  else display = `${isCalendarHoliday(date) ? "休日" : "平日"}${duty}勤`;
+
+  return {
+    name,
+    date,
+    rawDuty,
+    duty,
+    display,
+    row: row + 1,
+    col: col + 1
+  };
+}
+
+
+
+
+
+
+  
 function normalizeDutyData(data) {
   return data && typeof data === 'object' ? data : {};
 }
@@ -1198,6 +1304,7 @@ dutySearchBtn.onclick = () => {
   searchType = 'duty';
   dutySearchBtn.classList.add('active');
   vehicleSearchBtn.classList.remove('active');
+  rosterSearchBtn.classList.remove('active');
   searchInput.placeholder = '例: 39 / 26-2';
   searchInput.value = '';
   result.innerHTML = '';
@@ -1210,6 +1317,7 @@ vehicleSearchBtn.onclick = () => {
   searchType = 'vehicle';
   vehicleSearchBtn.classList.add('active');
   dutySearchBtn.classList.remove('active');
+  rosterSearchBtn.classList.remove('active');
   searchInput.placeholder = '例: 5810 / ブレーキ / 暖房 / MT';
   searchInput.value = '';
   result.innerHTML = '';
@@ -1240,6 +1348,26 @@ searchInput.addEventListener('input', () => {
 
   runSearch();
 });
+
+rosterSearchBtn.onclick = () => {
+  searchType = 'roster';
+
+  rosterSearchBtn.classList.add('active');
+  dutySearchBtn.classList.remove('active');
+  vehicleSearchBtn.classList.remove('active');
+
+  searchInput.placeholder = '例: 2026/5/31 または 笹山 2026/5/30';
+  searchInput.value = '';
+  result.innerHTML = '';
+  resultStatus.textContent = '待機中';
+  stopTicker();
+  searchInput.focus();
+};
+
+
+
+
+  
 
 function renderVehicleSearchResult(carNo, vehicle) {
   const mission = vehicle.ミッション || '不明';
@@ -1365,6 +1493,79 @@ ${list.map((item, index) => `
     </div>
   `;
 }
+
+function searchRoster() {
+  const input = searchInput.value.trim();
+
+  if (!input) {
+    result.innerHTML = '';
+    resultStatus.textContent = '待機中';
+    return;
+  }
+
+  const parts = input.split(/\s+/);
+
+  let name = "上村";
+  let dateText = input;
+
+  if (parts.length >= 2) {
+    name = parts[0];
+    dateText = parts[1];
+  }
+
+  const date = normalizeDateInput(dateText);
+
+  if (!date) {
+    result.innerHTML = '<div class="empty">日付は 2026/5/31 の形で入力してください</div>';
+    resultStatus.textContent = '日付エラー';
+    return;
+  }
+
+  const info = getStaffRosterDuty(name, date);
+
+  if (info.error) {
+    result.innerHTML = `<div class="empty">${info.error}</div>`;
+    resultStatus.textContent = '該当なし';
+    return;
+  }
+
+  const week = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
+  const dateLabel = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${week}）`;
+
+  result.innerHTML = `
+    <div class="result">
+      <div class="duty-head">
+        <div>
+          <h3>${info.name}</h3>
+          <div class="badges">
+            <span class="badge-mode">第2交番表</span>
+            <span class="badge-ramp">${dateLabel}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" style="margin-top:12px;">
+        <div class="info-card-title">交番表検索結果</div>
+        <div class="info-card-grid">
+          <div class="info-row"><span class="info-label">勤務</span><span class="info-value">${info.display}</span></div>
+          <div class="info-row"><span class="info-label">表記</span><span class="info-value">${info.rawDuty}</span></div>
+          <div class="info-row"><span class="info-label">交番表位置</span><span class="info-value">${info.row}行目 ${info.col}列目</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  resultStatus.textContent = `${info.name} ${dateLabel} を表示中`;
+}
+
+
+
+
+
+
+
+
+
   
 function searchVehicle() {
   const input = searchInput.value.trim();
@@ -1527,6 +1728,8 @@ function openVehicleFromDuty(carNo) {
 function runSearch() {
   if (searchType === 'vehicle') {
     searchVehicle();
+  } else if (searchType === 'roster') {
+    searchRoster();
   } else {
     searchDuty();
   }
