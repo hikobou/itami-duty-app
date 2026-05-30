@@ -1505,18 +1505,30 @@ function searchRoster() {
 
   const parts = input.split(/\s+/);
 
-  let name = "上村";
-  let dateText = input;
+  if (parts.length < 2) {
+    result.innerHTML = '<div class="empty">入力形式が違います</div>';
+    resultStatus.textContent = '入力形式エラー';
+    return;
+  }
 
-  if (parts.length >= 2) {
-    name = parts[0];
-    dateText = parts[1];
+  let name = parts[0];
+  const dateText = parts[1];
+
+  // 上村本人は「ひこ坊」でしか検索できない
+  if (name === "上村") {
+  result.innerHTML = '<div class="empty">職員データ未登録</div>';
+  resultStatus.textContent = '未登録';
+  return;
+}
+
+  if (name === "ひこ坊") {
+    name = "上村";
   }
 
   const date = normalizeDateInput(dateText);
 
   if (!date) {
-    result.innerHTML = '<div class="empty">日付は 2026/5/31 の形で入力してください</div>';
+    result.innerHTML = '<div class="empty">日付形式が違います</div>';
     resultStatus.textContent = '日付エラー';
     return;
   }
@@ -1524,7 +1536,7 @@ function searchRoster() {
   const info = getStaffRosterDuty(name, date);
 
   if (info.error) {
-    result.innerHTML = `<div class="empty">${info.error}</div>`;
+    result.innerHTML = '<div class="empty">該当職員なし</div>';
     resultStatus.textContent = '該当なし';
     return;
   }
@@ -1532,11 +1544,13 @@ function searchRoster() {
   const week = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
   const dateLabel = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${week}）`;
 
+  const displayName = parts[0] === "ひこ坊" ? "ひこ坊" : info.name;
+
   result.innerHTML = `
     <div class="result">
       <div class="duty-head">
         <div>
-          <h3>${info.name}</h3>
+          <h3>${displayName}</h3>
           <div class="badges">
             <span class="badge-mode">第2交番表</span>
             <span class="badge-ramp">${dateLabel}</span>
@@ -1555,9 +1569,8 @@ function searchRoster() {
     </div>
   `;
 
-  resultStatus.textContent = `${info.name} ${dateLabel} を表示中`;
+  resultStatus.textContent = `${displayName} ${dateLabel} を表示中`;
 }
-
 
 
 
