@@ -1188,6 +1188,32 @@ const BASE_DATE_ROSTER = new Date(2026, 4, 30);
 const BASE_KAMIMURA_KOBAN_INDEX = 4 * 7 + 6;
 const BASE_KAMIMURA_CIRC_INDEX = 4 * 7 + 3;
 
+function getFiscalYear(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  return m >= 4 ? y : y - 1;
+}
+
+function getFiscalBaseDate(date) {
+  const fiscalYear = getFiscalYear(date);
+  return new Date(fiscalYear, 3, 1); // 4月1日
+}
+
+function getFiscalYearShift(date) {
+  return getFiscalYear(date) - 2026;
+}
+
+function getKamimuraBaseIndexByFiscalYear(date) {
+  const total = 8 * 7;
+  const shift = getFiscalYearShift(date);
+
+  // 2026年度基準。毎年4月1日に1枠左へずれる
+  let index = BASE_KAMIMURA_KOBAN_INDEX - shift;
+
+  return ((index % total) + total) % total;
+}
+
+  
 function normalizeDateInput(input) {
   const normalized = String(input)
     .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
@@ -1271,11 +1297,13 @@ function getStaffRosterDuty(name, date) {
     return { error: "該当職員なし" };
   }
 
-  const diffDays = Math.floor((date - BASE_DATE_ROSTER) / 86400000);
-  const staffOffset = staffIndex - BASE_KAMIMURA_CIRC_INDEX;
+  const fiscalBaseDate = getFiscalBaseDate(date);
+const diffDays = Math.floor((date - fiscalBaseDate) / 86400000);
+const staffOffset = staffIndex - BASE_KAMIMURA_CIRC_INDEX;
 
-  const total = 8 * 7;
-  let kobanIndex = BASE_KAMIMURA_KOBAN_INDEX + diffDays + staffOffset;
+const total = 8 * 7;
+const fiscalBaseIndex = getKamimuraBaseIndexByFiscalYear(date);
+let kobanIndex = fiscalBaseIndex + diffDays + staffOffset;
   kobanIndex = ((kobanIndex % total) + total) % total;
 
   const row = Math.floor(kobanIndex / 7);
