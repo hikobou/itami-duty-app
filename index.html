@@ -241,7 +241,14 @@ body{
 
 /* ←ここに追加 */
 
-.badge-mode { background: #0f766e; }
+.badge-mode {
+  background: #0f766e;
+}
+
+.badge-mode.holiday {
+  background: #d98cb3;
+  color: #fff;
+}
 .badge-mission.at { background: #475569; }
 .badge-mission.mt { background: #b45309; }
 .vehicle-link{
@@ -2440,7 +2447,9 @@ let html = `
 </h3>
         <div class="badges">
           ${isMid ? '<span class="badge-mid">中休</span>' : ''}
-          <span class="badge-mode">${mode === 'weekday' ? '平日' : '休日'}</span>
+          <span class="badge-mode ${mode === 'holiday' ? 'holiday' : ''}">
+  ${mode === 'weekday' ? '平日' : '休日'}
+</span>
           ${fatigueInfo.疲労度 !== '―' ? `<span class="badge-fatigue ${fatigueClass}">疲労度 ${fatigueInfo.疲労度}</span>` : ''}
           ${fatigueInfo.障害者対応 !== '―' ? `<span class="badge-access">障害者対応 ${fatigueInfo.障害者対応}</span>` : ''}
           ${fatigueInfo.スロープ対応 !== '―' ? `<span class="badge-ramp">スロープ ${fatigueInfo.スロープ対応}</span>` : ''}
