@@ -1297,13 +1297,11 @@ function getStaffRosterDuty(name, date) {
     return { error: "該当職員なし" };
   }
 
-  const fiscalBaseDate = getFiscalBaseDate(date);
-const diffDays = Math.floor((date - fiscalBaseDate) / 86400000);
+const diffDays = Math.floor((date - BASE_DATE_ROSTER) / 86400000);
 const staffOffset = staffIndex - BASE_KAMIMURA_CIRC_INDEX;
 
 const total = 8 * 7;
-const fiscalBaseIndex = getKamimuraBaseIndexByFiscalYear(date);
-let kobanIndex = fiscalBaseIndex + diffDays + staffOffset;
+let kobanIndex = BASE_KAMIMURA_KOBAN_INDEX + diffDays + staffOffset;
   kobanIndex = ((kobanIndex % total) + total) % total;
 
   const row = Math.floor(kobanIndex / 7);
