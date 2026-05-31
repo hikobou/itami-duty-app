@@ -2010,7 +2010,13 @@ const dateText = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`;
     resultStatus.textContent = '日付エラー';
     return;
   }
+const rosterLimitDate = new Date(2027, 2, 31); // 2027年3月31日
 
+if (date > rosterLimitDate) {
+  result.innerHTML = '<div class="empty">交番表が決定していないため検索できません</div>';
+  resultStatus.textContent = '検索範囲外';
+  return;
+}
   const info = getStaffRosterDuty(name, date);
 
   if (info.error) {
