@@ -1993,11 +1993,36 @@ const dateText = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`;
 
 const detailMode = isCalendarHoliday(date) ? 'holiday' : 'weekday';
 
-const detailDutyNo = String(info.duty).replace(/[^0-9]/g, '');
+const rawDutyText = String(info.duty);
+const isSpecialDuty = /^(AS|PS)/i.test(rawDutyText);
+const detailDutyNo = rawDutyText.replace(/[^0-9]/g, '');
 
-const detailDuty = datasets[detailMode]?.[detailDutyNo];
+const detailDuty = isSpecialDuty ? null : datasets[detailMode]?.[detailDutyNo];
 
 mode = detailMode;
+
+if (isSpecialDuty) {
+  result.innerHTML = `
+    <div class="result">
+      <div class="info-card">
+        <div class="info-card-title">交番表検索結果</div>
+        <div class="info-card-grid">
+          <div class="info-row">
+            <span class="info-label">勤務</span>
+            <span class="info-value">${info.display}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">案内</span>
+            <span class="info-value">${rawDutyText}勤務です。勤務割に従ってください。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  resultStatus.textContent = `${displayName} ${dateLabel}`;
+  return;
+}
 
 if (!detailDuty) {
   result.innerHTML = `
