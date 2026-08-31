@@ -1758,7 +1758,32 @@ clearBtn.onclick = () => {
   stopTicker();
   searchInput.focus();
 };
+const todayDutyBtn = document.getElementById('todayDutyBtn');
 
+todayDutyBtn.onclick = () => {
+  let name = searchInput.value.trim();
+
+  if (!name) {
+    result.innerHTML = '<div class="empty">名前を入力してください</div>';
+    resultStatus.textContent = '名前未入力';
+    return;
+  }
+
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = today.getMonth() + 1;
+  const d = today.getDate();
+
+  searchType = 'roster';
+
+  rosterSearchBtn.classList.add('active');
+  dutySearchBtn.classList.remove('active');
+  vehicleSearchBtn.classList.remove('active');
+
+  searchInput.value = `${name} ${y}/${m}/${d}`;
+
+  searchRoster();
+};
 dutySearchBtn.onclick = () => {
   searchType = 'duty';
   dutySearchBtn.classList.add('active');
