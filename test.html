@@ -2155,7 +2155,16 @@ searchInput.addEventListener('input', () => {
     return;
   }
 
-  runSearch();
+  // 入力途中で別の勤番を表示しない。検索ボタン／Enterで確定する。
+  if (searchType === 'duty') {
+    resultStatus.textContent = '入力中（検索ボタンで確定）';
+    stopTicker();
+    currentDutyKey = null;
+    currentDutyData = null;
+    result.innerHTML = '';
+  } else {
+    runSearch();
+  }
 });
 
 rosterSearchBtn.onclick = () => {
@@ -3159,18 +3168,15 @@ function searchDuty() {
   let duty = data[normalizedInput];
   let dutyKey = normalizedInput;
 
-  const baseInput = normalizedInput.split('-')[0];
-
-  if (!duty) {
-    if (data[baseInput]) {
-      duty = data[baseInput];
-      dutyKey = baseInput;
-    } else if (data[`${baseInput}-1`]) {
-      duty = data[`${baseInput}-1`];
-      dutyKey = `${baseInput}-1`;
-    } else if (data[`${baseInput}-2`]) {
-      duty = data[`${baseInput}-2`];
-      dutyKey = `${baseInput}-2`;
+  // 指定した勤番と異なる勤務を勝手に表示しない。
+  // 枝番を入力した場合はその枝番のみ検索する。
+  // 枝番のない番号だけ、唯一の枝番が存在する場合に限り補完する。
+  if (!duty && !normalizedInput.includes('-')) {
+    const candidates = [`${normalizedInput}-1`, `${normalizedInput}-2`]
+      .filter(key => Object.prototype.hasOwnProperty.call(data, key));
+    if (candidates.length === 1) {
+      dutyKey = candidates[0];
+      duty = data[dutyKey];
     }
   }
 
@@ -3282,6 +3288,8 @@ redrawTimer = setInterval(() => {
   if (!currentDutyKey || !currentDutyData) return;
   if (searchType !== 'duty') return;
   if (!searchInput.value.trim()) return;
+  const typedDuty = searchInput.value.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[ー－―]/g,'-').replace(/勤$/i,'');
+  if (typedDuty !== currentDutyKey && !( !typedDuty.includes('-') && (currentDutyKey === typedDuty + '-1' || currentDutyKey === typedDuty + '-2') )) return;
 
   result.innerHTML = renderDutyHtml(
     currentDutyKey,
@@ -3400,6 +3408,8 @@ function runSelfTests() {
   const originalDutyVehicleDb = dutyVehicleDb;
   const originalDutyHardnessDb = dutyHardnessDb;
   const originalMode = mode;
+  const originalDutyKey = currentDutyKey;
+  const originalDutyData = currentDutyData;
 
   try {
     vehicleDb = structuredClone(FALLBACK_DATA.vehicle);
@@ -3431,6 +3441,8 @@ function runSelfTests() {
     dutyVehicleDb = originalDutyVehicleDb;
     dutyHardnessDb = originalDutyHardnessDb;
     mode = originalMode;
+    currentDutyKey = originalDutyKey;
+    currentDutyData = originalDutyData;
   }
 }
   
