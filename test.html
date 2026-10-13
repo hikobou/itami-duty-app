@@ -753,6 +753,11 @@ body{
 .conflict-graphic{overflow-x:auto;margin-top:10px}
 .conflict-graphic svg{display:block;min-width:620px;width:100%;background:#153b2d;border-radius:8px}
 .conflict-table tr.same-time td{background:#572728;color:#ffe7e7;font-weight:800}.conflict-table tr.overlap-time td{background:#4b3a1c;color:#ffe6aa}.conflict-signal{display:inline-block;padding:2px 6px;border-radius:5px;background:#b83237;color:white;font-weight:900}.conflict-signal.soft{background:#9a6a18;color:#fff3cd}
+
+.conflict-band-control{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:10px;background:#173c2e;border:1px solid #477b60;border-radius:9px}
+.conflict-band-control strong{margin-right:5px;font-size:13px}
+.conflict-band-option{background:#24503f;border:1px solid #6f9f84;color:#eafff3;padding:8px 13px;border-radius:8px;font-weight:700;cursor:pointer}
+.conflict-band-option.selected{background:#32b884;border-color:#97efca;color:#08281c;box-shadow:0 0 0 2px #67dfab50}
 </style>
 </head>
 
@@ -2039,7 +2044,14 @@ const conflictPassingStops = {
  holiday: []
 };
 const conflictSharedStops = {'鶴田団地':['51','52'],'伊丹病院住友前':['5','18']};
-let conflictModalOverflow = '';
+let conflictModalOverflow = null;
+let conflictArrivalBand = 10;
+let conflictLastTimeline = null;
+function setConflictArrivalBand(value){
+ if(![0,5,10].includes(value))return;
+ conflictArrivalBand=value;
+ if(conflictLastTimeline)openConflictTimeline(conflictLastTimeline.section,conflictLastTimeline.index);
+}
 function conflictMins(v){return nearMins(v);}
 function conflictFmt(v){return nearTime(v);}
 function conflictAllArrivals(stop){
@@ -2087,6 +2099,7 @@ function renderConflictRowNotice(item,section,index){
  return `<div class="conflict-alert">⚠️ 乗り場競合注意：${nearEscape(nearest.line)}系統 ${conflictFmt(nearest.time)}（ほか${match.list.length-1}件）<br><button type="button" class="conflict-open" onclick="openConflictTimeline('${nearEscape(section)}',${index})">時間差・タイムラインを見る</button></div>`;
 }
 function openConflictTimeline(section,index){
+ conflictLastTimeline={section,index};
  const key=currentDutyKey;
  const detail=dutyDetailDb[mode]?.[key]||dutyDetailDb[mode]?.[key?.split('-')[0]];
  const data=conflictMatches(key,detail,section,index) || (()=>{
@@ -2095,11 +2108,12 @@ function openConflictTimeline(section,index){
  })();
  if(!data)return;
  const {own,list}=data;
+ const band=conflictArrivalBand;
  // 自便の次発時刻を基準に前後30分以内の他便だけを表示する。
  const allAtStop=conflictAllArrivals(own.stop).filter(a=>String(a.duty)!==String(key)).sort((a,b)=>a.time-b.time);
  const show=allAtStop.filter(a=>Math.abs(a.time-own.to)<=30);
- const left=Math.min(own.from-15,...show.map(a=>a.time-10));
- const right=Math.max(own.to+15,...show.map(a=>a.time+10));
+ const left=Math.min(own.from-15,...show.map(a=>a.time-band));
+ const right=Math.max(own.to+15,...show.map(a=>a.time+band));
  const x=t=>100+(t-left)/(right-left)*590;
  const ordered=[...show.map(a=>({...a,isSelf:false})),{time:own.from,isSelf:true}].sort((a,b)=>a.time-b.time||(a.isSelf?-1:1));
  const h=85+ordered.length*40;
@@ -2107,18 +2121,18 @@ function openConflictTimeline(section,index){
  for(let v=Math.ceil(left/5)*5;v<=right;v+=5)grid.push(v);
  const svg=`<svg viewBox="0 0 720 ${h}" role="img" aria-label="自便も含む所定時刻順の近接便タイムライン">
  ${grid.map(v=>`<line x1="${x(v)}" y1="28" x2="${x(v)}" y2="${h-12}" stroke="#b4e3cc" stroke-opacity=".16"/><text x="${x(v)}" y="17" text-anchor="middle" fill="#d7efdf" font-size="11">${conflictFmt(v)}</text>`).join('')}
- ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.from;const overlaps=!a.isSelf&&a.time+10>=own.from&&a.time-10<=own.to;
+ ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.from;const overlaps=!a.isSelf&&a.time+band>=own.from&&a.time-band<=own.to;
  if(a.isSelf)return `<text x="6" y="${y+4}" fill="#e9ffe9" font-size="12" font-weight="bold">自便 ${nearEscape(key)}勤</text><rect x="${x(own.from)}" y="${y-10}" width="${Math.max(2,x(own.to)-x(own.from))}" height="19" rx="4" fill="#35d08b"/><circle cx="${x(own.from)}" cy="${y}" r="6" fill="#67d4ff"/><text x="${x(own.from)}" y="${y-16}" text-anchor="middle" fill="#a7e9ff" font-size="10">着${conflictFmt(own.from)}</text><text x="${x(own.to)}" y="${y+24}" text-anchor="middle" fill="#acffcf" font-size="10">発${conflictFmt(own.to)}</text>`;
- return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text><rect x="${x(a.time-10)}" y="${y-10}" width="${x(a.time+10)-x(a.time-10)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/><line x1="${x(a.time-10)}" x2="${x(a.time+10)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/><circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
+ return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text>${band>0?`<rect x="${x(a.time-band)}" y="${y-10}" width="${x(a.time+band)-x(a.time-band)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/>`: ''}<line x1="${x(a.time-band)}" x2="${x(a.time+band)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/><circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
  }).join('')}</svg>`;
- const rows=show.map(a=>{const d=a.time-own.from;const exact=d===0;const overlapping=a.time+10>=own.from&&a.time-10<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
+ const rows=show.map(a=>{const d=a.time-own.from;const exact=d===0;const overlapping=a.time+band>=own.from&&a.time-band<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
  document.getElementById('conflictModalTitle').textContent=`近接便｜${own.stop} ${key}勤`;
- document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、幅は各便±10分の想定。</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝各便±10分　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
+ document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、幅は各便${band===0?'所定時刻のみ':`±${band}分`}の想定。</div><div class="conflict-band-control" role="group" aria-label="他便の早着・延着表示幅"><strong>早着・延着の表示幅</strong>${[0,5,10].map(v=>`<button type="button" class="conflict-band-option ${band===v?'selected':''}" aria-pressed="${band===v}" onclick="setConflictArrivalBand(${v})">${v===0?'所定':`±${v}分`}</button>`).join('')}</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝各便${band===0?'所定のみ':`±${band}分`}　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
  const modal=document.getElementById('conflictModal');modal.hidden=false;
- conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+ if(conflictModalOverflow===null)conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
  modal.querySelector('.conflict-modal-close').focus({preventScroll:true});
 }
-function closeConflictTimeline(){document.getElementById('conflictModal').hidden=true;document.body.style.overflow=conflictModalOverflow;}
+function closeConflictTimeline(){document.getElementById('conflictModal').hidden=true;document.body.style.overflow=conflictModalOverflow??'';conflictModalOverflow=null;conflictLastTimeline=null;}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('conflictModal').hidden)closeConflictTimeline();});
 
 function renderDutyDetailTable(list, duty, section = 'front') {
