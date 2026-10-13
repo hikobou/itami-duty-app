@@ -798,6 +798,249 @@ img, iframe { max-width:100%; }
 .bus-timetable-form .bus-timetable-submit{width:100%;background:#2aa876;color:white;font-weight:800;border:none;border-radius:8px;padding:12px;cursor:pointer;font-size:15px}
 .bus-timetable-link{display:block;margin-top:8px;color:#a7ebd0;overflow-wrap:anywhere}
 .bus-timetable-msg{font-size:12px;line-height:1.5;color:#cfe9dd}
+.bus-timetable-viewer[hidden]{display:none!important}
+.bus-timetable-viewer{margin-top:10px;border:1px solid #4d9377;border-radius:9px;overflow:hidden;background:#fff}
+.bus-timetable-frame{display:block;width:760px;max-width:none!important;height:1050px;border:0;background:#fff;transform-origin:top left;transform:scale(var(--tt-scale,1))}
+.bus-timetable-stage{width:100%;height:560px;overflow:hidden;background:#fff;position:relative}
+.bus-timetable-stage .bus-timetable-frame{position:absolute;top:0;left:0}
+.bus-timetable-external{display:block;padding:8px 10px;background:#163e30;font-size:12px;color:#b5f1d6;overflow-wrap:anywhere}
+@media(max-width:520px){.bus-timetable-stage{height:62vh;min-height:380px}}
+
+/* Ver.6.5: スマホ全画面の横はみ出し防止（時刻表の縮小表示は維持） */
+@media (max-width: 760px) {
+  html, body { width:100% !important; max-width:100% !important; margin:0; overflow-x:hidden !important; }
+  .container { width:100%; max-width:100%; min-width:0; margin:0 auto; padding-left:10px; padding-right:10px; overflow-x:clip; }
+  .hero, .result, .result-main, .time-card, .info-card, .info-sections,
+  .toolbar, .search-box, .item-list, .near-panel, .near-summary,
+  .bus-timetable-card, .bus-timetable-viewer { box-sizing:border-box; min-width:0 !important; max-width:100% !important; }
+  .result-main, .toolbar { grid-template-columns:minmax(0,1fr) !important; }
+  .result-main > *, .toolbar > *, .info-sections > * { min-width:0 !important; max-width:100%; }
+  .hero-top, .result-headline, .item, .info-row, .near-titlebar { min-width:0; max-width:100%; flex-wrap:wrap; }
+  .search-box { width:100%; }
+  .search-box input { flex:1 1 0; min-width:0 !important; width:1%; }
+  .search-box button { flex:0 0 auto; }
+  .item-label, .item-value, .info-label, .info-value, .note-list li,
+  .bus-timetable-msg, .near-info { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+  .duty-table-wrap, .conflict-graphic, .fare-slide-viewport { width:100%; max-width:100%; overflow-x:auto; }
+  .duty-detail-table { width:100%; max-width:100%; table-layout:fixed; }
+  .duty-detail-table th, .duty-detail-table td { overflow-wrap:anywhere; word-break:normal; }
+  .conflict-modal-content { width:100%; max-width:100%; overflow-x:hidden; }
+  .conflict-graphic { overflow-x:auto; }
+  .bus-timetable-stage { max-width:100%; overflow:hidden; }
+  .footer { max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+}
+@media (max-width: 390px) {
+  .search-type-toggle { max-width:100%; display:flex; }
+  .search-type-toggle button { flex:1 1 0; min-width:0; padding:10px 5px; font-size:12px; }
+  .duty-quick-actions { flex-wrap:wrap; }
+}
+/* Ver.6.5: 運行詳細は列を押し潰さず、表枠の中だけ横スクロール */
+@media (max-width:760px) {
+  .duty-table-wrap { width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+  .duty-detail-table { width:max-content !important; min-width:610px !important; max-width:none !important; table-layout:auto !important; }
+  .duty-detail-table th, .duty-detail-table td {
+    overflow-wrap:normal !important; word-break:normal !important;
+    white-space:nowrap; vertical-align:middle;
+  }
+  .duty-detail-table .route-cell { white-space:nowrap !important; min-width:290px; }
+  .duty-detail-table .route-cell .stop-time,
+  .duty-detail-table .route-cell .route-arrow { display:inline !important; white-space:nowrap !important; }
+  .duty-detail-table .route-cell .conflict-alert { white-space:normal; min-width:290px; }
+}
+
+/* Ver.6.5: 運行詳細の文字サイズを「営業」「系統」に統一してコンパクト化 */
+@media (max-width:760px) {
+  .duty-detail-table {
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    table-layout:auto !important;
+    font-size:clamp(9px, 2.55vw, 11px) !important;
+  }
+  .duty-detail-table th, .duty-detail-table td,
+  .duty-detail-table .route-cell,
+  .duty-detail-table .stop-time,
+  .duty-detail-table .route-arrow {
+    font-size:inherit !important;
+    line-height:1.35 !important;
+    white-space:nowrap !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+  }
+  .duty-detail-table th, .duty-detail-table td { padding:5px 2px !important; }
+  .duty-detail-table .route-cell { min-width:0 !important; }
+  .duty-detail-table .trip-badge { font-size:inherit !important; padding:1px 3px; margin-left:2px; }
+  .duty-detail-table .route-cell .conflict-alert {
+    min-width:0 !important;
+    white-space:normal !important;
+    font-size:11px !important;
+  }
+}
+/* Ver.6.5: 運行詳細は横スクロールなし、スマホ幅で4列を表示 */
+@media (max-width:760px) {
+  .duty-table-wrap {
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:visible !important;
+    overflow-y:visible !important;
+  }
+  .duty-detail-table {
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    table-layout:fixed !important;
+    font-size:clamp(10px, 2.8vw, 12px) !important;
+    letter-spacing:-.045em;
+  }
+  .duty-detail-table th, .duty-detail-table td {
+    box-sizing:border-box;
+    min-width:0 !important;
+    padding:5px 1px !important;
+    font-size:inherit !important;
+    line-height:1.3 !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+    white-space:normal !important;
+  }
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:11%; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:13%; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:65%; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:11%; }
+  .duty-detail-table .route-cell { min-width:0 !important; white-space:normal !important; }
+  .duty-detail-table .route-cell .stop-time {
+    display:inline !important;
+    min-width:0 !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+    word-break:normal !important;
+    font-size:inherit !important;
+  }
+  .duty-detail-table .route-cell .route-arrow { display:inline !important; white-space:nowrap !important; }
+  .duty-detail-table .trip-badge { margin-left:1px; padding:1px 2px; font-size:8px !important; }
+  .duty-detail-table tr.current-run td:first-child { border-left-width:3px !important; }
+  .duty-detail-table .route-cell .conflict-alert { min-width:0 !important; white-space:normal !important; overflow-wrap:anywhere; }
+}
+
+/* Ver.6.5 スマホ運行詳細：以前の「発 →改行して着」を復元し、文字を読みやすく */
+@media (max-width:760px) {
+  .duty-detail-table { font-size:clamp(12px, 3.65vw, 15px) !important; letter-spacing:-.025em !important; }
+  .duty-detail-table th, .duty-detail-table td { padding:6px 2px !important; line-height:1.4 !important; }
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:12%; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:13%; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:64%; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:11%; }
+  .duty-detail-table .route-cell .stop-time:first-of-type {
+    display:block !important;
+    overflow-wrap:normal !important;
+    word-break:keep-all !important;
+  }
+  .duty-detail-table .route-cell .route-arrow {
+    display:inline !important;
+    margin-right:3px;
+    font-weight:800;
+    color:#39c48d;
+  }
+  .duty-detail-table .route-cell .stop-time:nth-of-type(2) {
+    display:inline !important;
+    overflow-wrap:normal !important;
+    word-break:keep-all !important;
+  }
+}
+
+/* Ver.6.5: 到着行の矢印を一文字分インデント（始発・最終バッジは変更しない） */
+@media (max-width:760px) {
+  .duty-detail-table .route-cell .route-arrow {
+    margin-left:1em !important;
+  }
+}
+
+/* Ver.6.5: 検索結果描画後もスマホのページ幅を固定する。運行詳細2段組は維持 */
+@media (max-width:760px) {
+  :root { width:100%; max-width:100%; overflow-x:clip; }
+  html { width:100%; max-width:100%; overflow-x:clip !important; }
+  body { width:100%; max-width:100%; min-width:0; overflow-x:clip !important; }
+  .container, .hero, .result, .result-main, .time-card, .info-card,
+  .info-sections, .item-list, .near-panel, .near-summary, .near-info,
+  .bus-timetable-card, .bus-timetable-viewer, .bus-timetable-stage,
+  .toolbar, .duty-table-wrap { min-width:0 !important; max-width:100% !important; }
+  .container { width:100%; overflow-x:clip; }
+  .result-main, .toolbar { grid-template-columns:minmax(0,1fr) !important; }
+  .result-main > *, .toolbar > *, .info-sections > *, .hero > * { min-width:0; max-width:100%; }
+  .hero-top > *, .duty-head > *, .result-headline > * { min-width:0; max-width:100%; }
+  .search-type-toggle, .search-box, .duty-quick-actions { min-width:0; max-width:100%; }
+  .search-box input { min-width:0 !important; flex:1 1 0; }
+  .search-type-toggle button { min-width:0; flex:1 1 0; }
+  .header, .header .line2, .result-title { max-width:100%; overflow-wrap:anywhere; }
+  .info-row > *, .item > *, .near-summary > * { min-width:0; }
+  .info-value, .item-value, .note-list li { overflow-wrap:anywhere; }
+  .duty-table-wrap { width:100% !important; overflow:visible !important; }
+  .duty-detail-table { width:100% !important; min-width:0 !important; max-width:100% !important; table-layout:fixed !important; }
+  .duty-detail-table .route-cell { min-width:0 !important; }
+  .duty-detail-table .route-cell .stop-time:first-of-type { display:block !important; }
+  .duty-detail-table .route-cell .route-arrow { display:inline !important; }
+  .duty-detail-table .route-cell .stop-time:nth-of-type(2) { display:inline !important; }
+  .duty-detail-table .route-cell .stop-time { overflow-wrap:anywhere !important; }
+  .conflict-graphic, .fare-slide-viewport { max-width:100%; overflow-x:auto; }
+  .bus-timetable-stage { max-width:100%; overflow:hidden; }
+  img, svg:not(.conflict-graphic svg) { max-width:100%; }
+}
+
+/* Ver.6.5 運行詳細：始発・最終を待機欄へ移動、発着欄の可読性向上 */
+.duty-detail-table .standby-cell .trip-badge { display:block; width:max-content; max-width:100%; margin:0 0 3px; white-space:nowrap; }
+.duty-detail-table .standby-cell .standby-time { display:block; }
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:11% !important; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:10% !important; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:65% !important; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:14% !important; }
+  .duty-detail-table .route-cell .stop-time,
+  .duty-detail-table .route-cell .route-arrow { font-size:clamp(13px, 3.9vw, 16px) !important; }
+  .duty-detail-table .standby-cell .trip-badge { font-size:10px !important; padding:1px 3px; }
+  .duty-detail-table .standby-cell .standby-time { font-size:clamp(11px, 3vw, 13px); white-space:nowrap; }
+}
+/* Ver.6.5: 始発・最終を系統欄へ戻す。番号の下に余白を取って読みやすく表示 */
+.duty-detail-table .route-number-cell .trip-badge {
+  display:block; width:max-content; max-width:100%;
+  margin:5px 0 2px 0.55em;
+  padding:2px 6px; font-size:12px; line-height:1.35;
+  white-space:nowrap; letter-spacing:0;
+}
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:11% !important; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:16% !important; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:62% !important; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:11% !important; }
+  .duty-detail-table .route-number-cell .trip-badge {
+    font-size:clamp(10px,3vw,12px) !important;
+    padding:2px 5px !important;
+    margin:5px 0 2px 0.5em !important;
+  }
+}
+
+/* Ver.6.5: 系統番号と始発・最終バッジを1行に配置 */
+.duty-detail-table .route-number-cell { white-space:nowrap !important; }
+.duty-detail-table .route-number-cell .trip-badge {
+  display:inline-block !important;
+  vertical-align:middle !important;
+  max-width:none !important;
+  margin:0 0 0 .45em !important;
+  padding:2px 5px !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+}
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) {width:11% !important;}
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) {width:23% !important;}
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) {width:55% !important;}
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) {width:11% !important;}
+  .duty-detail-table .route-number-cell {white-space:nowrap !important; letter-spacing:-.035em;}
+  .duty-detail-table .route-number-cell .trip-badge {
+    display:inline-block !important;
+    font-size:clamp(10px,2.85vw,12px) !important;
+    padding:2px 4px !important;
+    margin:0 0 0 .4em !important;
+  }
+}
 </style>
 </head>
 
@@ -1568,24 +1811,21 @@ async function loadExternalData() {
   dutyVehicleLoaded = false;
   dutyHardnessLoaded = false;
 
-  // 勤務DB
-  try {
-    const weekdayJson = await fetchJson(DATA_FILES.weekday);
-    const holidayJson = await fetchJson(DATA_FILES.holiday);
-
-    datasets = {
-      weekday: normalizeDutyData(weekdayJson),
-      holiday: normalizeDutyData(holidayJson)
-    };
-
-    weekdayLoaded = true;
-  } catch (e) {
-    console.error('勤務DB読込失敗', e);
-    datasets = {
-      weekday: {},
-      holiday: {}
-    };
+  // 平日・休日を個別に読み込む。一方の失敗でも他方を消さない。
+  datasets = { weekday: {}, holiday: {} };
+  const dutyDbErrors = [];
+  for (const day of ['weekday', 'holiday']) {
+    try {
+      const raw = await fetchJson(DATA_FILES[day]);
+      const parsed = normalizeDutyData(raw);
+      if (!Object.keys(parsed).length) throw new Error('勤務データが空です');
+      datasets[day] = parsed;
+    } catch (e) {
+      console.error(`${day}勤務DB読込失敗`, e);
+      dutyDbErrors.push(day === 'weekday' ? '平日' : '休日');
+    }
   }
+  weekdayLoaded = dutyDbErrors.length === 0;
 
   // 車両DB
   try {
@@ -1644,7 +1884,7 @@ try {
  // 状態表示
 const dbStatus = [];
 
-if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗");
+if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗（" + dutyDbErrors.join("・") + "）");
 if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
 if (!slopeStopsLoaded) dbStatus.push("スロープ停留所DB読込失敗");
 if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
@@ -1867,6 +2107,7 @@ function calcSummary(duty) {
 }
 
 weekdayBtn.onclick = () => {
+  cancelDutyAutoSearch();
   mode = 'weekday';
   weekdayBtn.classList.add('active');
   holidayBtn.classList.remove('active');
@@ -1878,6 +2119,7 @@ weekdayBtn.onclick = () => {
 };
 
 holidayBtn.onclick = () => {
+  cancelDutyAutoSearch();
   mode = 'holiday';
   holidayBtn.classList.add('active');
   weekdayBtn.classList.remove('active');
@@ -1888,9 +2130,16 @@ holidayBtn.onclick = () => {
   }
 };
 
-searchBtn.onclick = () => runSearch();
+// 入力後の短い待機で自動検索。連続入力中は古い検索を実行しない。
+let dutyAutoSearchTimer = null;
+function cancelDutyAutoSearch() {
+  if (dutyAutoSearchTimer !== null) clearTimeout(dutyAutoSearchTimer);
+  dutyAutoSearchTimer = null;
+}
+searchBtn.onclick = () => { cancelDutyAutoSearch(); runSearch(); };
 
 clearBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
@@ -1924,6 +2173,7 @@ todayDutyBtn.onclick = () => {
   searchRoster();
 };
 dutySearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'duty';
   dutySearchBtn.classList.add('active');
   vehicleSearchBtn.classList.remove('active');
@@ -1937,6 +2187,7 @@ dutySearchBtn.onclick = () => {
 };
 
 vehicleSearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'vehicle';
   vehicleSearchBtn.classList.add('active');
   dutySearchBtn.classList.remove('active');
@@ -1951,13 +2202,14 @@ vehicleSearchBtn.onclick = () => {
 
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
+    cancelDutyAutoSearch();
     runSearch();
   }
 });
 
 searchInput.addEventListener('input', () => {
   if (searchType === 'duty') {
-    searchInput.value = searchInput.value.replace(/[^0-9A-Za-z-]/g, '').slice(0, 8);
+    searchInput.value = searchInput.value.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[ー－―]/g,'-').replace(/[^0-9A-Za-z-]/g, '').slice(0, 12);
   } else {
     searchInput.value = searchInput.value.trimStart();
   }
@@ -1969,10 +2221,33 @@ searchInput.addEventListener('input', () => {
     return;
   }
 
-  runSearch();
+  // 勤番は入力が止まった500ms後に自動検索。枝番の「-」直後は待機する。
+  // 完全一致しない場合は別番号へ置換せず、未登録とする。
+  cancelDutyAutoSearch();
+  if (searchType === 'duty') {
+    stopTicker();
+    currentDutyKey = null;
+    currentDutyData = null;
+    result.innerHTML = '';
+    if (value.endsWith('-')) {
+      resultStatus.textContent = '枝番を入力中';
+      return;
+    }
+    resultStatus.textContent = '入力中…';
+    const expected = value;
+    const expectedMode = mode;
+    dutyAutoSearchTimer = setTimeout(() => {
+      dutyAutoSearchTimer = null;
+      if (searchType !== 'duty' || mode !== expectedMode || searchInput.value.trim() !== expected) return;
+      searchDuty();
+    }, 500);
+  } else {
+    runSearch();
+  }
 });
 
 rosterSearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'roster';
 
   rosterSearchBtn.classList.add('active');
@@ -2128,7 +2403,7 @@ function renderConflictRowNotice(item,section,index){
  if(!detail)return '';
  const match=conflictMatches(currentDutyKey,detail,section,index);
  if(!match||!match.list.length)return '';
- const nearest=[...match.list].sort((a,b)=>Math.abs(a.time-match.own.from)-Math.abs(b.time-match.own.from))[0];
+ const nearest=[...match.list].sort((a,b)=>Math.abs(a.time-match.own.to)-Math.abs(b.time-match.own.to))[0];
  return `<div class="conflict-alert">⚠️ 乗り場競合注意：${nearEscape(nearest.line)}系統 ${conflictFmt(nearest.time)}（ほか${match.list.length-1}件）<br><button type="button" class="conflict-open" onclick="openConflictTimeline('${nearEscape(section)}',${index})">時間差・タイムラインを見る</button></div>`;
 }
 function openConflictTimeline(section,index,band=0){
@@ -2155,13 +2430,13 @@ function openConflictTimeline(section,index,band=0){
  for(let v=Math.ceil(left/5)*5;v<=right;v+=5)grid.push(v);
  const svg=`<svg viewBox="0 0 720 ${h}" role="img" aria-label="自便も含む所定時刻順の近接便タイムライン">
  ${grid.map(v=>`<line x1="${x(v)}" y1="28" x2="${x(v)}" y2="${h-12}" stroke="#b4e3cc" stroke-opacity=".16"/><text x="${x(v)}" y="17" text-anchor="middle" fill="#d7efdf" font-size="11">${conflictFmt(v)}</text>`).join('')}
- ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.from;const overlaps=!a.isSelf&&a.time+band>=own.from&&a.time-band<=own.to;
+ ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.to;const overlaps=!a.isSelf&&a.time+band>=own.from&&a.time-band<=own.to;
  if(a.isSelf)return `<text x="6" y="${y+4}" fill="#e9ffe9" font-size="12" font-weight="bold">自便 ${nearEscape(key)}勤</text><rect x="${x(own.from)}" y="${y-10}" width="${Math.max(2,x(own.to)-x(own.from))}" height="19" rx="4" fill="#35d08b"/><circle cx="${x(own.from)}" cy="${y}" r="6" fill="#67d4ff"/><text x="${x(own.from)}" y="${y-16}" text-anchor="middle" fill="#a7e9ff" font-size="10">着${conflictFmt(own.from)}</text><text x="${x(own.to)}" y="${y+24}" text-anchor="middle" fill="#acffcf" font-size="10">発${conflictFmt(own.to)}</text>`;
  return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text>${band>0?`<rect x="${x(a.time-band)}" y="${y-10}" width="${x(a.time+band)-x(a.time-band)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/><line x1="${x(a.time-band)}" x2="${x(a.time+band)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/>`:''}<circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
  }).join('')}</svg>`;
- const rows=show.map(a=>{const d=a.time-own.from;const exact=d===0;const overlapping=a.time+band>=own.from&&a.time-band<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
+ const rows=show.map(a=>{const d=a.time-own.to;const exact=d===0;const overlapping=a.time+band>=own.from&&a.time-band<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 発車と同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
  document.getElementById('conflictModalTitle').textContent=`近接便｜${own.stop} ${key}勤`;
- document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、表示幅：${band===0?'所定のみ':'前後'+band+'分'}。</div><div class="conflict-band-controls" role="group" aria-label="早着延着の表示幅"><span>早着・延着の想定幅</span>${[0,5,10].map(v=>`<button type="button" class="conflict-band-btn ${band===v?'active':''}" aria-pressed="${band===v}" onclick="openConflictTimeline('${section}',${index},${v})">${v===0?'所定':'前後'+v+'分'}</button>`).join('')}</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝設定した前後時間（所定では非表示）　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
+ document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、表示幅：${band===0?'所定のみ':'前後'+band+'分'}。</div><div class="conflict-band-controls" role="group" aria-label="早着延着の表示幅"><span>早着・延着の想定幅</span>${[0,5,10].map(v=>`<button type="button" class="conflict-band-btn ${band===v?'active':''}" aria-pressed="${band===v}" onclick="openConflictTimeline('${section}',${index},${v})">${v===0?'所定':'前後'+v+'分'}</button>`).join('')}</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝設定した前後時間（所定では非表示）　🟥 自車発車と同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自車発車時刻との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
  const modal=document.getElementById('conflictModal');modal.hidden=false;
  conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
  (band===0?modal.querySelector('.conflict-modal-close'):modal.querySelector('.conflict-band-btn.active')).focus({preventScroll:true});
@@ -2190,22 +2465,19 @@ function renderDutyDetailTable(list, duty, section = 'front') {
 ${list.map((item, index) => `
   <tr class="${getDutyDetailRowClass(index, highlightIndex, item)}">
     <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
-    <td>
-  ${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}
-  ${
-    item.便区分 === '始発'
-      ? '<span class="trip-badge first">始発</span>'
-      : item.便区分 === '最終'
-        ? '<span class="trip-badge last">最終</span>'
-        : ''
-  }
-</td>
+    <td class="route-number-cell">${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}${
+      item.便区分 === '始発'
+        ? '<span class="trip-badge first">始発</span>'
+        : item.便区分 === '最終'
+          ? '<span class="trip-badge last">最終</span>'
+          : ''
+    }</td>
     <td class="route-cell">
       <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
       <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
       ${renderConflictRowNotice(item,section,index)}
     </td>
-    <td>${item.待機 ? `${item.待機}分` : '―'}</td>
+    <td class="standby-cell"><span class="standby-time">${item.待機 ? `${item.待機}分` : '―'}</span></td>
   </tr>
 `).join('')}
         </tbody>
@@ -2749,12 +3021,12 @@ function renderNearArrivalPanel(dutyNo,detail){
  const anchor=activeNearReference(detail,selected);
  const ownArrival=anchor?.arr??null;
  const dep=selected.dep;
+ const entry=ownArrival===null?dep-2:ownArrival;
  const all=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
  const near=all.filter(a=>a.time+10>=(ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival)&&a.time-10<=dep);
  const header=`<div class="near-titlebar"><h4>🚌 現在時刻からの近接便チェック</h4><span class="near-tag ${near.length?'':'clear'}">${near.length?'近接候補 '+near.length+'件':'近接候補なし'}</span></div>`;
- const list=all.length?`<table class="near-list"><thead><tr><th>他便</th><th>所定到着</th><th>進入との差</th></tr></thead><tbody>${all.map(a=>{
-   const entry=ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival;
-   const diff=a.time-entry;
+ const list=all.length?`<table class="near-list"><thead><tr><th>他便</th><th>所定到着</th><th>自車発車時刻との差</th></tr></thead><tbody>${all.map(a=>{
+   const diff=a.time-dep;
    const flag=a.time+10>=entry&&a.time-10<=dep;
    return `<tr><td>${flag?'⚠️ ':''}${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${nearTime(a.time)}</td><td>${diff===0?'同時刻':diff>0?diff+'分後':(-diff)+'分前'}</td></tr>`;
  }).join('')}</tbody></table>`:'<p>登録済みの運行詳細では、発車前後30分の他便はありません。</p>';
@@ -2921,7 +3193,11 @@ html += `
            <datalist id="busTimetableStops"></datalist>
            <label style="font-size:12px">のりば番号（分かる場合）<select id="busTimetablePlatform" aria-label="のりば番号"><option value="1">1番</option><option value="2">2番</option><option value="3">3番</option><option value="4">4番</option><option value="5">5番</option><option value="6">6番</option><option value="7">7番</option><option value="8">8番</option><option value="9">9番</option><option value="10">10番</option></select></label>
            <button class="bus-timetable-submit" id="busTimetableOpen" type="button">選んだ停留所の時刻表を表示</button>
-           <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選んで表示してください。公式サイトの時刻表を新しいタブで開きます。</div>
+           <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選ぶと、この欄に公式時刻表を表示します。</div>
+           <div class="bus-timetable-viewer" id="busTimetableViewer" hidden>
+             <div class="bus-timetable-stage" id="busTimetableStage"><iframe class="bus-timetable-frame" id="busTimetableFrame" title="伊丹市交通局 公式時刻表" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+             <a class="bus-timetable-external" id="busTimetableExternal" target="_blank" rel="noopener noreferrer">画面内で表示されない場合は公式サイトで確認</a>
+           </div>
          </div>
        </div>
         ${slopeHtml}
@@ -2966,24 +3242,18 @@ function searchDuty() {
 
   const normalizedInput = input.replace(/勤$/i, '');
   const data = datasets[mode] || {};
+  if (!Object.keys(data).length) {
+    result.innerHTML = '<div class="empty">勤務データを読み込めていません。GitHubのdataフォルダーと通信状態を確認してください。</div>';
+    resultStatus.textContent = '勤務DB未読込（検索不可）';
+    stopTicker();
+    return;
+  }
 
   let duty = data[normalizedInput];
   let dutyKey = normalizedInput;
 
-  const baseInput = normalizedInput.split('-')[0];
-
-  if (!duty) {
-    if (data[baseInput]) {
-      duty = data[baseInput];
-      dutyKey = baseInput;
-    } else if (data[`${baseInput}-1`]) {
-      duty = data[`${baseInput}-1`];
-      dutyKey = `${baseInput}-1`;
-    } else if (data[`${baseInput}-2`]) {
-      duty = data[`${baseInput}-2`];
-      dutyKey = `${baseInput}-2`;
-    }
-  }
+  // 完全一致のみ。異なる勤番・枝番への自動置換は禁止。
+  if (!Object.prototype.hasOwnProperty.call(data, normalizedInput)) duty = null;
 
 if (!duty) {
   result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
@@ -3007,7 +3277,17 @@ currentVehicle = vehicle;
 currentDutyBaseDate = new Date();
 currentDutyBaseDate.setHours(0, 0, 0, 0);  
 
-result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
+try {
+  result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
+} catch (err) {
+  console.error('勤番結果の表示エラー', err);
+  result.innerHTML = '<div class="empty">勤務情報の表示中にエラーが発生しました。正式なダイヤ表をご確認ください。</div>';
+  resultStatus.textContent = '表示エラー：' + String(err?.message || err).slice(0, 110);
+  currentDutyKey = null;
+  currentDutyData = null;
+  stopTicker();
+  return;
+}
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
 
   startTicker(duty);
@@ -3093,6 +3373,8 @@ redrawTimer = setInterval(() => {
   if (!currentDutyKey || !currentDutyData) return;
   if (searchType !== 'duty') return;
   if (!searchInput.value.trim()) return;
+  const typedDuty = searchInput.value.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[ー－―]/g,'-').replace(/勤$/i,'');
+  if (typedDuty !== currentDutyKey) return;
 
   result.innerHTML = renderDutyHtml(
     currentDutyKey,
@@ -3211,6 +3493,8 @@ function runSelfTests() {
   const originalDutyVehicleDb = dutyVehicleDb;
   const originalDutyHardnessDb = dutyHardnessDb;
   const originalMode = mode;
+  const originalDutyKey = currentDutyKey;
+  const originalDutyData = currentDutyData;
 
   try {
     vehicleDb = structuredClone(FALLBACK_DATA.vehicle);
@@ -3242,6 +3526,8 @@ function runSelfTests() {
     dutyVehicleDb = originalDutyVehicleDb;
     dutyHardnessDb = originalDutyHardnessDb;
     mode = originalMode;
+    currentDutyKey = originalDutyKey;
+    currentDutyData = originalDutyData;
   }
 }
   
@@ -3252,7 +3538,7 @@ async function initializeApp() {
   console.log('weekday keys =', Object.keys(datasets.weekday));
   console.log('weekday 26 =', datasets.weekday['26']);
 
-  runSelfTests();
+  // テスト用ダミーデータによる内部検証は本番起動時には実行しない。
 }
 document.getElementById('guideBtn').addEventListener('click', () => {
   document.getElementById('guideModal').style.display = 'block';
@@ -3266,8 +3552,18 @@ initializeApp();
 
 /* 時刻表検索復旧。確認済みの公式直リンクだけ使用し、未確認のURLは生成しない */
 const TIMETABLE_DIRECT_LINKS = {
-  '昆陽': { '1': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya1.html', '2': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya2.html' }
+ '昆陽': {'1':'Bus-ka/koya1.html','2':'Bus-ka/koya2.html'},
+ '阪急伊丹': {'1':'Bus-ha/hankyu1.html','2':'Bus-ha/hankyu2.html','3':'Bus-ha/hankyu3.html'},
+ '鴻池東': {'1':'Bus-ka/konoikehigashi.html'},
+ '塚口': {'1':'Bus-ta/tukaguti1.html','2':'Bus-ta/tukaguti2.html'},
+ '西野武庫川センター前': {'1':'Bus-na/mukogawa.html'},
+ '昆陽里': {'1':'Bus-ka/koyanosato1.html','2':'Bus-ka/koyanosato2.html'},
+ '三師団・交通局前': {'1':'Bus-sa/sansidan1.html','2':'Bus-sa/sansidan2.html'},
+ 'JR猪名寺': {'1':'Bus-sa/jr_inadera.html'},
+ '山田': {'1':'Bus-ma/yamada1.html'}
 };
+const TIMETABLE_BASE = 'https://itamicity-bus.jp/timetable2/';
+const TIMETABLE_NAME_ALIASES = {'三師団交通局前':'三師団・交通局前','ＪＲ猪名寺':'JR猪名寺','ＪＲ猪名寺駅':'JR猪名寺'};
 const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田'];
 function populateTimetableStops(){
  const el = document.getElementById('busTimetableStops');
@@ -3290,7 +3586,7 @@ document.addEventListener('click',function(event){
  const choice = event.target.closest('#busTimetableFavorites button[data-stop]');
  if(choice){
    const input=document.getElementById('busTimetableStop');
-   if(input){input.value=choice.dataset.stop;input.focus();}
+   if(input){input.value=choice.dataset.stop;input.focus();} const sel=document.getElementById('busTimetablePlatform');if(sel)sel.value='1';
    return;
  }
  if(!event.target.closest('#busTimetableOpen')) return;
@@ -3299,15 +3595,47 @@ document.addEventListener('click',function(event){
  const name=(input?.value||'').trim();
  if(!name){if(msg) msg.textContent='停留所名を入力してください。';input?.focus();return;}
  const platform=document.getElementById('busTimetablePlatform')?.value || '1';
- const direct=TIMETABLE_DIRECT_LINKS[name]?.[platform];
- const url=direct || 'https://itamicity-bus.jp/timetable';
- const w=window.open(url,'_blank','noopener,noreferrer');
- if(msg)msg.textContent = direct ? `${name} ${platform}番のりばの公式時刻表を開きました。` : `${name}の個別時刻表URLは未確認のため、公式検索ページを開きました。公式側で停留所・のりばを指定してください。`;
- if(!w && msg){
-   msg.replaceChildren(document.createTextNode('ブラウザで新しいタブが開けない場合：'));
-   const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='公式時刻表を開く';link.className='bus-timetable-link';msg.append(link);
+ const canonical=TIMETABLE_NAME_ALIASES[name] || name;
+ const stops=TIMETABLE_DIRECT_LINKS[canonical];
+ const direct=stops?.[platform];
+ const viewer=document.getElementById('busTimetableViewer');
+ const frame=document.getElementById('busTimetableFrame');
+ const external=document.getElementById('busTimetableExternal');
+ if(!direct){
+   if(viewer)viewer.hidden=true;
+   if(frame)frame.removeAttribute('src');
+   if(msg)msg.textContent=stops
+     ? `${canonical}の${platform}番のりばは公式ページを確認できていません。利用可能：${Object.keys(stops).join('・')}番のりば。`
+     : `${canonical}の個別時刻表URLは未登録です。検索トップ画面への自動移動は行いません。`;
+   return;
  }
+ const url=TIMETABLE_BASE+direct;
+ if(frame)frame.src=url;
+ if(external)external.href=url;
+ if(viewer)viewer.hidden=false;
+ requestAnimationFrame(fitBusTimetableFrame);
+ if(msg)msg.textContent=`${canonical} ${platform}番のりばの公式時刻表を表示します。`;
 });
+// 外部公式ページはDOMを変更できないため、iframe全体を縮小して表示枠に合わせる。
+// ページ内の文字は縮小されるので、必要時には公式リンクから原寸で確認できる。
+function fitBusTimetableFrame(){
+ const stage=document.getElementById('busTimetableStage');
+ const frame=document.getElementById('busTimetableFrame');
+ if(!stage||!frame||!stage.clientWidth)return;
+ const baseWidth=760;
+ const scale=Math.min(1,stage.clientWidth/baseWidth);
+ frame.style.width=baseWidth+'px';
+ frame.style.height=Math.ceil(stage.clientHeight/scale)+'px';
+ frame.style.setProperty('--tt-scale',String(scale));
+}
+window.addEventListener('resize',fitBusTimetableFrame,{passive:true});
+if(typeof ResizeObserver!=='undefined'){
+ const timetableObserver=new ResizeObserver(()=>fitBusTimetableFrame());
+ document.addEventListener('click',()=>{
+  const stage=document.getElementById('busTimetableStage');
+  if(stage&&!stage.dataset.fitObserved){stage.dataset.fitObserved='1';timetableObserver.observe(stage);}
+ });
+}
 document.addEventListener('focusin',event=>{if(event.target?.id==='busTimetableStop') populateTimetableStops();});
 </script>
 
