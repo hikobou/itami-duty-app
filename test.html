@@ -984,6 +984,63 @@ img, iframe { max-width:100%; }
   .bus-timetable-stage { max-width:100%; overflow:hidden; }
   img, svg:not(.conflict-graphic svg) { max-width:100%; }
 }
+
+/* Ver.6.5 運行詳細：始発・最終を待機欄へ移動、発着欄の可読性向上 */
+.duty-detail-table .standby-cell .trip-badge { display:block; width:max-content; max-width:100%; margin:0 0 3px; white-space:nowrap; }
+.duty-detail-table .standby-cell .standby-time { display:block; }
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:11% !important; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:10% !important; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:65% !important; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:14% !important; }
+  .duty-detail-table .route-cell .stop-time,
+  .duty-detail-table .route-cell .route-arrow { font-size:clamp(13px, 3.9vw, 16px) !important; }
+  .duty-detail-table .standby-cell .trip-badge { font-size:10px !important; padding:1px 3px; }
+  .duty-detail-table .standby-cell .standby-time { font-size:clamp(11px, 3vw, 13px); white-space:nowrap; }
+}
+/* Ver.6.5: 始発・最終を系統欄へ戻す。番号の下に余白を取って読みやすく表示 */
+.duty-detail-table .route-number-cell .trip-badge {
+  display:block; width:max-content; max-width:100%;
+  margin:5px 0 2px 0.55em;
+  padding:2px 6px; font-size:12px; line-height:1.35;
+  white-space:nowrap; letter-spacing:0;
+}
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) { width:11% !important; }
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) { width:16% !important; }
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) { width:62% !important; }
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) { width:11% !important; }
+  .duty-detail-table .route-number-cell .trip-badge {
+    font-size:clamp(10px,3vw,12px) !important;
+    padding:2px 5px !important;
+    margin:5px 0 2px 0.5em !important;
+  }
+}
+
+/* Ver.6.5: 系統番号と始発・最終バッジを1行に配置 */
+.duty-detail-table .route-number-cell { white-space:nowrap !important; }
+.duty-detail-table .route-number-cell .trip-badge {
+  display:inline-block !important;
+  vertical-align:middle !important;
+  max-width:none !important;
+  margin:0 0 0 .45em !important;
+  padding:2px 5px !important;
+  font-size:12px !important;
+  line-height:1.25 !important;
+}
+@media (max-width:760px) {
+  .duty-detail-table th:nth-child(1), .duty-detail-table td:nth-child(1) {width:11% !important;}
+  .duty-detail-table th:nth-child(2), .duty-detail-table td:nth-child(2) {width:23% !important;}
+  .duty-detail-table th:nth-child(3), .duty-detail-table td:nth-child(3) {width:55% !important;}
+  .duty-detail-table th:nth-child(4), .duty-detail-table td:nth-child(4) {width:11% !important;}
+  .duty-detail-table .route-number-cell {white-space:nowrap !important; letter-spacing:-.035em;}
+  .duty-detail-table .route-number-cell .trip-badge {
+    display:inline-block !important;
+    font-size:clamp(10px,2.85vw,12px) !important;
+    padding:2px 4px !important;
+    margin:0 0 0 .4em !important;
+  }
+}
 </style>
 </head>
 
@@ -2408,22 +2465,19 @@ function renderDutyDetailTable(list, duty, section = 'front') {
 ${list.map((item, index) => `
   <tr class="${getDutyDetailRowClass(index, highlightIndex, item)}">
     <td>${item.種別 === '営業運行' ? '営業' : (item.種別 || '―')}</td>
-    <td>
-  ${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}
-  ${
-    item.便区分 === '始発'
-      ? '<span class="trip-badge first">始発</span>'
-      : item.便区分 === '最終'
-        ? '<span class="trip-badge last">最終</span>'
-        : ''
-  }
-</td>
+    <td class="route-number-cell">${item.種別 === '営業運行' ? (item.系統 || '―') : '―'}${
+      item.便区分 === '始発'
+        ? '<span class="trip-badge first">始発</span>'
+        : item.便区分 === '最終'
+          ? '<span class="trip-badge last">最終</span>'
+          : ''
+    }</td>
     <td class="route-cell">
       <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
       <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
       ${renderConflictRowNotice(item,section,index)}
     </td>
-    <td>${item.待機 ? `${item.待機}分` : '―'}</td>
+    <td class="standby-cell"><span class="standby-time">${item.待機 ? `${item.待機}分` : '―'}</span></td>
   </tr>
 `).join('')}
         </tbody>
