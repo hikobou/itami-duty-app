@@ -800,9 +800,11 @@ img, iframe { max-width:100%; }
 .bus-timetable-msg{font-size:12px;line-height:1.5;color:#cfe9dd}
 .bus-timetable-viewer[hidden]{display:none!important}
 .bus-timetable-viewer{margin-top:10px;border:1px solid #4d9377;border-radius:9px;overflow:hidden;background:#fff}
-.bus-timetable-frame{display:block;width:100%;height:520px;border:0;background:#fff}
+.bus-timetable-frame{display:block;width:760px;max-width:none!important;height:1050px;border:0;background:#fff;transform-origin:top left;transform:scale(var(--tt-scale,1))}
+.bus-timetable-stage{width:100%;height:560px;overflow:hidden;background:#fff;position:relative}
+.bus-timetable-stage .bus-timetable-frame{position:absolute;top:0;left:0}
 .bus-timetable-external{display:block;padding:8px 10px;background:#163e30;font-size:12px;color:#b5f1d6;overflow-wrap:anywhere}
-@media(max-width:520px){.bus-timetable-frame{height:62vh;min-height:380px}}
+@media(max-width:520px){.bus-timetable-stage{height:62vh;min-height:380px}}
 </style>
 </head>
 
@@ -2928,7 +2930,7 @@ html += `
            <button class="bus-timetable-submit" id="busTimetableOpen" type="button">選んだ停留所の時刻表を表示</button>
            <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選ぶと、この欄に公式時刻表を表示します。</div>
            <div class="bus-timetable-viewer" id="busTimetableViewer" hidden>
-             <iframe class="bus-timetable-frame" id="busTimetableFrame" title="伊丹市交通局 公式時刻表" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+             <div class="bus-timetable-stage" id="busTimetableStage"><iframe class="bus-timetable-frame" id="busTimetableFrame" title="伊丹市交通局 公式時刻表" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
              <a class="bus-timetable-external" id="busTimetableExternal" target="_blank" rel="noopener noreferrer">画面内で表示されない場合は公式サイトで確認</a>
            </div>
          </div>
@@ -3336,8 +3338,29 @@ document.addEventListener('click',function(event){
  if(frame)frame.src=url;
  if(external)external.href=url;
  if(viewer)viewer.hidden=false;
+ requestAnimationFrame(fitBusTimetableFrame);
  if(msg)msg.textContent=`${canonical} ${platform}番のりばの公式時刻表を表示します。`;
 });
+// 外部公式ページはDOMを変更できないため、iframe全体を縮小して表示枠に合わせる。
+// ページ内の文字は縮小されるので、必要時には公式リンクから原寸で確認できる。
+function fitBusTimetableFrame(){
+ const stage=document.getElementById('busTimetableStage');
+ const frame=document.getElementById('busTimetableFrame');
+ if(!stage||!frame||!stage.clientWidth)return;
+ const baseWidth=760;
+ const scale=Math.min(1,stage.clientWidth/baseWidth);
+ frame.style.width=baseWidth+'px';
+ frame.style.height=Math.ceil(stage.clientHeight/scale)+'px';
+ frame.style.setProperty('--tt-scale',String(scale));
+}
+window.addEventListener('resize',fitBusTimetableFrame,{passive:true});
+if(typeof ResizeObserver!=='undefined'){
+ const timetableObserver=new ResizeObserver(()=>fitBusTimetableFrame());
+ document.addEventListener('click',()=>{
+  const stage=document.getElementById('busTimetableStage');
+  if(stage&&!stage.dataset.fitObserved){stage.dataset.fitObserved='1';timetableObserver.observe(stage);}
+ });
+}
 document.addEventListener('focusin',event=>{if(event.target?.id==='busTimetableStop') populateTimetableStops();});
 </script>
 
