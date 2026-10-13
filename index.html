@@ -704,6 +704,44 @@ body{
 .duty-quick-actions .action-btn{flex:0 1 auto;white-space:nowrap}
 #fareTableBtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent)}
 #fareGuide[hidden]{display:none}
+
+/* 近接到着便チェック Ver.6.3 */
+.near-panel{margin:12px 0 16px;padding:15px;border:1px solid #50b992;border-radius:13px;background:#102d23;color:#eafff3}
+.near-titlebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.near-titlebar h4{margin:0;font-size:18px}
+.near-tag{border-radius:20px;padding:5px 10px;background:#725019;color:#ffe5a1;font-size:12px;font-weight:800}
+.near-tag.clear{background:#215b42;color:#a9f1d3}
+.near-summary{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.near-info{flex:1;min-width:110px;padding:10px;border-radius:9px;background:#1a4031}
+.near-info small{display:block;color:#a8cfbd;font-size:11px}
+.near-info strong{display:block;margin-top:3px;font-size:19px}
+.near-info .near-stop{font-size:17px}
+.near-panel p{margin:9px 0;line-height:1.6;font-size:13px}
+.near-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.near-actions button{background:#256f56;border:1px solid #5cac8b;border-radius:8px;color:white;padding:9px 12px;font-weight:bold;cursor:pointer}
+.near-timeline{width:100%;height:auto;display:block;margin-top:8px;background:#173b2f;border-radius:9px}
+.near-list{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+.near-list th,.near-list td{padding:8px 5px;border-bottom:1px solid #39624f;text-align:left}
+.near-list th{color:#b6d9c9;font-size:11px}
+.near-warning{border-left:3px solid #f5b740;padding-left:10px;color:#ffe4a6}
+.near-small{color:#a5c5b6;font-size:11px!important}
+
+/* 競合停留所：運行詳細内の注意喚起と拡大タイムライン */
+.conflict-alert{margin:6px 0 0;padding:6px 8px;background:#633e16;color:#ffe5a3;border:1px solid #edaf42;border-radius:7px;font-size:12px;line-height:1.5}
+.conflict-open{margin:5px 0 0;padding:5px 10px;background:#28654d;border:1px solid #7adaab;color:#fff;border-radius:6px;cursor:pointer;font-weight:700}
+.conflict-modal[hidden]{display:none!important}
+.conflict-modal{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:10px}
+.conflict-modal-content{background:#102e24;color:#eafff5;border:1px solid #68c79b;border-radius:14px;width:min(960px,100%);max-height:92dvh;overflow:auto;padding:15px}
+.conflict-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.conflict-modal-head h3{margin:0}
+.conflict-modal-close{background:#315d4b;border:1px solid #8ecab0;color:#fff;border-radius:7px;padding:9px 15px;cursor:pointer}
+.conflict-legend{font-size:12px;line-height:1.7;color:#c3ebd4}
+.conflict-summary{padding:10px;border-radius:9px;background:#1a4636;font-size:14px;margin:12px 0}
+.conflict-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.conflict-table td,.conflict-table th{border-bottom:1px solid #48745b;padding:8px 5px;text-align:left}
+.conflict-graphic{overflow-x:auto;margin-top:10px}
+.conflict-graphic svg{display:block;min-width:620px;width:100%;background:#153b2d;border-radius:8px}
+.conflict-table tr.same-time td{background:#572728;color:#ffe7e7;font-weight:800}.conflict-table tr.overlap-time td{background:#4b3a1c;color:#ffe6aa}.conflict-signal{display:inline-block;padding:2px 6px;border-radius:5px;background:#b83237;color:white;font-weight:900}.conflict-signal.soft{background:#9a6a18;color:#fff3cd}
 </style>
 </head>
 
@@ -715,7 +753,7 @@ body{
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.2</span></div>
+        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.3</span></div>
         <p class="sub">Duty Search System / Professional Edition</p>
       </div>
       <div class="system-badge">
@@ -1979,6 +2017,99 @@ function renderVehicleList(assignments) {
   }).join('');
 }
 
+
+/* 近接便 Ver.6.3：同じ終点での折返し便と途中停留所の系統を統合 */
+// 途中停留所の発着は dutyDetail.json に未収録。確認済みの事例のみ設定。
+// 52系統の20:20は前回の照合値。ダイヤ改正時に停留所時刻表と再照合すること。
+const conflictPassingStops = {
+ weekday: [
+  {stop:'鶴田団地', time:'20:20', line:'52', duty:'105', next:'JR中山寺方面', source:'停留所時刻表（別途更新）'}
+ ],
+ holiday: []
+};
+const conflictSharedStops = {'鶴田団地':['51','52'],'伊丹病院住友前':['5','18']};
+let conflictModalOverflow = '';
+function conflictMins(v){return nearMins(v);}
+function conflictFmt(v){return nearTime(v);}
+function conflictAllArrivals(stop){
+ const arr=[];
+ Object.entries(dutyDetailDb?.[mode]||{}).forEach(([key,parts])=>{
+  for(const part of ['前半','後半']){
+   const ls=parts?.[part]||[];
+   ls.forEach((trip,index)=>{
+    if(String(trip.着||'').trim()!==stop)return;
+    const a=conflictMins(trip.着時刻); if(a===null)return;
+    const next=ls[index+1];
+    const atSame=next && String(next.発||'').trim()===stop;
+    const nextTime=atSame?conflictMins(next.発時刻):null;
+    arr.push({duty:key,line:String(trip.系統||'回送'),time:a,nextTime, nextLabel:atSame?(next.種別==='回送'?'回送':`${next.系統||''}系統 ${next.着||''}行`):'次運行未登録',kind:trip.種別,source:'運行詳細'});
+   });
+  }
+ });
+ (conflictPassingStops[mode]||[]).filter(e=>e.stop===stop).forEach(e=>arr.push({duty:e.duty,line:e.line,time:conflictMins(e.time),nextTime:null,nextLabel:e.next||'途中停留所',kind:'途中停留所',source:e.source,passing:true}));
+ return arr.sort((a,b)=>a.time-b.time||String(a.duty).localeCompare(String(b.duty),'ja'));
+}
+function conflictOwnPeriod(detail,section,index){
+ const trip=detail?.[section]?.[index]; if(!trip)return null;
+ const stop=String(trip.着||'').trim();
+ const from=conflictMins(trip.着時刻);if(from===null)return null;
+ const next=detail?.[section]?.[index+1];
+ const nextDep=next && String(next.発||'').trim()===stop?conflictMins(next.発時刻):null;
+ return {stop,from,to:nextDep!==null?nextDep:from+2,next};
+}
+function conflictMatches(dutyNo,detail,section,index){
+ const own=conflictOwnPeriod(detail,section,index);if(!own)return null;
+ if(!conflictSharedStops[own.stop])return null;
+ const list=conflictAllArrivals(own.stop).filter(a=>
+    String(a.duty)!==String(dutyNo) && Math.abs(a.time-own.from)<=20 &&
+    // 同じ停留所の「所定到着±10分」が自便到着〜次発と交差する便
+    a.time+10>=own.from && a.time-10<=own.to);
+ return {own,list};
+}
+function renderConflictRowNotice(item,section,index){
+ if(!currentDutyKey)return '';
+ const detail=dutyDetailDb[mode]?.[currentDutyKey]||dutyDetailDb[mode]?.[currentDutyKey.split('-')[0]];
+ if(!detail)return '';
+ const match=conflictMatches(currentDutyKey,detail,section,index);
+ if(!match||!match.list.length)return '';
+ const nearest=[...match.list].sort((a,b)=>Math.abs(a.time-match.own.from)-Math.abs(b.time-match.own.from))[0];
+ return `<div class="conflict-alert">⚠️ 乗り場競合注意：${nearEscape(nearest.line)}系統 ${conflictFmt(nearest.time)}（ほか${match.list.length-1}件）<br><button type="button" class="conflict-open" onclick="openConflictTimeline('${nearEscape(section)}',${index})">時間差・タイムラインを見る</button></div>`;
+}
+function openConflictTimeline(section,index){
+ const key=currentDutyKey;
+ const detail=dutyDetailDb[mode]?.[key]||dutyDetailDb[mode]?.[key?.split('-')[0]];
+ const data=conflictMatches(key,detail,section,index) || (()=>{
+   const own=conflictOwnPeriod(detail,section,index);
+   return own?{own,list:[]}:null;
+ })();
+ if(!data)return;
+ const {own,list}=data;
+ // 自便の次発時刻を基準に前後30分以内の他便だけを表示する。
+ const allAtStop=conflictAllArrivals(own.stop).filter(a=>String(a.duty)!==String(key)).sort((a,b)=>a.time-b.time);
+ const show=allAtStop.filter(a=>Math.abs(a.time-own.to)<=30);
+ const left=Math.min(own.from-15,...show.map(a=>a.time-10));
+ const right=Math.max(own.to+15,...show.map(a=>a.time+10));
+ const x=t=>100+(t-left)/(right-left)*590;
+ const ordered=[...show.map(a=>({...a,isSelf:false})),{time:own.from,isSelf:true}].sort((a,b)=>a.time-b.time||(a.isSelf?-1:1));
+ const h=85+ordered.length*40;
+ const grid=[];
+ for(let v=Math.ceil(left/5)*5;v<=right;v+=5)grid.push(v);
+ const svg=`<svg viewBox="0 0 720 ${h}" role="img" aria-label="自便も含む所定時刻順の近接便タイムライン">
+ ${grid.map(v=>`<line x1="${x(v)}" y1="28" x2="${x(v)}" y2="${h-12}" stroke="#b4e3cc" stroke-opacity=".16"/><text x="${x(v)}" y="17" text-anchor="middle" fill="#d7efdf" font-size="11">${conflictFmt(v)}</text>`).join('')}
+ ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.from;const overlaps=!a.isSelf&&a.time+10>=own.from&&a.time-10<=own.to;
+ if(a.isSelf)return `<text x="6" y="${y+4}" fill="#e9ffe9" font-size="12" font-weight="bold">自便 ${nearEscape(key)}勤</text><rect x="${x(own.from)}" y="${y-10}" width="${Math.max(2,x(own.to)-x(own.from))}" height="19" rx="4" fill="#35d08b"/><circle cx="${x(own.from)}" cy="${y}" r="6" fill="#67d4ff"/><text x="${x(own.from)}" y="${y-16}" text-anchor="middle" fill="#a7e9ff" font-size="10">着${conflictFmt(own.from)}</text><text x="${x(own.to)}" y="${y+24}" text-anchor="middle" fill="#acffcf" font-size="10">発${conflictFmt(own.to)}</text>`;
+ return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text><rect x="${x(a.time-10)}" y="${y-10}" width="${x(a.time+10)-x(a.time-10)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/><line x1="${x(a.time-10)}" x2="${x(a.time+10)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/><circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
+ }).join('')}</svg>`;
+ const rows=show.map(a=>{const d=a.time-own.from;const exact=d===0;const overlapping=a.time+10>=own.from&&a.time-10<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
+ document.getElementById('conflictModalTitle').textContent=`近接便｜${own.stop} ${key}勤`;
+ document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、幅は各便±10分の想定。</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝各便±10分　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
+ const modal=document.getElementById('conflictModal');modal.hidden=false;
+ conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+ modal.querySelector('.conflict-modal-close').focus({preventScroll:true});
+}
+function closeConflictTimeline(){document.getElementById('conflictModal').hidden=true;document.body.style.overflow=conflictModalOverflow;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('conflictModal').hidden)closeConflictTimeline();});
+
 function renderDutyDetailTable(list, duty, section = 'front') {
   if (!list || !list.length) {
     return '<div class="info-empty">なし</div>';
@@ -2013,6 +2144,7 @@ ${list.map((item, index) => `
     <td class="route-cell">
       <span class="stop-time">${item.発 || '―'}(${item.発時刻 || '―'})</span>
       <span class="route-arrow">→</span><span class="stop-time">${item.着 || '―'}(${item.着時刻 || '―'})</span>
+      ${renderConflictRowNotice(item,section,index)}
     </td>
     <td>${item.待機 ? `${item.待機}分` : '―'}</td>
   </tr>
@@ -2499,7 +2631,88 @@ if (timeUntilStart > 20 || timeUntilStart < -5) return;
   return alerts.slice(0, 1).join('<br><br>');
 }
   
+
+// 現在表示中の勤番の次の発車と、同じ停留所への近接到着便を比較する。
+// 予定時刻のみを扱い、実際の遅延や停車位置は判断しない。
+function nearMins(t){
+  if (typeof t !== 'string' || !/^\d{1,2}:\d{2}$/.test(t.trim())) return null;
+  const [h,m]=t.trim().split(':').map(Number);
+  return h>=0 && h<=29 && m<60 ? h*60+m : null;
+}
+function nearTime(m){
+  return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+}
+function nearEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function nearTrips(detail){return [...(detail?.前半||[]),...(detail?.後半||[])].filter(t=>t && t.発 && t.着);}
+// 予定ダイヤから現在時刻以降の次発便を求める。停留所到着後は次の発車へ自動移行。
+function activeNearDeparture(detail, nowMinutes){
+ const entries=[];
+ for(const section of ['前半','後半']){
+   (detail?.[section]||[]).forEach((trip,index)=>{
+     const dep=nearMins(trip.発時刻);
+     if(dep!==null && trip.発 && trip.着)entries.push({trip,section,index,dep});
+   });
+ }
+ entries.sort((a,b)=>a.dep-b.dep);
+ // 出発時刻を過ぎたら次発へ切替。最後の便まで到達したら終了表示。
+ return entries.find(e=>e.dep>=nowMinutes)||null;
+}
+function activeNearReference(detail, selected){
+ if(!selected)return null;
+ const all=[];
+ for(const section of ['前半','後半']){
+   (detail?.[section]||[]).forEach((trip,index)=>all.push({trip,section,index,arr:nearMins(trip.着時刻)}));
+ }
+ const stop=String(selected.trip.発||'').trim();
+ // 選択便の直前までの同じ地点への到着を優先。前後半が分かれた場合も時刻で確認。
+ const previous=all.filter(e=>e.arr!==null && e.arr<=selected.dep && String(e.trip.着||'').trim()===stop && e.arr>=selected.dep-90).sort((a,b)=>b.arr-a.arr)[0];
+ return previous||null;
+}
+function openActiveNearTimeline(){
+ if(!currentDutyKey)return;
+ const detail=dutyDetailDb?.[mode]?.[currentDutyKey]||dutyDetailDb?.[mode]?.[currentDutyKey.split('-')[0]];
+ const now=new Date();
+ const active=activeNearDeparture(detail,now.getHours()*60+now.getMinutes());
+ const anchor=activeNearReference(detail,active);
+ if(!anchor){alert('この便の直前到着地点を確認できないため、タイムラインを表示できません。運行詳細から確認してください。');return;}
+ openConflictTimeline(anchor.section,anchor.index);
+}
+function renderNearArrivalPanel(dutyNo,detail){
+ const now=new Date();
+ const minute=now.getHours()*60+now.getMinutes();
+ const selected=activeNearDeparture(detail,minute);
+ if(!selected)return `<section class="near-panel"><div class="near-titlebar"><h4>🚌 近接到着便チェック</h4><span class="near-tag clear">本日の運行終了</span></div><p>現在時刻 ${nearTime(minute)} 以降の発車便は登録されていません。</p><p class="near-small">登録済みの所定ダイヤに基づく表示です。</p></section>`;
+ const ownStop=String(selected.trip.発).trim();
+ const anchor=activeNearReference(detail,selected);
+ const ownArrival=anchor?.arr??null;
+ const dep=selected.dep;
+ const all=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
+ const near=all.filter(a=>a.time+10>=(ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival)&&a.time-10<=dep);
+ const header=`<div class="near-titlebar"><h4>🚌 現在時刻からの近接便チェック</h4><span class="near-tag ${near.length?'':'clear'}">${near.length?'近接候補 '+near.length+'件':'近接候補なし'}</span></div>`;
+ const list=all.length?`<table class="near-list"><thead><tr><th>他便</th><th>所定到着</th><th>進入との差</th></tr></thead><tbody>${all.map(a=>{
+   const entry=ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival;
+   const diff=a.time-entry;
+   const flag=a.time+10>=entry&&a.time-10<=dep;
+   return `<tr><td>${flag?'⚠️ ':''}${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${nearTime(a.time)}</td><td>${diff===0?'同時刻':diff>0?diff+'分後':(-diff)+'分前'}</td></tr>`;
+ }).join('')}</tbody></table>`:'<p>登録済みの運行詳細では、発車前後30分の他便はありません。</p>';
+ const timeLabel=now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+ return `<section class="near-panel" aria-label="現在時刻からの近接便チェック">${header}
+  <div class="near-summary"><div class="near-info"><small>次の出発バス停</small><strong class="near-stop">${nearEscape(ownStop)}</strong></div><div class="near-info"><small>通常進入目安／到着予定</small><strong>${ownArrival===null?nearTime(dep-(ownStop==='JR伊丹'?3:2)):nearTime(ownArrival)}</strong></div><div class="near-info"><small>自便発車予定</small><strong>${nearTime(dep)}</strong></div></div>
+  <p class="near-small">${ownArrival===null?'直前の到着データがなく、通常進入目安で比較。':'同地点への直前到着（折返し・回送を含む）で比較。'} 現在 ${timeLabel} 現在の次発便を自動選択しています。</p>
+  ${list}
+  ${near.length?'<p class="near-warning">近接候補あり。所定時刻と±10分の仮定帯による注意喚起です。実際の運行状況ではありません。</p>':''}
+  <div class="near-actions"><button type="button" onclick="refreshNearArrivalPanel()">🔄 今の時刻で更新</button>${anchor?'<button type="button" onclick="openActiveNearTimeline()">📊 前後30分のタイムラインを見る</button>':''}</div>
+  <p class="near-small">自便の次発を過ぎると次の便に自動切替（約1分ごと）。運転中は操作せず、現場の安全確認を優先してください。伊丹病院住友前など未登録の途中停留所は表示できません。</p>
+ </section>`;
+}
+function refreshNearArrivalPanel(){
+ if(!currentDutyKey)return;
+ const el=document.querySelector('.near-panel');
+ if(el){const detail=dutyDetailDb?.[mode]?.[currentDutyKey]||dutyDetailDb?.[mode]?.[currentDutyKey.split('-')[0]]||{前半:[],後半:[]};el.outerHTML=renderNearArrivalPanel(currentDutyKey,detail);}
+}
+
 function renderDutyHtml(dutyNo, duty, hardness, vehicle, slopeStops) {
+  currentDutyKey = dutyNo;
  
   const start = duty['出勤'] || '―';
   const end = duty['退勤'] || '';
@@ -2612,6 +2825,8 @@ html += `
       <div class="ticker-text">${tickerMessage}</div>
     </div>
       
+
+        ${renderNearArrivalPanel(dutyNo, dutyDetail)}
 
         <div class="info-card">
           <div class="info-card-title">運行詳細（前半）</div>
@@ -2999,5 +3214,8 @@ initializeApp();
   });
 })();
 </script>
+<section id="conflictModal" class="conflict-modal" role="dialog" aria-modal="true" aria-labelledby="conflictModalTitle" hidden>
+ <div class="conflict-modal-content"><div class="conflict-modal-head"><h3 id="conflictModalTitle">🚌 近接便タイムライン</h3><button class="conflict-modal-close" type="button" onclick="closeConflictTimeline()">戻る ✕</button></div><div id="conflictModalBody"></div></div>
+</section>
 </body>
 </html>
