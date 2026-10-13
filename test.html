@@ -2907,12 +2907,8 @@ html += `
       </div>
 
       <div class="info-sections">
-        ${slopeHtml}
-
-
-
         <div class="info-card official-timetable-card">
-          <div class="info-card-title">伊丹市交通局 公式時刻表</div>
+          <div class="info-card-title">🚌 時刻表（公式）</div>
           <label for="officialTimetableStop" style="display:block;font-size:12px;margin-bottom:6px">停留所を選択</label>
           <div class="official-timetable-controls">
             <select id="officialTimetableStop" aria-label="公式時刻表の停留所を選択">
@@ -2920,12 +2916,17 @@ html += `
             </select>
           </div>
           <div class="official-timetable-links">
-            <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">時刻表を表示</button>
+            <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">選んだ停留所の時刻表を表示</button>
             <a id="officialTimetableExternal" class="official-timetable-action" target="_blank" rel="noopener noreferrer" href="https://itamicity-bus.jp/timetable">公式サイトで開く ↗</a>
           </div>
           <div class="official-timetable-help">伊丹市交通局の公式時刻表を表示します。乗り場・方向・平日／休日を公式画面で確認してください。サイト側の制限で枠内に表示されない場合は「公式サイトで開く」を使用してください。</div>
           <iframe id="officialTimetableFrame" class="official-timetable-frame" title="伊丹市交通局公式時刻表" loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
         </div>
+
+        ${slopeHtml}
+
+
+
 
        <div class="info-card">
           <div class="info-card-title">メモ</div>
