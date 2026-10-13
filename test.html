@@ -769,6 +769,12 @@ body{
 .conflict-band-option.selected{background:#32b884;border-color:#97efca;color:#08281c;box-shadow:0 0 0 2px #67dfab50}
 
 /* 公式時刻表パネル：右メモ欄 */
+.official-favorites{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.official-favorite{border:1px solid #497b63;color:#d9f6e7;background:#244c39;padding:6px 9px;border-radius:8px;font-size:12px;cursor:pointer}
+.official-favorite:hover{background:#376f52}
+.official-stop-search{box-sizing:border-box;width:100%;padding:11px 9px;background:#143528;color:#fff;border:1px solid #71b895;border-radius:8px;margin-bottom:9px;font-size:15px}
+.official-stop-meta{display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;margin-top:6px;color:#badbc9;font-size:12px}
+
 .official-timetable-card{border-color:#49745f}
 .official-timetable-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .official-timetable-controls select{width:100%;background:#143528;border:1px solid #71b895;color:#f0fff7;border-radius:8px;padding:11px 8px;font-size:15px}
@@ -1189,19 +1195,43 @@ Created by 株式会社三栄社
 
 <script>
 
-// 伊丹市交通局の公式サイトを直接参照。時刻表の転記・推定はしない。
-const OFFICIAL_TIMETABLE_STOPS = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団・交通局前','ＪＲ猪名寺','山田'];
+// 伊丹市交通局公式サイトの停留所名一覧（2026-10-13参照）。乗り場や所定時刻は公式画面で確認。
+const OFFICIAL_TIMETABLE_STOPS = ["尼崎北高校前", "尼崎北小学校前", "天津", "荒牧", "荒牧北", "荒牧バラ公園", "アルビス寺本", "池尻", "池尻南口", "泉町", "伊丹工業団地前", "伊丹坂", "伊丹市役所西", "伊丹市役所前", "伊丹スカイパーク・上須古", "伊丹病院住友前", "伊丹郵便局前", "市高前", "稲野", "稲野町8丁目", "岩屋", "岩屋東", "上久代", "大阪芸大短期大学部前", "大阪国際空港", "大鹿口", "大鹿東口", "大野", "大樋橋", "荻野", "荻野北", "荻野西", "荻野南", "春日丘", "春日丘西", "神津", "神津大橋", "神津交流センター前", "北河原6丁目", "北センター前", "北野", "北ノ口", "北町", "北村", "北村西口", "行基町1丁目", "近畿中央病院前", "空港１丁目", "口酒井", "クリーンランド前", "車塚", "桑田", "県高前", "県住北口", "県住南口", "小井内", "小井内南", "公設市場前", "鴻池", "鴻池東", "御願塚", "昆陽", "昆陽池公園前", "昆陽西口", "昆陽里", "昆陽里・交番前", "昆陽里北", "坂ノ下", "桜ヶ丘2丁目", "桜ヶ丘8丁目", "佐々原", "三師団・交通局前", "サンシティ", "ＪＲ伊丹", "ＪＲ猪名寺", "ＪＲ北伊丹", "ＪＲ中山寺", "自衛隊病院前", "清水橋", "下河原", "瑞ヶ池", "鈴原町1丁目", "鈴原町4丁目", "鈴原町6丁目", "スポーツセンター前", "スポーツセンター南", "住友北", "スワンホール前", "摂陽小学校前", "千僧口", "総監部前", "体育館市民プール前", "高台", "玉田団地", "塚口", "塚口小学校前", "塚口町1丁目", "塚口町5丁目", "塚口町6丁目", "辻村", "鶴田団地", "寺本東", "天神川団地", "天王寺川中学校前", "長沢", "中野", "中野大橋", "中野東", "南菱", "西池", "西桑津", "西野", "西野団地", "西野変電所", "西野武庫川センター前", "野里", "野間", "野間口", "野間東", "阪急伊丹", "東有岡", "東口酒井", "東野", "東野南", "藤ノ木", "札場辻", "蛍池西町", "蛍池南町", "堀池口", "堀池団地", "堀池西", "本町", "松ヶ丘", "松谷化学前", "瑞ヶ丘", "瑞ヶ丘公園前", "美鈴町", "瑞原１丁目", "瑞原3丁目", "瑞穂小学校前", "緑丘小学校前", "緑ヶ丘7丁目", "緑ヶ丘2丁目", "南町", "南町住宅前", "南野", "南畑", "南本町1丁目", "南本町4丁目", "箕輪", "宮川原橋", "宮ノ前", "森本2丁目", "森本4丁目", "森本6丁目", "山田", "山田北", "山本団地", "ラスタホール前"];
+const OFFICIAL_FAVORITE_STOPS = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団・交通局前','ＪＲ猪名寺','山田'];
+function normalizeStopQuery(v){return String(v||'').normalize('NFKC').replace(/[\s・･]/g,'').toLowerCase();}
+function officialSelectedStop(){
+ const pick=document.getElementById('officialTimetableStop');
+ return pick?.value || OFFICIAL_FAVORITE_STOPS[0];
+}
 function officialTimetableURL(){
+ // 公式の時刻表入口。stop パラメータに対する公式側の自動選択挙動は未保証。
+ return 'https://itamicity-bus.jp/timetable';
+}
+function renderOfficialStopOptions(query=''){
  const select=document.getElementById('officialTimetableStop');
- const idx=Number(select?.value||0);
- const name=OFFICIAL_TIMETABLE_STOPS[idx] || OFFICIAL_TIMETABLE_STOPS[0];
- return 'https://itamicity-bus.jp/timetable?stop='+encodeURIComponent(name);
+ if(!select)return;
+ const previous=select.value || OFFICIAL_FAVORITE_STOPS[0];
+ const needle=normalizeStopQuery(query);
+ const filtered=OFFICIAL_TIMETABLE_STOPS.filter(n=>normalizeStopQuery(n).includes(needle));
+ select.replaceChildren();
+ const groups=[['★ よく使う停留所',OFFICIAL_FAVORITE_STOPS.filter(n=>filtered.includes(n))],['全停留所',filtered.filter(n=>!OFFICIAL_FAVORITE_STOPS.includes(n))]];
+ groups.forEach(([label,items])=>{if(!items.length)return;const optgroup=document.createElement('optgroup');optgroup.label=label;items.forEach(n=>{const option=document.createElement('option');option.value=n;option.textContent=n;optgroup.appendChild(option)});select.appendChild(optgroup)});
+ if(filtered.includes(previous))select.value=previous;
+ else if(filtered.length)select.value=filtered[0];
+ const count=document.getElementById('officialStopCount');if(count)count.textContent=`${filtered.length}停留所 / 全${OFFICIAL_TIMETABLE_STOPS.length}停留所`;
+ syncOfficialTimetableLink();
 }
 function syncOfficialTimetableLink(){
  const link=document.getElementById('officialTimetableExternal');
- if(link) link.href=officialTimetableURL();
- const frame=document.getElementById('officialTimetableFrame');
- if(frame && !frame.hidden) frame.src=officialTimetableURL();
+ if(link)link.href=officialTimetableURL();
+ const label=document.getElementById('officialSelectedStopLabel');
+ if(label)label.textContent='選択中：'+officialSelectedStop();
+}
+function chooseOfficialFavorite(stop){
+ const field=document.getElementById('officialStopSearch');if(field)field.value='';
+ renderOfficialStopOptions('');
+ const pick=document.getElementById('officialTimetableStop');if(pick)pick.value=stop;
+ syncOfficialTimetableLink();
 }
 function openOfficialTimetableEmbed(){
  const frame=document.getElementById('officialTimetableFrame');
@@ -1210,6 +1240,7 @@ function openOfficialTimetableEmbed(){
  frame.src=officialTimetableURL();
  syncOfficialTimetableLink();
 }
+document.addEventListener('input',function(e){if(e.target?.id==='officialStopSearch')renderOfficialStopOptions(e.target.value);});
 document.addEventListener('change',function(e){if(e.target?.id==='officialTimetableStop')syncOfficialTimetableLink();});
 
 let mode = 'weekday';
@@ -2909,17 +2940,22 @@ html += `
       <div class="info-sections">
         <div class="info-card official-timetable-card">
           <div class="info-card-title">🚌 時刻表（公式）</div>
-          <label for="officialTimetableStop" style="display:block;font-size:12px;margin-bottom:6px">停留所を選択</label>
+          <div class="official-favorites">
+            ${OFFICIAL_FAVORITE_STOPS.map(stop=>`<button type="button" class="official-favorite" onclick="chooseOfficialFavorite('${stop}')">${stop}</button>`).join('')}
+          </div>
+          <label for="officialStopSearch" style="display:block;font-size:12px;margin:12px 0 6px">全停留所を名前で検索</label>
+          <input id="officialStopSearch" type="search" placeholder="例：鶴田、伊丹病院、昆陽" autocomplete="off" class="official-stop-search">
           <div class="official-timetable-controls">
             <select id="officialTimetableStop" aria-label="公式時刻表の停留所を選択">
-              <option value="0">阪急伊丹</option><option value="1">鴻池東</option><option value="2">塚口</option><option value="3">西野武庫川センター前</option><option value="4">昆陽里</option><option value="5">三師団・交通局前</option><option value="6">ＪＲ猪名寺</option><option value="7">山田</option>
+              ${OFFICIAL_TIMETABLE_STOPS.map(stop=>`<option value="${stop}" ${stop==='阪急伊丹'?'selected':''}>${stop}</option>`).join('')}
             </select>
           </div>
+          <div class="official-stop-meta"><span id="officialStopCount">全${OFFICIAL_TIMETABLE_STOPS.length}停留所</span><span id="officialSelectedStopLabel">選択中：阪急伊丹</span></div>
           <div class="official-timetable-links">
             <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">選んだ停留所の時刻表を表示</button>
             <a id="officialTimetableExternal" class="official-timetable-action" target="_blank" rel="noopener noreferrer" href="https://itamicity-bus.jp/timetable">公式サイトで開く ↗</a>
           </div>
-          <div class="official-timetable-help">伊丹市交通局の公式時刻表を表示します。乗り場・方向・平日／休日を公式画面で確認してください。サイト側の制限で枠内に表示されない場合は「公式サイトで開く」を使用してください。</div>
+          <div class="official-timetable-help">選択した停留所名を目印に公式時刻表検索ページを開きます。公式サイト内で停留所・乗り場・行先を選択してください（自動選択は未対応）。平日／休日は公式の表示を確認。枠内に表示されない場合は「公式サイトで開く」を使用してください。</div>
           <iframe id="officialTimetableFrame" class="official-timetable-frame" title="伊丹市交通局公式時刻表" loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
         </div>
 
