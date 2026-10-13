@@ -834,6 +834,19 @@ img, iframe { max-width:100%; }
   .search-type-toggle button { flex:1 1 0; min-width:0; padding:10px 5px; font-size:12px; }
   .duty-quick-actions { flex-wrap:wrap; }
 }
+/* Ver.6.5: 運行詳細は列を押し潰さず、表枠の中だけ横スクロール */
+@media (max-width:760px) {
+  .duty-table-wrap { width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+  .duty-detail-table { width:max-content !important; min-width:610px !important; max-width:none !important; table-layout:auto !important; }
+  .duty-detail-table th, .duty-detail-table td {
+    overflow-wrap:normal !important; word-break:normal !important;
+    white-space:nowrap; vertical-align:middle;
+  }
+  .duty-detail-table .route-cell { white-space:nowrap !important; min-width:290px; }
+  .duty-detail-table .route-cell .stop-time,
+  .duty-detail-table .route-cell .route-arrow { display:inline !important; white-space:nowrap !important; }
+  .duty-detail-table .route-cell .conflict-alert { white-space:normal; min-width:290px; }
+}
 </style>
 </head>
 
