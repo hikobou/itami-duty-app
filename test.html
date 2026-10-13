@@ -705,7 +705,7 @@ body{
 #fareTableBtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent)}
 #fareGuide[hidden]{display:none}
 
-/* 近接到着便チェック Ver.6.3 */
+/* 近接到着便チェック Ver.6.5 */
 .near-panel{margin:12px 0 16px;padding:15px;border:1px solid #50b992;border-radius:13px;background:#102d23;color:#eafff3}
 .near-titlebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .near-titlebar h4{margin:0;font-size:18px}
@@ -726,27 +726,7 @@ body{
 .near-warning{border-left:3px solid #f5b740;padding-left:10px;color:#ffe4a6}
 .near-small{color:#a5c5b6;font-size:11px!important}
 
-
-/* 近接チェックは通常画面でコンパクト表示。詳細は既存モーダルで確認する。 */
-.near-panel-compact{padding:12px 14px;margin:10px 0 12px}
-.near-panel-compact .near-titlebar h4{font-size:15px}
-.near-panel-compact .near-compact-route{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;margin-top:10px;background:#194333;padding:10px;border-radius:9px;font-size:13px}
-.near-panel-compact .near-compact-route strong{font-size:20px;color:#b8ffdc;font-variant-numeric:tabular-nums}
-.near-panel-compact .near-compact-entry{color:#c0dcca;font-size:12px}
-.near-panel-compact .near-primary-action{background:#21825e;border-color:#87d6ad}
-.near-panel-compact .near-small{margin:8px 0 0}
-@media(max-width:560px){.near-panel-compact .near-actions button{flex:1;min-width:0}.near-panel-compact .near-compact-route{gap:5px 10px}}
-
 /* 競合停留所：運行詳細内の注意喚起と拡大タイムライン */
-
-/* JR伊丹発：タイムラインの代わりに近接情報をコンパクトに表示 */
-.near-jr-brief{margin-top:10px;background:#163a2d;border:1px solid #447c62;border-radius:9px;padding:10px;font-size:12px}
-.near-jr-brief>b{display:block;margin-bottom:7px;color:#caffdf}
-.near-jr-item{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;border-top:1px solid #325c48;padding:7px 1px}
-.near-jr-item strong{color:#ecfff3;font-size:14px;font-variant-numeric:tabular-nums}
-.near-jr-item small{grid-column:1/-1;color:#aacdbc}
-.near-jr-alert strong{color:#ffd18c}
-@media(max-width:560px){.near-jr-item{grid-template-columns:1fr auto}.near-jr-item>span:nth-of-type(2){grid-column:1/-1;color:#c8dece}}
 .conflict-alert{margin:6px 0 0;padding:6px 8px;background:#633e16;color:#ffe5a3;border:1px solid #edaf42;border-radius:7px;font-size:12px;line-height:1.5}
 .conflict-open{margin:5px 0 0;padding:5px 10px;background:#28654d;border:1px solid #7adaab;color:#fff;border-radius:6px;cursor:pointer;font-weight:700}
 .conflict-modal[hidden]{display:none!important}
@@ -763,28 +743,66 @@ body{
 .conflict-graphic svg{display:block;min-width:620px;width:100%;background:#153b2d;border-radius:8px}
 .conflict-table tr.same-time td{background:#572728;color:#ffe7e7;font-weight:800}.conflict-table tr.overlap-time td{background:#4b3a1c;color:#ffe6aa}.conflict-signal{display:inline-block;padding:2px 6px;border-radius:5px;background:#b83237;color:white;font-weight:900}.conflict-signal.soft{background:#9a6a18;color:#fff3cd}
 
-.conflict-band-control{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:10px;background:#173c2e;border:1px solid #477b60;border-radius:9px}
-.conflict-band-control strong{margin-right:5px;font-size:13px}
-.conflict-band-option{background:#24503f;border:1px solid #6f9f84;color:#eafff3;padding:8px 13px;border-radius:8px;font-weight:700;cursor:pointer}
-.conflict-band-option.selected{background:#32b884;border-color:#97efca;color:#08281c;box-shadow:0 0 0 2px #67dfab50}
+.conflict-band-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0;padding:10px;border:1px solid #48745b;border-radius:9px;background:#183d30}
+.conflict-band-controls span{font-weight:700;font-size:13px;margin-right:6px}
+.conflict-band-btn{background:#244e3d;color:#f4fff9;border:1px solid #6b9b85;border-radius:8px;min-height:42px;padding:9px 13px;font-weight:700;cursor:pointer}
+.conflict-band-btn.active{background:#2aa876;border-color:#9bf0c8;color:#071c12;box-shadow:0 0 0 2px rgba(155,240,200,.3)}
 
-/* 公式時刻表パネル：右メモ欄 */
-.official-favorites{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
-.official-favorite{border:1px solid #497b63;color:#d9f6e7;background:#244c39;padding:6px 9px;border-radius:8px;font-size:12px;cursor:pointer}
-.official-favorite:hover{background:#376f52}
-.official-stop-search{box-sizing:border-box;width:100%;padding:11px 9px;background:#143528;color:#fff;border:1px solid #71b895;border-radius:8px;margin-bottom:9px;font-size:15px}
-.official-stop-meta{display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;margin-top:6px;color:#badbc9;font-size:12px}
+/* Ver.6.5: スマートフォンの画面幅に収める（機能・データ処理は変更しない） */
+html { max-width:100%; overflow-x:clip; }
+body { width:100%; min-width:0; max-width:100%; overflow-x:clip; }
+.container, .hero, .toolbar, .search-box, .result, .result-main,
+.time-card, .info-card, .info-sections, .result-headline,
+#result, .near-panel, .near-summary, .near-info {
+  min-width:0; max-width:100%;
+}
+.search-box input { min-width:0; width:100%; }
+.search-box button { flex:0 0 auto; }
+.result-main > *, .toolbar > * { min-width:0; }
+.duty-table-wrap, .conflict-graphic, .fare-slide-viewport {
+  max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.duty-detail-table, .near-list { max-width:100%; }
+img, iframe { max-width:100%; }
+@media(max-width:760px) {
+  .container { width:100%; }
+  .toolbar { grid-template-columns:minmax(0,1fr); }
+  .result-main { grid-template-columns:minmax(0,1fr); }
+  .hero-top { min-width:0; }
+  .header { overflow-wrap:anywhere; }
+  .info-row { min-width:0; }
+  .info-value { min-width:0; overflow-wrap:anywhere; }
+  .result-headline { flex-wrap:wrap; gap:6px 12px; }
+  .footer { white-space:normal; text-align:center; overflow-wrap:anywhere; }
+  .conflict-modal-content { min-width:0; max-width:100%; }
+  .conflict-modal-head { flex-wrap:wrap; }
+}
+@media(max-width:420px) {
+  .container { padding:12px 9px 26px; }
+  .hero { padding:12px; }
+  .search-box { gap:6px; }
+  .search-box input { font-size:16px; padding:0 9px; }
+  .search-box button { padding:0 12px; }
+  .duty-quick-actions { flex-wrap:wrap; }
+  .result { padding:9px; }
+  .time-card, .info-card { padding:9px; }
+  .near-panel { padding:10px; }
+}
 
-.official-timetable-card{border-color:#49745f}
-.official-timetable-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.official-timetable-controls select{width:100%;background:#143528;border:1px solid #71b895;color:#f0fff7;border-radius:8px;padding:11px 8px;font-size:15px}
-.official-timetable-action{display:inline-block;background:#267454;border:1px solid #77b896;color:white;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:700;text-decoration:none}
-.official-timetable-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
-.official-timetable-help{font-size:12px;color:#badbc9;line-height:1.6;margin:9px 0}
-.official-timetable-frame[hidden]{display:none}
-.official-timetable-frame{display:block;width:100%;height:520px;border:1px solid #5c8b73;border-radius:8px;background:white;margin-top:10px}
-@media(max-width:650px){.official-timetable-frame{height:460px}}
-
+/* 時刻表検索：スマホでもパネル外へはみ出さない */
+.bus-timetable-card{min-width:0;overflow:hidden}
+.bus-timetable-card input,.bus-timetable-card select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:#fff;color:#111827;border:1px solid #9fc5b5;border-radius:8px;padding:10px;font-size:16px}
+.bus-timetable-form{display:grid;gap:9px}
+.bus-timetable-favorites{display:flex;gap:6px;flex-wrap:wrap}
+.bus-timetable-favorites button{font-size:12px;padding:7px 9px;border:1px solid #65b795;background:#1d5944;border-radius:7px;color:white;cursor:pointer}
+.bus-timetable-form .bus-timetable-submit{width:100%;background:#2aa876;color:white;font-weight:800;border:none;border-radius:8px;padding:12px;cursor:pointer;font-size:15px}
+.bus-timetable-link{display:block;margin-top:8px;color:#a7ebd0;overflow-wrap:anywhere}
+.bus-timetable-msg{font-size:12px;line-height:1.5;color:#cfe9dd}
+.bus-timetable-viewer[hidden]{display:none!important}
+.bus-timetable-viewer{margin-top:10px;border:1px solid #4d9377;border-radius:9px;overflow:hidden;background:#fff}
+.bus-timetable-frame{display:block;width:100%;height:520px;border:0;background:#fff}
+.bus-timetable-external{display:block;padding:8px 10px;background:#163e30;font-size:12px;color:#b5f1d6;overflow-wrap:anywhere}
+@media(max-width:520px){.bus-timetable-frame{height:62vh;min-height:380px}}
 </style>
 </head>
 
@@ -796,7 +814,7 @@ body{
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.3</span></div>
+        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.5</span></div>
         <p class="sub">Duty Search System / Professional Edition</p>
       </div>
       <div class="system-badge">
@@ -1194,61 +1212,6 @@ Created by 株式会社三栄社
 </div>
 
 <script>
-
-// 伊丹市交通局公式サイトの停留所名一覧（2026-10-13参照）。乗り場や所定時刻は公式画面で確認。
-const OFFICIAL_TIMETABLE_STOPS = ["尼崎北高校前", "尼崎北小学校前", "天津", "荒牧", "荒牧北", "荒牧バラ公園", "アルビス寺本", "池尻", "池尻南口", "泉町", "伊丹工業団地前", "伊丹坂", "伊丹市役所西", "伊丹市役所前", "伊丹スカイパーク・上須古", "伊丹病院住友前", "伊丹郵便局前", "市高前", "稲野", "稲野町8丁目", "岩屋", "岩屋東", "上久代", "大阪芸大短期大学部前", "大阪国際空港", "大鹿口", "大鹿東口", "大野", "大樋橋", "荻野", "荻野北", "荻野西", "荻野南", "春日丘", "春日丘西", "神津", "神津大橋", "神津交流センター前", "北河原6丁目", "北センター前", "北野", "北ノ口", "北町", "北村", "北村西口", "行基町1丁目", "近畿中央病院前", "空港１丁目", "口酒井", "クリーンランド前", "車塚", "桑田", "県高前", "県住北口", "県住南口", "小井内", "小井内南", "公設市場前", "鴻池", "鴻池東", "御願塚", "昆陽", "昆陽池公園前", "昆陽西口", "昆陽里", "昆陽里・交番前", "昆陽里北", "坂ノ下", "桜ヶ丘2丁目", "桜ヶ丘8丁目", "佐々原", "三師団・交通局前", "サンシティ", "ＪＲ伊丹", "ＪＲ猪名寺", "ＪＲ北伊丹", "ＪＲ中山寺", "自衛隊病院前", "清水橋", "下河原", "瑞ヶ池", "鈴原町1丁目", "鈴原町4丁目", "鈴原町6丁目", "スポーツセンター前", "スポーツセンター南", "住友北", "スワンホール前", "摂陽小学校前", "千僧口", "総監部前", "体育館市民プール前", "高台", "玉田団地", "塚口", "塚口小学校前", "塚口町1丁目", "塚口町5丁目", "塚口町6丁目", "辻村", "鶴田団地", "寺本東", "天神川団地", "天王寺川中学校前", "長沢", "中野", "中野大橋", "中野東", "南菱", "西池", "西桑津", "西野", "西野団地", "西野変電所", "西野武庫川センター前", "野里", "野間", "野間口", "野間東", "阪急伊丹", "東有岡", "東口酒井", "東野", "東野南", "藤ノ木", "札場辻", "蛍池西町", "蛍池南町", "堀池口", "堀池団地", "堀池西", "本町", "松ヶ丘", "松谷化学前", "瑞ヶ丘", "瑞ヶ丘公園前", "美鈴町", "瑞原１丁目", "瑞原3丁目", "瑞穂小学校前", "緑丘小学校前", "緑ヶ丘7丁目", "緑ヶ丘2丁目", "南町", "南町住宅前", "南野", "南畑", "南本町1丁目", "南本町4丁目", "箕輪", "宮川原橋", "宮ノ前", "森本2丁目", "森本4丁目", "森本6丁目", "山田", "山田北", "山本団地", "ラスタホール前"];
-const OFFICIAL_FAVORITE_STOPS = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団・交通局前','ＪＲ猪名寺','山田'];
-function normalizeStopQuery(v){return String(v||'').normalize('NFKC').replace(/[\s・･]/g,'').toLowerCase();}
-function officialSelectedStop(){
- const pick=document.getElementById('officialTimetableStop');
- return pick?.value || OFFICIAL_FAVORITE_STOPS[0];
-}
-function officialTimetableURL(){
- const stop=officialSelectedStop();
- const platform=document.getElementById('officialTimetablePlatform')?.value || '1';
- if(stop==='昆陽' && platform==='1')return 'https://itamicity-bus.jp/timetable2/Bus-ka/koya1.html';
- // 伊丹市交通局の公式時刻表：停留所名と乗り場番号をURLパラメータに指定。
- return 'https://itamicity-bus.jp/timetable?stop='+encodeURIComponent(stop)+'&no='+encodeURIComponent(platform);
-}
-function renderOfficialStopOptions(query=''){
- const select=document.getElementById('officialTimetableStop');
- if(!select)return;
- const previous=select.value || OFFICIAL_FAVORITE_STOPS[0];
- const needle=normalizeStopQuery(query);
- const filtered=OFFICIAL_TIMETABLE_STOPS.filter(n=>normalizeStopQuery(n).includes(needle));
- select.replaceChildren();
- const groups=[['★ よく使う停留所',OFFICIAL_FAVORITE_STOPS.filter(n=>filtered.includes(n))],['全停留所',filtered.filter(n=>!OFFICIAL_FAVORITE_STOPS.includes(n))]];
- groups.forEach(([label,items])=>{if(!items.length)return;const optgroup=document.createElement('optgroup');optgroup.label=label;items.forEach(n=>{const option=document.createElement('option');option.value=n;option.textContent=n;optgroup.appendChild(option)});select.appendChild(optgroup)});
- if(filtered.includes(previous))select.value=previous;
- else if(filtered.length)select.value=filtered[0];
- const count=document.getElementById('officialStopCount');if(count)count.textContent=`${filtered.length}停留所 / 全${OFFICIAL_TIMETABLE_STOPS.length}停留所`;
- syncOfficialTimetableLink();
-}
-function syncOfficialTimetableLink(){
- const link=document.getElementById('officialTimetableExternal');
- if(link)link.href=officialTimetableURL();
- const frame=document.getElementById('officialTimetableFrame');
- if(frame && !frame.hidden && frame.src!==officialTimetableURL())frame.src=officialTimetableURL();
- const label=document.getElementById('officialSelectedStopLabel');
- if(label)label.textContent='選択中：'+officialSelectedStop();
-}
-function chooseOfficialFavorite(stop){
- const field=document.getElementById('officialStopSearch');if(field)field.value='';
- renderOfficialStopOptions('');
- const pick=document.getElementById('officialTimetableStop');if(pick)pick.value=stop;
- const platform=document.getElementById('officialTimetablePlatform');if(platform)platform.value='1';
- syncOfficialTimetableLink();
-}
-function openOfficialTimetableEmbed(){
- const frame=document.getElementById('officialTimetableFrame');
- if(!frame)return;
- frame.hidden=false;
- frame.src=officialTimetableURL();
- syncOfficialTimetableLink();
-}
-document.addEventListener('input',function(e){if(e.target?.id==='officialStopSearch')renderOfficialStopOptions(e.target.value);});
-document.addEventListener('change',function(e){if(e.target?.id==='officialTimetableStop'){const p=document.getElementById('officialTimetablePlatform');if(p)p.value='1';syncOfficialTimetableLink();}});
-
 let mode = 'weekday';
 
 const weekdayBtn = document.getElementById('weekdayBtn');
@@ -2116,7 +2079,7 @@ function renderVehicleList(assignments) {
 }
 
 
-/* 近接便 Ver.6.3：同じ終点での折返し便と途中停留所の系統を統合 */
+/* 近接便 Ver.6.5：同じ終点での折返し便と途中停留所の系統を統合 */
 // 途中停留所の発着は dutyDetail.json に未収録。確認済みの事例のみ設定。
 // 52系統の20:20は前回の照合値。ダイヤ改正時に停留所時刻表と再照合すること。
 const conflictPassingStops = {
@@ -2126,14 +2089,7 @@ const conflictPassingStops = {
  holiday: []
 };
 const conflictSharedStops = {'鶴田団地':['51','52'],'伊丹病院住友前':['5','18']};
-let conflictModalOverflow = null;
-let conflictArrivalBand = 0;
-let conflictLastTimeline = null;
-function setConflictArrivalBand(value){
- if(![0,5,10].includes(value))return;
- conflictArrivalBand=value;
- if(conflictLastTimeline)openConflictTimeline(conflictLastTimeline.section,conflictLastTimeline.index);
-}
+let conflictModalOverflow = '';
 function conflictMins(v){return nearMins(v);}
 function conflictFmt(v){return nearTime(v);}
 function conflictAllArrivals(stop){
@@ -2180,8 +2136,8 @@ function renderConflictRowNotice(item,section,index){
  const nearest=[...match.list].sort((a,b)=>Math.abs(a.time-match.own.from)-Math.abs(b.time-match.own.from))[0];
  return `<div class="conflict-alert">⚠️ 乗り場競合注意：${nearEscape(nearest.line)}系統 ${conflictFmt(nearest.time)}（ほか${match.list.length-1}件）<br><button type="button" class="conflict-open" onclick="openConflictTimeline('${nearEscape(section)}',${index})">時間差・タイムラインを見る</button></div>`;
 }
-function openConflictTimeline(section,index){
- conflictLastTimeline={section,index};
+function openConflictTimeline(section,index,band=0){
+ band=[0,5,10].includes(Number(band))?Number(band):0;
  const key=currentDutyKey;
  const detail=dutyDetailDb[mode]?.[key]||dutyDetailDb[mode]?.[key?.split('-')[0]];
  const data=conflictMatches(key,detail,section,index) || (()=>{
@@ -2190,8 +2146,8 @@ function openConflictTimeline(section,index){
  })();
  if(!data)return;
  const {own,list}=data;
- if(own.stop==='JR伊丹'){return;} // JR伊丹発は一覧のみ。タイムラインは開かない。
- const band=conflictArrivalBand;
+ // JR伊丹でのタイムラインは不要（通常の運行詳細は維持）。
+ if(own.stop==='JR伊丹')return;
  // 自便の次発時刻を基準に前後30分以内の他便だけを表示する。
  const allAtStop=conflictAllArrivals(own.stop).filter(a=>String(a.duty)!==String(key)).sort((a,b)=>a.time-b.time);
  const show=allAtStop.filter(a=>Math.abs(a.time-own.to)<=30);
@@ -2206,16 +2162,16 @@ function openConflictTimeline(section,index){
  ${grid.map(v=>`<line x1="${x(v)}" y1="28" x2="${x(v)}" y2="${h-12}" stroke="#b4e3cc" stroke-opacity=".16"/><text x="${x(v)}" y="17" text-anchor="middle" fill="#d7efdf" font-size="11">${conflictFmt(v)}</text>`).join('')}
  ${ordered.map((a,i)=>{const y=65+i*40;const isExact=!a.isSelf&&a.time===own.from;const overlaps=!a.isSelf&&a.time+band>=own.from&&a.time-band<=own.to;
  if(a.isSelf)return `<text x="6" y="${y+4}" fill="#e9ffe9" font-size="12" font-weight="bold">自便 ${nearEscape(key)}勤</text><rect x="${x(own.from)}" y="${y-10}" width="${Math.max(2,x(own.to)-x(own.from))}" height="19" rx="4" fill="#35d08b"/><circle cx="${x(own.from)}" cy="${y}" r="6" fill="#67d4ff"/><text x="${x(own.from)}" y="${y-16}" text-anchor="middle" fill="#a7e9ff" font-size="10">着${conflictFmt(own.from)}</text><text x="${x(own.to)}" y="${y+24}" text-anchor="middle" fill="#acffcf" font-size="10">発${conflictFmt(own.to)}</text>`;
- return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text>${band>0?`<rect x="${x(a.time-band)}" y="${y-10}" width="${x(a.time+band)-x(a.time-band)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/>`: ''}<line x1="${x(a.time-band)}" x2="${x(a.time+band)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/><circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
+ return `${overlaps?`<rect x="2" y="${y-16}" width="716" height="31" rx="5" fill="${isExact?'#b32d37':'#b47b22'}" fill-opacity="${isExact?'.38':'.18'}" stroke="${isExact?'#ff6b72':'#f4b953'}" stroke-width="${isExact?2:1}"/>`: ''}<text x="6" y="${y+4}" fill="${isExact?'#fff1f1':'#e9ffe9'}" font-size="12" font-weight="${overlaps?'bold':'normal'}">${nearEscape(a.duty)}勤 ${nearEscape(a.line)}系統${isExact?' ★同時刻':overlaps?' ⚠近接':''}</text>${band>0?`<rect x="${x(a.time-band)}" y="${y-10}" width="${x(a.time+band)-x(a.time-band)}" height="19" fill="${isExact?'#ff626f':overlaps?'#ffad3b':'#f5b83d'}" fill-opacity="${overlaps?'.52':'.28'}" rx="5"/><line x1="${x(a.time-band)}" x2="${x(a.time+band)}" y1="${y}" y2="${y}" stroke="${isExact?'#ff777e':'#f5b83d'}" stroke-width="${overlaps?4:2.5}"/>`:''}<circle cx="${x(a.time)}" cy="${y}" r="${isExact?10:overlaps?8:6}" fill="${isExact?'#ff424f':overlaps?'#ffb12e':'#ffbd4d'}" stroke="${overlaps?'#ffffff':'none'}" stroke-width="${overlaps?2:0}"/><text x="${x(a.time)}" y="${y-16}" fill="${isExact?'#ffe5e6':'#fff0bc'}" text-anchor="middle" font-weight="${overlaps?'bold':'normal'}" font-size="${overlaps?12:10}">${conflictFmt(a.time)}</text>`;
  }).join('')}</svg>`;
  const rows=show.map(a=>{const d=a.time-own.from;const exact=d===0;const overlapping=a.time+band>=own.from&&a.time-band<=own.to;return `<tr class="${exact?'same-time':overlapping?'overlap-time':''}"><td>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${conflictFmt(a.time)}</td><td>${d===0?'<span class="conflict-signal">★ 同時刻</span>':overlapping?`<span class="conflict-signal soft">⚠ ${d<0?`${-d}分前`:`${d}分後`}</span>`:d<0?`${-d}分前`:`${d}分後`}</td><td>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</td></tr>`}).join('');
  document.getElementById('conflictModalTitle').textContent=`近接便｜${own.stop} ${key}勤`;
- document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、幅は各便${band===0?'所定時刻のみ':`±${band}分`}の想定。</div><div class="conflict-band-control" role="group" aria-label="他便の早着・延着表示幅"><strong>早着・延着の表示幅</strong>${[0,5,10].map(v=>`<button type="button" class="conflict-band-option ${band===v?'selected':''}" aria-pressed="${band===v}" onclick="setConflictArrivalBand(${v})">${v===0?'所定':`±${v}分`}</button>`).join('')}</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝各便${band===0?'所定のみ':`±${band}分`}　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
+ document.getElementById('conflictModalBody').innerHTML=`<div class="conflict-summary"><b>自便 ${nearEscape(key)}勤　${conflictFmt(own.from)}着 → ${conflictFmt(own.to)}次発</b><br>自便の発車${conflictFmt(own.to)}を基準に前後30分以内（計${show.length}件）。時刻は所定で、表示幅：${band===0?'所定のみ':'前後'+band+'分'}。</div><div class="conflict-band-controls" role="group" aria-label="早着延着の表示幅"><span>早着・延着の想定幅</span>${[0,5,10].map(v=>`<button type="button" class="conflict-band-btn ${band===v?'active':''}" aria-pressed="${band===v}" onclick="openConflictTimeline('${section}',${index},${v})">${v===0?'所定':'前後'+v+'分'}</button>`).join('')}</div><div class="conflict-graphic">${svg}</div><p class="conflict-legend">🟩 自便の到着〜次発　 🟠 丸＝他便の所定到着／停留所時刻　薄橙＝設定した前後時間（所定では非表示）　🟥 同時刻　🟧 自便停車時間と想定帯が重なる（実測・予測ではない）</p><table class="conflict-table"><thead><tr><th>他便</th><th>所定時刻</th><th>自便到着との差</th><th>次運行</th></tr></thead><tbody>${rows}</tbody></table><p class="near-small">※「鶴田団地」51・52系統は同じ乗り場。伊丹病院住友前の途中停留所時刻は未登録のため、追加確認が必要です。乗務中の操作は行わず、現場の運行指示と安全確認を優先してください。</p>`;
  const modal=document.getElementById('conflictModal');modal.hidden=false;
- if(conflictModalOverflow===null)conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
- modal.querySelector('.conflict-modal-close').focus({preventScroll:true});
+ conflictModalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+ (band===0?modal.querySelector('.conflict-modal-close'):modal.querySelector('.conflict-band-btn.active')).focus({preventScroll:true});
 }
-function closeConflictTimeline(){document.getElementById('conflictModal').hidden=true;document.body.style.overflow=conflictModalOverflow??'';conflictModalOverflow=null;conflictLastTimeline=null;}
+function closeConflictTimeline(){document.getElementById('conflictModal').hidden=true;document.body.style.overflow=conflictModalOverflow;}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('conflictModal').hidden)closeConflictTimeline();});
 
 function renderDutyDetailTable(list, duty, section = 'front') {
@@ -2781,8 +2737,9 @@ function openActiveNearTimeline(){
  const detail=dutyDetailDb?.[mode]?.[currentDutyKey]||dutyDetailDb?.[mode]?.[currentDutyKey.split('-')[0]];
  const now=new Date();
  const active=activeNearDeparture(detail,now.getHours()*60+now.getMinutes());
+ // JR伊丹発の便は近接便タイムラインを開かない。
+ if(active && String(active.trip.発||'').trim()==='JR伊丹')return;
  const anchor=activeNearReference(detail,active);
- if(active?.trip?.発==='JR伊丹'){return;}
  if(!anchor){alert('この便の直前到着地点を確認できないため、タイムラインを表示できません。運行詳細から確認してください。');return;}
  openConflictTimeline(anchor.section,anchor.index);
 }
@@ -2790,23 +2747,30 @@ function renderNearArrivalPanel(dutyNo,detail){
  const now=new Date();
  const minute=now.getHours()*60+now.getMinutes();
  const selected=activeNearDeparture(detail,minute);
- if(!selected)return `<section class="near-panel near-panel-compact" aria-label="現在時刻からの近接便チェック"><div class="near-titlebar"><h4>🚌 近接便チェック</h4><span class="near-tag clear">本日の運行終了</span></div><p class="near-small">現在時刻 ${nearTime(minute)} 以降の発車便は登録されていません。</p></section>`;
+ if(!selected)return `<section class="near-panel"><div class="near-titlebar"><h4>🚌 近接到着便チェック</h4><span class="near-tag clear">本日の運行終了</span></div><p>現在時刻 ${nearTime(minute)} 以降の発車便は登録されていません。</p><p class="near-small">登録済みの所定ダイヤに基づく表示です。</p></section>`;
  const ownStop=String(selected.trip.発).trim();
- // JR伊丹発は近接情報そのものを表示しない。非表示の更新用要素は残す。
- if(ownStop==='JR伊丹')return '<section class="near-panel" hidden aria-hidden="true"></section>';
+ // JR伊丹発では近接到着便チェックとタイムラインを表示しない。
+ if(ownStop==='JR伊丹')return '';
  const anchor=activeNearReference(detail,selected);
  const ownArrival=anchor?.arr??null;
  const dep=selected.dep;
- const entry=ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival;
- const arrivals=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
- const near=arrivals.filter(a=>a.time+10>=entry&&a.time-10<=dep);
- const label=near.length?`⚠ 近接候補 ${near.length}件`:'近接候補なし';
+ const all=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
+ const near=all.filter(a=>a.time+10>=(ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival)&&a.time-10<=dep);
+ const header=`<div class="near-titlebar"><h4>🚌 現在時刻からの近接便チェック</h4><span class="near-tag ${near.length?'':'clear'}">${near.length?'近接候補 '+near.length+'件':'近接候補なし'}</span></div>`;
+ const list=all.length?`<table class="near-list"><thead><tr><th>他便</th><th>所定到着</th><th>進入との差</th></tr></thead><tbody>${all.map(a=>{
+   const entry=ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival;
+   const diff=a.time-entry;
+   const flag=a.time+10>=entry&&a.time-10<=dep;
+   return `<tr><td>${flag?'⚠️ ':''}${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</td><td>${nearTime(a.time)}</td><td>${diff===0?'同時刻':diff>0?diff+'分後':(-diff)+'分前'}</td></tr>`;
+ }).join('')}</tbody></table>`:'<p>登録済みの運行詳細では、発車前後30分の他便はありません。</p>';
  const timeLabel=now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
- return `<section class="near-panel near-panel-compact" aria-label="現在時刻からの近接便チェック">
-  <div class="near-titlebar"><h4>🚌 次の運行・近接便</h4><span class="near-tag ${near.length?'':'clear'}">${label}</span></div>
-  <div class="near-compact-route"><span>次発 <b>${nearEscape(ownStop)}</b></span><strong>${nearTime(dep)} 発</strong><span class="near-compact-entry">${ownArrival===null?'進入目安':'直前到着'} ${nearTime(entry)}</span></div>
-  <div class="near-actions">${anchor?'<button type="button" class="near-primary-action" onclick="openActiveNearTimeline()">📊 近接便タイムラインを見る</button>':'<span class="near-small">この便は直前到着情報がないため、運行詳細から確認してください。</span>'}<button type="button" onclick="refreshNearArrivalPanel()">🔄 更新</button></div>
-  <p class="near-small">現在 ${timeLabel}／所定ダイヤによる自動選択。${near.length?'他便の±10分想定帯が自便の停車時間に近接します。':'前後30分の便はタイムラインで確認できます。'} 運転中は操作しないでください。</p>
+ return `<section class="near-panel" aria-label="現在時刻からの近接便チェック">${header}
+  <div class="near-summary"><div class="near-info"><small>次の出発バス停</small><strong class="near-stop">${nearEscape(ownStop)}</strong></div><div class="near-info"><small>通常進入目安／到着予定</small><strong>${ownArrival===null?nearTime(dep-(ownStop==='JR伊丹'?3:2)):nearTime(ownArrival)}</strong></div><div class="near-info"><small>自便発車予定</small><strong>${nearTime(dep)}</strong></div></div>
+  <p class="near-small">${ownArrival===null?'直前の到着データがなく、通常進入目安で比較。':'同地点への直前到着（折返し・回送を含む）で比較。'} 現在 ${timeLabel} 現在の次発便を自動選択しています。</p>
+  ${list}
+  ${near.length?'<p class="near-warning">近接候補あり。所定時刻と±10分の仮定帯による注意喚起です。実際の運行状況ではありません。</p>':''}
+  <div class="near-actions"><button type="button" onclick="refreshNearArrivalPanel()">🔄 今の時刻で更新</button>${anchor?'<button type="button" onclick="openActiveNearTimeline()">📊 前後30分のタイムラインを見る</button>':''}</div>
+  <p class="near-small">自便の次発を過ぎると次の便に自動切替（約1分ごと）。運転中は操作せず、現場の安全確認を優先してください。伊丹病院住友前など未登録の途中停留所は表示できません。</p>
  </section>`;
 }
 function refreshNearArrivalPanel(){
@@ -2944,34 +2908,32 @@ html += `
       </div>
 
       <div class="info-sections">
-        <div class="info-card official-timetable-card">
-          <div class="info-card-title">🚌 時刻表（公式）</div>
-          <div class="official-favorites">
-            ${OFFICIAL_FAVORITE_STOPS.map(stop=>`<button type="button" class="official-favorite" onclick="chooseOfficialFavorite('${stop}')">${stop}</button>`).join('')}
-          </div>
-          <label for="officialStopSearch" style="display:block;font-size:12px;margin:12px 0 6px">全停留所を名前で検索</label>
-          <input id="officialStopSearch" type="search" placeholder="例：鶴田、伊丹病院、昆陽" autocomplete="off" class="official-stop-search">
-          <div class="official-timetable-controls">
-            <select id="officialTimetableStop" aria-label="公式時刻表の停留所を選択">
-              ${OFFICIAL_TIMETABLE_STOPS.map(stop=>`<option value="${stop}" ${stop==='阪急伊丹'?'selected':''}>${stop}</option>`).join('')}
-            </select>
-          </div>
-          <div class="official-stop-meta"><span id="officialStopCount">全${OFFICIAL_TIMETABLE_STOPS.length}停留所</span><span id="officialSelectedStopLabel">選択中：阪急伊丹</span></div>
-          <label for="officialTimetablePlatform" style="display:block;font-size:12px;margin:9px 0 5px">のりば番号（最初は1番を表示）</label>
-          <select id="officialTimetablePlatform" aria-label="のりば番号" onchange="syncOfficialTimetableLink()" style="max-width:180px;padding:8px;border-radius:7px">
-            ${Array.from({length:10},(_,i)=>`<option value="${i+1}">${i+1}番のりば</option>`).join('')}
-          </select>
-          <div class="official-timetable-links">
-            <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">選んだ停留所の時刻表を表示</button>
-            <a id="officialTimetableExternal" class="official-timetable-action" target="_blank" rel="noopener noreferrer" href="https://itamicity-bus.jp/timetable">公式サイトで開く ↗</a>
-          </div>
-          <div class="official-timetable-help">選択した停留所・のりばの公式時刻表を直接開きます。乗り場が複数ある停留所は番号を切り替えてください。存在しない乗り場番号では表示されない場合があります。公式サイト側が枠内表示を禁止している場合は「公式サイトで開く」を使ってください。</div>
-          <iframe id="officialTimetableFrame" class="official-timetable-frame" title="伊丹市交通局公式時刻表" loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
-        </div>
 
+       <div class="info-card bus-timetable-card" aria-label="時刻表検索">
+         <div class="info-card-title">🚌 公式時刻表検索</div>
+         <div class="bus-timetable-form">
+           <div class="bus-timetable-favorites" id="busTimetableFavorites">
+             <button type="button" data-stop="阪急伊丹">阪急伊丹</button>
+             <button type="button" data-stop="鴻池東">鴻池東</button>
+             <button type="button" data-stop="塚口">塚口</button>
+             <button type="button" data-stop="西野武庫川センター前">西野武庫川センター前</button>
+             <button type="button" data-stop="昆陽里">昆陽里</button>
+             <button type="button" data-stop="三師団交通局前">三師団交通局前</button>
+             <button type="button" data-stop="JR猪名寺">JR猪名寺</button>
+             <button type="button" data-stop="山田">山田</button>
+           </div>
+           <input id="busTimetableStop" type="search" list="busTimetableStops" placeholder="停留所名を入力（例：昆陽）" aria-label="停留所名">
+           <datalist id="busTimetableStops"></datalist>
+           <label style="font-size:12px">のりば番号（分かる場合）<select id="busTimetablePlatform" aria-label="のりば番号"><option value="1">1番</option><option value="2">2番</option><option value="3">3番</option><option value="4">4番</option><option value="5">5番</option><option value="6">6番</option><option value="7">7番</option><option value="8">8番</option><option value="9">9番</option><option value="10">10番</option></select></label>
+           <button class="bus-timetable-submit" id="busTimetableOpen" type="button">選んだ停留所の時刻表を表示</button>
+           <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選ぶと、この欄に公式時刻表を表示します。</div>
+           <div class="bus-timetable-viewer" id="busTimetableViewer" hidden>
+             <iframe class="bus-timetable-frame" id="busTimetableFrame" title="伊丹市交通局 公式時刻表" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+             <a class="bus-timetable-external" id="busTimetableExternal" target="_blank" rel="noopener noreferrer">画面内で表示されない場合は公式サイトで確認</a>
+           </div>
+         </div>
+       </div>
         ${slopeHtml}
-
-
 
 
        <div class="info-card">
@@ -3210,7 +3172,7 @@ redrawTimer = setInterval(() => {
   const today = new Date();
   const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
 
-  updateTicker(`📅 ${dateText}です。🚍・休日～25勤迄運行詳細表示。平日～217迄照合済　出勤時間まであと ${remainText}`);
+  updateTicker(`📅 ${dateText}です。🚍・近接到着便検索機能、時刻表検索機能追加・休日～25勤迄運行詳細表示。平日～217迄照合済　出勤時間まであと ${remainText}`);
 } else {
   updateTicker(`次：${next.label} ${next.time}　あと ${remainText}です`);
 }
@@ -3310,6 +3272,54 @@ function closeGuide() {
 }
 initializeApp();
 
+
+/* 時刻表検索復旧。確認済みの公式直リンクだけ使用し、未確認のURLは生成しない */
+const TIMETABLE_DIRECT_LINKS = {
+  '昆陽': { '1': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya1.html', '2': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya2.html' }
+};
+const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田'];
+function populateTimetableStops(){
+ const el = document.getElementById('busTimetableStops');
+ if(!el) return;
+ const names = new Set([...TIMETABLE_FAVORITES, '昆陽']);
+ for(const day of ['weekday','holiday']){
+   for(const duty of Object.values(dutyDetailDb[day] || {})){
+     for(const part of ['前半','後半']){
+       for(const run of (duty?.[part] || [])){
+         for(const k of ['発','着','発停留所','着停留所','発地','着地']){
+           if(typeof run[k] === 'string' && run[k].length <= 30) names.add(run[k]);
+         }
+       }
+     }
+   }
+ }
+ el.replaceChildren(...[...names].sort((a,b)=>a.localeCompare(b,'ja')).map(n=>{const o=document.createElement('option');o.value=n;return o;}));
+}
+document.addEventListener('click',function(event){
+ const choice = event.target.closest('#busTimetableFavorites button[data-stop]');
+ if(choice){
+   const input=document.getElementById('busTimetableStop');
+   if(input){input.value=choice.dataset.stop;input.focus();}
+   return;
+ }
+ if(!event.target.closest('#busTimetableOpen')) return;
+ const input=document.getElementById('busTimetableStop');
+ const msg=document.getElementById('busTimetableMessage');
+ const name=(input?.value||'').trim();
+ if(!name){if(msg) msg.textContent='停留所名を入力してください。';input?.focus();return;}
+ const platform=document.getElementById('busTimetablePlatform')?.value || '1';
+ const direct=TIMETABLE_DIRECT_LINKS[name]?.[platform];
+ const url=direct || 'https://itamicity-bus.jp/timetable';
+ const viewer=document.getElementById('busTimetableViewer');
+ const frame=document.getElementById('busTimetableFrame');
+ const external=document.getElementById('busTimetableExternal');
+ if(frame)frame.src=url;
+ if(external)external.href=url;
+ if(viewer)viewer.hidden=false;
+ if(msg)msg.textContent = direct ? `${name} ${platform}番のりばの公式時刻表を下に表示しています。` : `${name}の個別時刻表URLは未確認です。公式検索画面をこの欄に表示していますので、公式側で停留所・のりばを指定してください。`;
+
+});
+document.addEventListener('focusin',event=>{if(event.target?.id==='busTimetableStop') populateTimetableStops();});
 </script>
 
 <script>
