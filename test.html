@@ -1204,8 +1204,11 @@ function officialSelectedStop(){
  return pick?.value || OFFICIAL_FAVORITE_STOPS[0];
 }
 function officialTimetableURL(){
- // 公式の時刻表入口。stop パラメータに対する公式側の自動選択挙動は未保証。
- return 'https://itamicity-bus.jp/timetable';
+ const stop=officialSelectedStop();
+ const platform=document.getElementById('officialTimetablePlatform')?.value || '1';
+ if(stop==='昆陽' && platform==='1')return 'https://itamicity-bus.jp/timetable2/Bus-ka/koya1.html';
+ // 伊丹市交通局の公式時刻表：停留所名と乗り場番号をURLパラメータに指定。
+ return 'https://itamicity-bus.jp/timetable?stop='+encodeURIComponent(stop)+'&no='+encodeURIComponent(platform);
 }
 function renderOfficialStopOptions(query=''){
  const select=document.getElementById('officialTimetableStop');
@@ -1224,6 +1227,8 @@ function renderOfficialStopOptions(query=''){
 function syncOfficialTimetableLink(){
  const link=document.getElementById('officialTimetableExternal');
  if(link)link.href=officialTimetableURL();
+ const frame=document.getElementById('officialTimetableFrame');
+ if(frame && !frame.hidden && frame.src!==officialTimetableURL())frame.src=officialTimetableURL();
  const label=document.getElementById('officialSelectedStopLabel');
  if(label)label.textContent='選択中：'+officialSelectedStop();
 }
@@ -1231,6 +1236,7 @@ function chooseOfficialFavorite(stop){
  const field=document.getElementById('officialStopSearch');if(field)field.value='';
  renderOfficialStopOptions('');
  const pick=document.getElementById('officialTimetableStop');if(pick)pick.value=stop;
+ const platform=document.getElementById('officialTimetablePlatform');if(platform)platform.value='1';
  syncOfficialTimetableLink();
 }
 function openOfficialTimetableEmbed(){
@@ -1241,7 +1247,7 @@ function openOfficialTimetableEmbed(){
  syncOfficialTimetableLink();
 }
 document.addEventListener('input',function(e){if(e.target?.id==='officialStopSearch')renderOfficialStopOptions(e.target.value);});
-document.addEventListener('change',function(e){if(e.target?.id==='officialTimetableStop')syncOfficialTimetableLink();});
+document.addEventListener('change',function(e){if(e.target?.id==='officialTimetableStop'){const p=document.getElementById('officialTimetablePlatform');if(p)p.value='1';syncOfficialTimetableLink();}});
 
 let mode = 'weekday';
 
@@ -2951,11 +2957,15 @@ html += `
             </select>
           </div>
           <div class="official-stop-meta"><span id="officialStopCount">全${OFFICIAL_TIMETABLE_STOPS.length}停留所</span><span id="officialSelectedStopLabel">選択中：阪急伊丹</span></div>
+          <label for="officialTimetablePlatform" style="display:block;font-size:12px;margin:9px 0 5px">のりば番号（最初は1番を表示）</label>
+          <select id="officialTimetablePlatform" aria-label="のりば番号" onchange="syncOfficialTimetableLink()" style="max-width:180px;padding:8px;border-radius:7px">
+            ${Array.from({length:10},(_,i)=>`<option value="${i+1}">${i+1}番のりば</option>`).join('')}
+          </select>
           <div class="official-timetable-links">
             <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">選んだ停留所の時刻表を表示</button>
             <a id="officialTimetableExternal" class="official-timetable-action" target="_blank" rel="noopener noreferrer" href="https://itamicity-bus.jp/timetable">公式サイトで開く ↗</a>
           </div>
-          <div class="official-timetable-help">選択した停留所名を目印に公式時刻表検索ページを開きます。公式サイト内で停留所・乗り場・行先を選択してください（自動選択は未対応）。平日／休日は公式の表示を確認。枠内に表示されない場合は「公式サイトで開く」を使用してください。</div>
+          <div class="official-timetable-help">選択した停留所・のりばの公式時刻表を直接開きます。乗り場が複数ある停留所は番号を切り替えてください。存在しない乗り場番号では表示されない場合があります。公式サイト側が枠内表示を禁止している場合は「公式サイトで開く」を使ってください。</div>
           <iframe id="officialTimetableFrame" class="official-timetable-frame" title="伊丹市交通局公式時刻表" loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
         </div>
 
