@@ -738,6 +738,15 @@ body{
 @media(max-width:560px){.near-panel-compact .near-actions button{flex:1;min-width:0}.near-panel-compact .near-compact-route{gap:5px 10px}}
 
 /* 競合停留所：運行詳細内の注意喚起と拡大タイムライン */
+
+/* JR伊丹発：タイムラインの代わりに近接情報をコンパクトに表示 */
+.near-jr-brief{margin-top:10px;background:#163a2d;border:1px solid #447c62;border-radius:9px;padding:10px;font-size:12px}
+.near-jr-brief>b{display:block;margin-bottom:7px;color:#caffdf}
+.near-jr-item{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;border-top:1px solid #325c48;padding:7px 1px}
+.near-jr-item strong{color:#ecfff3;font-size:14px;font-variant-numeric:tabular-nums}
+.near-jr-item small{grid-column:1/-1;color:#aacdbc}
+.near-jr-alert strong{color:#ffd18c}
+@media(max-width:560px){.near-jr-item{grid-template-columns:1fr auto}.near-jr-item>span:nth-of-type(2){grid-column:1/-1;color:#c8dece}}
 .conflict-alert{margin:6px 0 0;padding:6px 8px;background:#633e16;color:#ffe5a3;border:1px solid #edaf42;border-radius:7px;font-size:12px;line-height:1.5}
 .conflict-open{margin:5px 0 0;padding:5px 10px;background:#28654d;border:1px solid #7adaab;color:#fff;border-radius:6px;cursor:pointer;font-weight:700}
 .conflict-modal[hidden]{display:none!important}
@@ -2045,7 +2054,7 @@ const conflictPassingStops = {
 };
 const conflictSharedStops = {'鶴田団地':['51','52'],'伊丹病院住友前':['5','18']};
 let conflictModalOverflow = null;
-let conflictArrivalBand = 10;
+let conflictArrivalBand = 0;
 let conflictLastTimeline = null;
 function setConflictArrivalBand(value){
  if(![0,5,10].includes(value))return;
@@ -2108,6 +2117,7 @@ function openConflictTimeline(section,index){
  })();
  if(!data)return;
  const {own,list}=data;
+ if(own.stop==='JR伊丹'){return;} // JR伊丹発は一覧のみ。タイムラインは開かない。
  const band=conflictArrivalBand;
  // 自便の次発時刻を基準に前後30分以内の他便だけを表示する。
  const allAtStop=conflictAllArrivals(own.stop).filter(a=>String(a.duty)!==String(key)).sort((a,b)=>a.time-b.time);
@@ -2699,6 +2709,7 @@ function openActiveNearTimeline(){
  const now=new Date();
  const active=activeNearDeparture(detail,now.getHours()*60+now.getMinutes());
  const anchor=activeNearReference(detail,active);
+ if(active?.trip?.発==='JR伊丹'){return;}
  if(!anchor){alert('この便の直前到着地点を確認できないため、タイムラインを表示できません。運行詳細から確認してください。');return;}
  openConflictTimeline(anchor.section,anchor.index);
 }
@@ -2715,12 +2726,17 @@ function renderNearArrivalPanel(dutyNo,detail){
  const arrivals=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
  const near=arrivals.filter(a=>a.time+10>=entry&&a.time-10<=dep);
  const label=near.length?`⚠ 近接候補 ${near.length}件`:'近接候補なし';
+ const isJRItami=ownStop==='JR伊丹';
+ // JR伊丹発は大きなタイムラインを使わず、到着予定と次運行を短く表示。
+ const brief=arrivals.slice().sort((a,b)=>Math.abs(a.time-entry)-Math.abs(b.time-entry)||a.time-b.time).slice(0,4);
+ const briefHtml=isJRItami?`<div class="near-jr-brief"><b>JR伊丹・近接到着情報</b>${brief.length?brief.map(a=>{const gap=a.time-entry;const nearMark=(a.time+10>=entry&&a.time-10<=dep);return `<div class="near-jr-item ${nearMark?'near-jr-alert':''}"><span>${nearEscape(a.duty)}勤・${nearEscape(a.line)}系統</span><strong>${conflictFmt(a.time)}着</strong><span>${gap===0?'進入と同時刻':gap<0?`進入${-gap}分前`:`進入${gap}分後`}</span><small>${nearEscape(a.nextLabel)}${a.nextTime!==null?' '+conflictFmt(a.nextTime):''}</small></div>`}).join(''):'<p class="near-small">発車前後30分以内の到着便はありません。</p>'}<p class="near-small">到着時刻は所定です。近接判定は前後±10分の想定幅を参考にしています。最大4便表示。</p></div>`:'';
  const timeLabel=now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
  return `<section class="near-panel near-panel-compact" aria-label="現在時刻からの近接便チェック">
   <div class="near-titlebar"><h4>🚌 次の運行・近接便</h4><span class="near-tag ${near.length?'':'clear'}">${label}</span></div>
   <div class="near-compact-route"><span>次発 <b>${nearEscape(ownStop)}</b></span><strong>${nearTime(dep)} 発</strong><span class="near-compact-entry">${ownArrival===null?'進入目安':'直前到着'} ${nearTime(entry)}</span></div>
-  <div class="near-actions">${anchor?'<button type="button" class="near-primary-action" onclick="openActiveNearTimeline()">📊 近接便タイムラインを見る</button>':'<span class="near-small">この便は直前到着情報がないため、運行詳細から確認してください。</span>'}<button type="button" onclick="refreshNearArrivalPanel()">🔄 更新</button></div>
-  <p class="near-small">現在 ${timeLabel}／所定ダイヤによる自動選択。${near.length?'他便の±10分想定帯が自便の停車時間に近接します。':'前後30分の便はタイムラインで確認できます。'} 運転中は操作しないでください。</p>
+  ${briefHtml}
+  <div class="near-actions">${isJRItami?'':anchor?'<button type="button" class="near-primary-action" onclick="openActiveNearTimeline()">📊 近接便タイムラインを見る</button>':'<span class="near-small">この便は直前到着情報がないため、運行詳細から確認してください。</span>'}<button type="button" onclick="refreshNearArrivalPanel()">🔄 更新</button></div>
+  <p class="near-small">現在 ${timeLabel}／所定ダイヤによる自動選択。${isJRItami?'JR伊丹発は近接到着情報のみ表示します。':near.length?'他便の±10分想定帯が自便の停車時間に近接します。':'前後30分の便はタイムラインで確認できます。'} 運転中は操作しないでください。</p>
  </section>`;
 }
 function refreshNearArrivalPanel(){
