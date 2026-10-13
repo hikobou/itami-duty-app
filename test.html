@@ -767,6 +767,18 @@ body{
 .conflict-band-control strong{margin-right:5px;font-size:13px}
 .conflict-band-option{background:#24503f;border:1px solid #6f9f84;color:#eafff3;padding:8px 13px;border-radius:8px;font-weight:700;cursor:pointer}
 .conflict-band-option.selected{background:#32b884;border-color:#97efca;color:#08281c;box-shadow:0 0 0 2px #67dfab50}
+
+/* 公式時刻表パネル：右メモ欄 */
+.official-timetable-card{border-color:#49745f}
+.official-timetable-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.official-timetable-controls select{width:100%;background:#143528;border:1px solid #71b895;color:#f0fff7;border-radius:8px;padding:11px 8px;font-size:15px}
+.official-timetable-action{display:inline-block;background:#267454;border:1px solid #77b896;color:white;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:700;text-decoration:none}
+.official-timetable-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.official-timetable-help{font-size:12px;color:#badbc9;line-height:1.6;margin:9px 0}
+.official-timetable-frame[hidden]{display:none}
+.official-timetable-frame{display:block;width:100%;height:520px;border:1px solid #5c8b73;border-radius:8px;background:white;margin-top:10px}
+@media(max-width:650px){.official-timetable-frame{height:460px}}
+
 </style>
 </head>
 
@@ -1176,6 +1188,30 @@ Created by 株式会社三栄社
 </div>
 
 <script>
+
+// 伊丹市交通局の公式サイトを直接参照。時刻表の転記・推定はしない。
+const OFFICIAL_TIMETABLE_STOPS = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団・交通局前','ＪＲ猪名寺','山田'];
+function officialTimetableURL(){
+ const select=document.getElementById('officialTimetableStop');
+ const idx=Number(select?.value||0);
+ const name=OFFICIAL_TIMETABLE_STOPS[idx] || OFFICIAL_TIMETABLE_STOPS[0];
+ return 'https://itamicity-bus.jp/timetable?stop='+encodeURIComponent(name);
+}
+function syncOfficialTimetableLink(){
+ const link=document.getElementById('officialTimetableExternal');
+ if(link) link.href=officialTimetableURL();
+ const frame=document.getElementById('officialTimetableFrame');
+ if(frame && !frame.hidden) frame.src=officialTimetableURL();
+}
+function openOfficialTimetableEmbed(){
+ const frame=document.getElementById('officialTimetableFrame');
+ if(!frame)return;
+ frame.hidden=false;
+ frame.src=officialTimetableURL();
+ syncOfficialTimetableLink();
+}
+document.addEventListener('change',function(e){if(e.target?.id==='officialTimetableStop')syncOfficialTimetableLink();});
+
 let mode = 'weekday';
 
 const weekdayBtn = document.getElementById('weekdayBtn');
@@ -2873,6 +2909,23 @@ html += `
       <div class="info-sections">
         ${slopeHtml}
 
+
+
+        <div class="info-card official-timetable-card">
+          <div class="info-card-title">伊丹市交通局 公式時刻表</div>
+          <label for="officialTimetableStop" style="display:block;font-size:12px;margin-bottom:6px">停留所を選択</label>
+          <div class="official-timetable-controls">
+            <select id="officialTimetableStop" aria-label="公式時刻表の停留所を選択">
+              <option value="0">阪急伊丹</option><option value="1">鴻池東</option><option value="2">塚口</option><option value="3">西野武庫川センター前</option><option value="4">昆陽里</option><option value="5">三師団・交通局前</option><option value="6">ＪＲ猪名寺</option><option value="7">山田</option>
+            </select>
+          </div>
+          <div class="official-timetable-links">
+            <button type="button" class="official-timetable-action" onclick="openOfficialTimetableEmbed()">時刻表を表示</button>
+            <a id="officialTimetableExternal" class="official-timetable-action" target="_blank" rel="noopener noreferrer" href="https://itamicity-bus.jp/timetable">公式サイトで開く ↗</a>
+          </div>
+          <div class="official-timetable-help">伊丹市交通局の公式時刻表を表示します。乗り場・方向・平日／休日を公式画面で確認してください。サイト側の制限で枠内に表示されない場合は「公式サイトで開く」を使用してください。</div>
+          <iframe id="officialTimetableFrame" class="official-timetable-frame" title="伊丹市交通局公式時刻表" loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
+        </div>
 
        <div class="info-card">
           <div class="info-card-title">メモ</div>
