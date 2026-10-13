@@ -3194,6 +3194,7 @@ html += `
            <datalist id="busTimetableStops"></datalist>
            <label style="font-size:12px">のりば番号（分かる場合）<select id="busTimetablePlatform" aria-label="のりば番号"><option value="1">1番</option><option value="2">2番</option><option value="3">3番</option><option value="4">4番</option><option value="5">5番</option><option value="6">6番</option><option value="7">7番</option><option value="8">8番</option><option value="9">9番</option><option value="10">10番</option></select></label>
            <button class="bus-timetable-submit" id="busTimetableOpen" type="button">選んだ停留所の時刻表を表示</button>
+           <button class="bus-timetable-submit" id="busTimetableOfficialSearch" type="button" style="background:#295b49;border:1px solid #7eac97">公式サイトで全停留所・のりばを探す</button>
            <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選ぶと、この欄に公式時刻表を表示します。</div>
            <div class="bus-timetable-viewer" id="busTimetableViewer" hidden>
              <div class="bus-timetable-stage" id="busTimetableStage"><iframe class="bus-timetable-frame" id="busTimetableFrame" title="伊丹市交通局 公式時刻表" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
@@ -3551,13 +3552,19 @@ function closeGuide() {
 initializeApp();
 
 
-/* 現行公式時刻表（検証済み停留所・のりばのみ個別表示）。未確認は公式検索入口へ */
+/* 現行公式時刻表：全停留所で直接URLを生成、確認済みの乗り場のみ確定表示 */
 const TIMETABLE_CONFIRMED = {
-  '山田': { '1': 'ま', '2': 'ま' }
+  // 公式「主なのりば」掲載の乗り場番号に限定。URLにはchaを付けず公式のリンク形式を使用。
+  '阪急伊丹': {'1':'','2':'','3':'','4':'','5':'','6':'','9':''},
+  '塚口': {'1':'','2':''},
+  'ＪＲ伊丹': {'1':'','2':'','3':'','4':'','5':'','6':''},
+  '大阪国際空港': {'7':''},
+  // 現行公式ページが実際に表示されることを確認済み。
+  '山田': {'1':'ま','2':'ま'}
 };
 const TIMETABLE_OFFICIAL_SEARCH = 'https://itamicity-bus.jp/timetable';
-const TIMETABLE_NAME_ALIASES = {'三師団交通局前':'三師団・交通局前','ＪＲ猪名寺':'JR猪名寺','ＪＲ猪名寺駅':'JR猪名寺'};
-const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田'];
+const TIMETABLE_NAME_ALIASES = {'三師団交通局前':'三師団・交通局前','ＪＲ猪名寺':'JR猪名寺','ＪＲ猪名寺駅':'JR猪名寺','JR伊丹':'ＪＲ伊丹'};
+const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田','JR伊丹','大阪国際空港'];
 function populateTimetableStops(){
  const el=document.getElementById('busTimetableStops');
  if(!el) return;
@@ -3582,13 +3589,13 @@ function updateTimetablePlatforms(){
  const name=TIMETABLE_NAME_ALIASES[(input?.value||'').trim()]||(input?.value||'').trim();
  const confirmed=TIMETABLE_CONFIRMED[name];
  const previous=sel.value;
- const numbers=confirmed?Object.keys(confirmed):['1','2','3','4','5'];
+ const numbers=confirmed?Object.keys(confirmed):Array.from({length:10},(_,i)=>String(i+1));
  sel.replaceChildren(...numbers.map(n=>{const o=document.createElement('option');o.value=n;o.textContent=n+'番';return o;}));
- if(numbers.includes(previous))sel.value=previous;
+ if(numbers.includes(previous) && confirmed)sel.value=previous;
  const msg=document.getElementById('busTimetableMessage');
  if(msg)msg.textContent=confirmed
   ? `${name}は現行公式時刻表の${numbers.join('・')}番のりばを確認済みです。`
-  : 'この停留所の乗り場構成は未照合です。公式検索画面で確認してください。';
+  : '全停留所検索モード：1〜10番から選択できます。未照合の番号は公式時刻表の表示内容を必ず確認してください。';
 }
 document.addEventListener('click',function(event){
  const choice=event.target.closest('#busTimetableFavorites button[data-stop]');
@@ -3605,25 +3612,33 @@ document.addEventListener('click',function(event){
  if(!raw){if(msg)msg.textContent='停留所名を入力してください。';input?.focus();return;}
  const name=TIMETABLE_NAME_ALIASES[raw]||raw;
  const no=document.getElementById('busTimetablePlatform')?.value||'1';
+ const knownPlatform=TIMETABLE_CONFIRMED[name] && Object.prototype.hasOwnProperty.call(TIMETABLE_CONFIRMED[name],no);
  const cha=TIMETABLE_CONFIRMED[name]?.[no];
  const viewer=document.getElementById('busTimetableViewer');
  const frame=document.getElementById('busTimetableFrame');
  const external=document.getElementById('busTimetableExternal');
- if(!cha){
-  if(frame)frame.removeAttribute('src');
-  if(external){external.href=TIMETABLE_OFFICIAL_SEARCH;external.textContent='公式サイトで停留所・のりばを検索する';}
-  if(viewer)viewer.hidden=false;
-  if(frame)frame.src=TIMETABLE_OFFICIAL_SEARCH;
-  if(msg)msg.textContent=`${name} ${no}番のりばの現行URLは未検証です。公式検索画面で停留所と乗り場を選んでください。`;
-  requestAnimationFrame(fitBusTimetableFrame);
-  return;
- }
- const url=TIMETABLE_OFFICIAL_SEARCH+'?'+new URLSearchParams({stop:name,no,cha}).toString();
+ const query={stop:name,no};
+ if(cha)query.cha=cha;
+ const url=TIMETABLE_OFFICIAL_SEARCH+'?'+new URLSearchParams(query).toString();
  if(frame)frame.src=url;
  if(external){external.href=url;external.textContent='この時刻表を公式サイトで開く';}
  if(viewer)viewer.hidden=false;
  requestAnimationFrame(fitBusTimetableFrame);
- if(msg)msg.textContent=`${name}${no}番のりばの現行公式時刻表を表示します。`;
+ if(msg)msg.textContent=knownPlatform
+  ? `${name}${no}番のりばの現行公式時刻表を表示します。`
+  : `${name}${no}番のりばを現行公式サイトで検索します（乗り場未照合）。表示された停留所名・のりば・行先を必ず確認してください。`;
+});
+document.addEventListener('click',event=>{
+ if(!event.target.closest('#busTimetableOfficialSearch'))return;
+ const viewer=document.getElementById('busTimetableViewer');
+ const frame=document.getElementById('busTimetableFrame');
+ const external=document.getElementById('busTimetableExternal');
+ const msg=document.getElementById('busTimetableMessage');
+ if(frame)frame.src=TIMETABLE_OFFICIAL_SEARCH;
+ if(external){external.href=TIMETABLE_OFFICIAL_SEARCH;external.textContent='公式サイトの全停留所検索を別画面で開く';}
+ if(viewer)viewer.hidden=false;
+ if(msg)msg.textContent='公式サイトの停留所検索画面です。停留所を選び、正しいのりばを確認してください。';
+ requestAnimationFrame(fitBusTimetableFrame);
 });
 document.addEventListener('input',event=>{if(event.target?.id==='busTimetableStop')updateTimetablePlatforms();});
 // 外部公式ページはDOMを変更できないため、iframe全体を縮小して表示枠に合わせる。
