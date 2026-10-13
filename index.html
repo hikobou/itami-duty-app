@@ -788,6 +788,16 @@ img, iframe { max-width:100%; }
   .time-card, .info-card { padding:9px; }
   .near-panel { padding:10px; }
 }
+
+/* 時刻表検索：スマホでもパネル外へはみ出さない */
+.bus-timetable-card{min-width:0;overflow:hidden}
+.bus-timetable-card input,.bus-timetable-card select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:#fff;color:#111827;border:1px solid #9fc5b5;border-radius:8px;padding:10px;font-size:16px}
+.bus-timetable-form{display:grid;gap:9px}
+.bus-timetable-favorites{display:flex;gap:6px;flex-wrap:wrap}
+.bus-timetable-favorites button{font-size:12px;padding:7px 9px;border:1px solid #65b795;background:#1d5944;border-radius:7px;color:white;cursor:pointer}
+.bus-timetable-form .bus-timetable-submit{width:100%;background:#2aa876;color:white;font-weight:800;border:none;border-radius:8px;padding:12px;cursor:pointer;font-size:15px}
+.bus-timetable-link{display:block;margin-top:8px;color:#a7ebd0;overflow-wrap:anywhere}
+.bus-timetable-msg{font-size:12px;line-height:1.5;color:#cfe9dd}
 </style>
 </head>
 
@@ -2893,6 +2903,27 @@ html += `
       </div>
 
       <div class="info-sections">
+
+       <div class="info-card bus-timetable-card" aria-label="時刻表検索">
+         <div class="info-card-title">🚌 公式時刻表検索</div>
+         <div class="bus-timetable-form">
+           <div class="bus-timetable-favorites" id="busTimetableFavorites">
+             <button type="button" data-stop="阪急伊丹">阪急伊丹</button>
+             <button type="button" data-stop="鴻池東">鴻池東</button>
+             <button type="button" data-stop="塚口">塚口</button>
+             <button type="button" data-stop="西野武庫川センター前">西野武庫川センター前</button>
+             <button type="button" data-stop="昆陽里">昆陽里</button>
+             <button type="button" data-stop="三師団交通局前">三師団交通局前</button>
+             <button type="button" data-stop="JR猪名寺">JR猪名寺</button>
+             <button type="button" data-stop="山田">山田</button>
+           </div>
+           <input id="busTimetableStop" type="search" list="busTimetableStops" placeholder="停留所名を入力（例：昆陽）" aria-label="停留所名">
+           <datalist id="busTimetableStops"></datalist>
+           <label style="font-size:12px">のりば番号（分かる場合）<select id="busTimetablePlatform" aria-label="のりば番号"><option value="1">1番</option><option value="2">2番</option><option value="3">3番</option><option value="4">4番</option><option value="5">5番</option><option value="6">6番</option><option value="7">7番</option><option value="8">8番</option><option value="9">9番</option><option value="10">10番</option></select></label>
+           <button class="bus-timetable-submit" id="busTimetableOpen" type="button">選んだ停留所の時刻表を表示</button>
+           <div class="bus-timetable-msg" id="busTimetableMessage">停留所を選んで表示してください。公式サイトの時刻表を新しいタブで開きます。</div>
+         </div>
+       </div>
         ${slopeHtml}
 
 
@@ -3232,6 +3263,52 @@ function closeGuide() {
 }
 initializeApp();
 
+
+/* 時刻表検索復旧。確認済みの公式直リンクだけ使用し、未確認のURLは生成しない */
+const TIMETABLE_DIRECT_LINKS = {
+  '昆陽': { '1': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya1.html', '2': 'https://itamicity-bus.jp/timetable2/Bus-ka/koya2.html' }
+};
+const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田'];
+function populateTimetableStops(){
+ const el = document.getElementById('busTimetableStops');
+ if(!el) return;
+ const names = new Set([...TIMETABLE_FAVORITES, '昆陽']);
+ for(const day of ['weekday','holiday']){
+   for(const duty of Object.values(dutyDetailDb[day] || {})){
+     for(const part of ['前半','後半']){
+       for(const run of (duty?.[part] || [])){
+         for(const k of ['発','着','発停留所','着停留所','発地','着地']){
+           if(typeof run[k] === 'string' && run[k].length <= 30) names.add(run[k]);
+         }
+       }
+     }
+   }
+ }
+ el.replaceChildren(...[...names].sort((a,b)=>a.localeCompare(b,'ja')).map(n=>{const o=document.createElement('option');o.value=n;return o;}));
+}
+document.addEventListener('click',function(event){
+ const choice = event.target.closest('#busTimetableFavorites button[data-stop]');
+ if(choice){
+   const input=document.getElementById('busTimetableStop');
+   if(input){input.value=choice.dataset.stop;input.focus();}
+   return;
+ }
+ if(!event.target.closest('#busTimetableOpen')) return;
+ const input=document.getElementById('busTimetableStop');
+ const msg=document.getElementById('busTimetableMessage');
+ const name=(input?.value||'').trim();
+ if(!name){if(msg) msg.textContent='停留所名を入力してください。';input?.focus();return;}
+ const platform=document.getElementById('busTimetablePlatform')?.value || '1';
+ const direct=TIMETABLE_DIRECT_LINKS[name]?.[platform];
+ const url=direct || 'https://itamicity-bus.jp/timetable';
+ const w=window.open(url,'_blank','noopener,noreferrer');
+ if(msg)msg.textContent = direct ? `${name} ${platform}番のりばの公式時刻表を開きました。` : `${name}の個別時刻表URLは未確認のため、公式検索ページを開きました。公式側で停留所・のりばを指定してください。`;
+ if(!w && msg){
+   msg.replaceChildren(document.createTextNode('ブラウザで新しいタブが開けない場合：'));
+   const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='公式時刻表を開く';link.className='bus-timetable-link';msg.append(link);
+ }
+});
+document.addEventListener('focusin',event=>{if(event.target?.id==='busTimetableStop') populateTimetableStops();});
 </script>
 
 <script>
