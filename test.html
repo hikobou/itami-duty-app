@@ -805,6 +805,35 @@ img, iframe { max-width:100%; }
 .bus-timetable-stage .bus-timetable-frame{position:absolute;top:0;left:0}
 .bus-timetable-external{display:block;padding:8px 10px;background:#163e30;font-size:12px;color:#b5f1d6;overflow-wrap:anywhere}
 @media(max-width:520px){.bus-timetable-stage{height:62vh;min-height:380px}}
+
+/* Ver.6.5: スマホ全画面の横はみ出し防止（時刻表の縮小表示は維持） */
+@media (max-width: 760px) {
+  html, body { width:100% !important; max-width:100% !important; margin:0; overflow-x:hidden !important; }
+  .container { width:100%; max-width:100%; min-width:0; margin:0 auto; padding-left:10px; padding-right:10px; overflow-x:clip; }
+  .hero, .result, .result-main, .time-card, .info-card, .info-sections,
+  .toolbar, .search-box, .item-list, .near-panel, .near-summary,
+  .bus-timetable-card, .bus-timetable-viewer { box-sizing:border-box; min-width:0 !important; max-width:100% !important; }
+  .result-main, .toolbar { grid-template-columns:minmax(0,1fr) !important; }
+  .result-main > *, .toolbar > *, .info-sections > * { min-width:0 !important; max-width:100%; }
+  .hero-top, .result-headline, .item, .info-row, .near-titlebar { min-width:0; max-width:100%; flex-wrap:wrap; }
+  .search-box { width:100%; }
+  .search-box input { flex:1 1 0; min-width:0 !important; width:1%; }
+  .search-box button { flex:0 0 auto; }
+  .item-label, .item-value, .info-label, .info-value, .note-list li,
+  .bus-timetable-msg, .near-info { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+  .duty-table-wrap, .conflict-graphic, .fare-slide-viewport { width:100%; max-width:100%; overflow-x:auto; }
+  .duty-detail-table { width:100%; max-width:100%; table-layout:fixed; }
+  .duty-detail-table th, .duty-detail-table td { overflow-wrap:anywhere; word-break:normal; }
+  .conflict-modal-content { width:100%; max-width:100%; overflow-x:hidden; }
+  .conflict-graphic { overflow-x:auto; }
+  .bus-timetable-stage { max-width:100%; overflow:hidden; }
+  .footer { max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+}
+@media (max-width: 390px) {
+  .search-type-toggle { max-width:100%; display:flex; }
+  .search-type-toggle button { flex:1 1 0; min-width:0; padding:10px 5px; font-size:12px; }
+  .duty-quick-actions { flex-wrap:wrap; }
+}
 </style>
 </head>
 
