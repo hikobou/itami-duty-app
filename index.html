@@ -705,7 +705,7 @@ body{
 #fareTableBtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent)}
 #fareGuide[hidden]{display:none}
 
-/* 近接到着便チェック Ver.6.3 */
+/* 近接到着便チェック Ver.6.5 */
 .near-panel{margin:12px 0 16px;padding:15px;border:1px solid #50b992;border-radius:13px;background:#102d23;color:#eafff3}
 .near-titlebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .near-titlebar h4{margin:0;font-size:18px}
@@ -753,7 +753,7 @@ body{
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.3</span></div>
+        <div class="header">伊丹市交通局<br><span class="line2">勤番検索ツール Ver.6.5</span></div>
         <p class="sub">Duty Search System / Professional Edition</p>
       </div>
       <div class="system-badge">
@@ -2018,7 +2018,7 @@ function renderVehicleList(assignments) {
 }
 
 
-/* 近接便 Ver.6.3：同じ終点での折返し便と途中停留所の系統を統合 */
+/* 近接便 Ver.6.5：同じ終点での折返し便と途中停留所の系統を統合 */
 // 途中停留所の発着は dutyDetail.json に未収録。確認済みの事例のみ設定。
 // 52系統の20:20は前回の照合値。ダイヤ改正時に停留所時刻表と再照合すること。
 const conflictPassingStops = {
@@ -3079,7 +3079,7 @@ redrawTimer = setInterval(() => {
   const today = new Date();
   const dateText = `${today.getMonth() + 1}月${today.getDate()}日`;
 
-  updateTicker(`📅 ${dateText}です。🚍・休日～25勤迄運行詳細表示。平日～217迄照合済　出勤時間まであと ${remainText}`);
+  updateTicker(`📅 ${dateText}です。🚍・近接到着便検索機能、時刻表検索機能追加・休日～25勤迄運行詳細表示。平日～217迄照合済　出勤時間まであと ${remainText}`);
 } else {
   updateTicker(`次：${next.label} ${next.time}　あと ${remainText}です`);
 }
