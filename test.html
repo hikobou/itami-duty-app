@@ -1754,24 +1754,21 @@ async function loadExternalData() {
   dutyVehicleLoaded = false;
   dutyHardnessLoaded = false;
 
-  // 勤務DB
-  try {
-    const weekdayJson = await fetchJson(DATA_FILES.weekday);
-    const holidayJson = await fetchJson(DATA_FILES.holiday);
-
-    datasets = {
-      weekday: normalizeDutyData(weekdayJson),
-      holiday: normalizeDutyData(holidayJson)
-    };
-
-    weekdayLoaded = true;
-  } catch (e) {
-    console.error('勤務DB読込失敗', e);
-    datasets = {
-      weekday: {},
-      holiday: {}
-    };
+  // 平日・休日を個別に読み込む。一方の失敗でも他方を消さない。
+  datasets = { weekday: {}, holiday: {} };
+  const dutyDbErrors = [];
+  for (const day of ['weekday', 'holiday']) {
+    try {
+      const raw = await fetchJson(DATA_FILES[day]);
+      const parsed = normalizeDutyData(raw);
+      if (!Object.keys(parsed).length) throw new Error('勤務データが空です');
+      datasets[day] = parsed;
+    } catch (e) {
+      console.error(`${day}勤務DB読込失敗`, e);
+      dutyDbErrors.push(day === 'weekday' ? '平日' : '休日');
+    }
   }
+  weekdayLoaded = dutyDbErrors.length === 0;
 
   // 車両DB
   try {
@@ -1830,7 +1827,7 @@ try {
  // 状態表示
 const dbStatus = [];
 
-if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗");
+if (!weekdayLoaded) dbStatus.push("勤務DB読込失敗（" + dutyDbErrors.join("・") + "）");
 if (!vehicleLoaded) dbStatus.push("車両DB読込失敗");
 if (!slopeStopsLoaded) dbStatus.push("スロープ停留所DB読込失敗");
 if (!dutyVehicleLoaded) dbStatus.push("割付DB読込失敗");
@@ -2053,6 +2050,7 @@ function calcSummary(duty) {
 }
 
 weekdayBtn.onclick = () => {
+  cancelDutyAutoSearch();
   mode = 'weekday';
   weekdayBtn.classList.add('active');
   holidayBtn.classList.remove('active');
@@ -2064,6 +2062,7 @@ weekdayBtn.onclick = () => {
 };
 
 holidayBtn.onclick = () => {
+  cancelDutyAutoSearch();
   mode = 'holiday';
   holidayBtn.classList.add('active');
   weekdayBtn.classList.remove('active');
@@ -2074,9 +2073,16 @@ holidayBtn.onclick = () => {
   }
 };
 
-searchBtn.onclick = () => runSearch();
+// 入力後の短い待機で自動検索。連続入力中は古い検索を実行しない。
+let dutyAutoSearchTimer = null;
+function cancelDutyAutoSearch() {
+  if (dutyAutoSearchTimer !== null) clearTimeout(dutyAutoSearchTimer);
+  dutyAutoSearchTimer = null;
+}
+searchBtn.onclick = () => { cancelDutyAutoSearch(); runSearch(); };
 
 clearBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchInput.value = '';
   result.innerHTML = '';
   resultStatus.textContent = '待機中';
@@ -2110,6 +2116,7 @@ todayDutyBtn.onclick = () => {
   searchRoster();
 };
 dutySearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'duty';
   dutySearchBtn.classList.add('active');
   vehicleSearchBtn.classList.remove('active');
@@ -2123,6 +2130,7 @@ dutySearchBtn.onclick = () => {
 };
 
 vehicleSearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'vehicle';
   vehicleSearchBtn.classList.add('active');
   dutySearchBtn.classList.remove('active');
@@ -2137,13 +2145,14 @@ vehicleSearchBtn.onclick = () => {
 
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
+    cancelDutyAutoSearch();
     runSearch();
   }
 });
 
 searchInput.addEventListener('input', () => {
   if (searchType === 'duty') {
-    searchInput.value = searchInput.value.replace(/[^0-9A-Za-z-]/g, '').slice(0, 8);
+    searchInput.value = searchInput.value.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[ー－―]/g,'-').replace(/[^0-9A-Za-z-]/g, '').slice(0, 12);
   } else {
     searchInput.value = searchInput.value.trimStart();
   }
@@ -2155,19 +2164,33 @@ searchInput.addEventListener('input', () => {
     return;
   }
 
-  // 入力途中で別の勤番を表示しない。検索ボタン／Enterで確定する。
+  // 勤番は入力が止まった500ms後に自動検索。枝番の「-」直後は待機する。
+  // 完全一致しない場合は別番号へ置換せず、未登録とする。
+  cancelDutyAutoSearch();
   if (searchType === 'duty') {
-    resultStatus.textContent = '入力中（検索ボタンで確定）';
     stopTicker();
     currentDutyKey = null;
     currentDutyData = null;
     result.innerHTML = '';
+    if (value.endsWith('-')) {
+      resultStatus.textContent = '枝番を入力中';
+      return;
+    }
+    resultStatus.textContent = '入力中…';
+    const expected = value;
+    const expectedMode = mode;
+    dutyAutoSearchTimer = setTimeout(() => {
+      dutyAutoSearchTimer = null;
+      if (searchType !== 'duty' || mode !== expectedMode || searchInput.value.trim() !== expected) return;
+      searchDuty();
+    }, 500);
   } else {
     runSearch();
   }
 });
 
 rosterSearchBtn.onclick = () => {
+  cancelDutyAutoSearch();
   searchType = 'roster';
 
   rosterSearchBtn.classList.add('active');
@@ -3164,21 +3187,18 @@ function searchDuty() {
 
   const normalizedInput = input.replace(/勤$/i, '');
   const data = datasets[mode] || {};
+  if (!Object.keys(data).length) {
+    result.innerHTML = '<div class="empty">勤務データを読み込めていません。GitHubのdataフォルダーと通信状態を確認してください。</div>';
+    resultStatus.textContent = '勤務DB未読込（検索不可）';
+    stopTicker();
+    return;
+  }
 
   let duty = data[normalizedInput];
   let dutyKey = normalizedInput;
 
-  // 指定した勤番と異なる勤務を勝手に表示しない。
-  // 枝番を入力した場合はその枝番のみ検索する。
-  // 枝番のない番号だけ、唯一の枝番が存在する場合に限り補完する。
-  if (!duty && !normalizedInput.includes('-')) {
-    const candidates = [`${normalizedInput}-1`, `${normalizedInput}-2`]
-      .filter(key => Object.prototype.hasOwnProperty.call(data, key));
-    if (candidates.length === 1) {
-      dutyKey = candidates[0];
-      duty = data[dutyKey];
-    }
-  }
+  // 完全一致のみ。異なる勤番・枝番への自動置換は禁止。
+  if (!Object.prototype.hasOwnProperty.call(data, normalizedInput)) duty = null;
 
 if (!duty) {
   result.innerHTML = '<div class="empty">未登録の勤番です（DB未入力または誤入力）</div>';
@@ -3202,7 +3222,17 @@ currentVehicle = vehicle;
 currentDutyBaseDate = new Date();
 currentDutyBaseDate.setHours(0, 0, 0, 0);  
 
-result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
+try {
+  result.innerHTML = renderDutyHtml(dutyKey, duty, hardness, vehicle, slopeStops);
+} catch (err) {
+  console.error('勤番結果の表示エラー', err);
+  result.innerHTML = '<div class="empty">勤務情報の表示中にエラーが発生しました。正式なダイヤ表をご確認ください。</div>';
+  resultStatus.textContent = '表示エラー：' + String(err?.message || err).slice(0, 110);
+  currentDutyKey = null;
+  currentDutyData = null;
+  stopTicker();
+  return;
+}
   resultStatus.textContent = `${mode === 'weekday' ? '平日' : '休日'} ${dutyKey.includes('-') ? dutyKey : dutyKey + '勤'} を表示中`;
 
   startTicker(duty);
@@ -3289,7 +3319,7 @@ redrawTimer = setInterval(() => {
   if (searchType !== 'duty') return;
   if (!searchInput.value.trim()) return;
   const typedDuty = searchInput.value.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[ー－―]/g,'-').replace(/勤$/i,'');
-  if (typedDuty !== currentDutyKey && !( !typedDuty.includes('-') && (currentDutyKey === typedDuty + '-1' || currentDutyKey === typedDuty + '-2') )) return;
+  if (typedDuty !== currentDutyKey) return;
 
   result.innerHTML = renderDutyHtml(
     currentDutyKey,
@@ -3453,7 +3483,7 @@ async function initializeApp() {
   console.log('weekday keys =', Object.keys(datasets.weekday));
   console.log('weekday 26 =', datasets.weekday['26']);
 
-  runSelfTests();
+  // テスト用ダミーデータによる内部検証は本番起動時には実行しない。
 }
 document.getElementById('guideBtn').addEventListener('click', () => {
   document.getElementById('guideModal').style.display = 'block';
