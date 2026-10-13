@@ -2967,6 +2967,7 @@ function renderNearArrivalPanel(dutyNo,detail){
  const anchor=activeNearReference(detail,selected);
  const ownArrival=anchor?.arr??null;
  const dep=selected.dep;
+ const entry=ownArrival===null?dep-2:ownArrival;
  const all=conflictAllArrivals(ownStop).filter(a=>String(a.duty)!==String(dutyNo)&&Math.abs(a.time-dep)<=30);
  const near=all.filter(a=>a.time+10>=(ownArrival===null?dep-(ownStop==='JR伊丹'?3:2):ownArrival)&&a.time-10<=dep);
  const header=`<div class="near-titlebar"><h4>🚌 現在時刻からの近接便チェック</h4><span class="near-tag ${near.length?'':'clear'}">${near.length?'近接候補 '+near.length+'件':'近接候補なし'}</span></div>`;
