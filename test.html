@@ -3562,8 +3562,161 @@ const TIMETABLE_CONFIRMED = {
   // 現行公式ページが実際に表示されることを確認済み。
   '山田': {'1':'ま','2':'ま'}
 };
+/* 公式の五十音別停留所一覧から転記した直接表示用データ。時刻表本体は公式サイトで読み込む。 */
+const TIMETABLE_STOP_PLATFORM_DATA = {
+  '尼崎北高校前': {cha:'あ', nums:'1'},
+  '尼崎北小学校前': {cha:'あ', nums:'1,2'},
+  '天津': {cha:'あ', nums:'1'},
+  '荒牧': {cha:'あ', nums:'1,2'},
+  '荒牧北': {cha:'あ', nums:'1,2'},
+  '荒牧バラ公園': {cha:'あ', nums:'1,2'},
+  'アルビス寺本': {cha:'あ', nums:'1,2'},
+  '池尻': {cha:'あ', nums:'1,2'},
+  '池尻南口': {cha:'あ', nums:'1,2'},
+  '泉町': {cha:'あ', nums:'1,2'},
+  '伊丹工業団地前': {cha:'あ', nums:'1'},
+  '伊丹坂': {cha:'あ', nums:'1,2'},
+  '伊丹市役所西': {cha:'あ', nums:'1,2'},
+  '伊丹市役所前': {cha:'あ', nums:'1,2'},
+  '伊丹スカイパーク・上須古': {cha:'あ', nums:'1,2,3'},
+  '伊丹病院住友前': {cha:'あ', nums:'1,2,3,4,5'},
+  '伊丹郵便局前': {cha:'あ', nums:'1,2'},
+  '市高前': {cha:'あ', nums:'1,2'},
+  '稲野': {cha:'あ', nums:'1,2'},
+  '稲野町8丁目': {cha:'あ', nums:'1,2,3,4'},
+  '岩屋': {cha:'あ', nums:'1'},
+  '岩屋東': {cha:'あ', nums:'1,2'},
+  '上久代': {cha:'あ', nums:'1,2'},
+  '大阪芸大短期大学部前': {cha:'あ', nums:'1,2'},
+  '大阪国際空港': {cha:'あ', nums:'7'},
+  '大鹿口': {cha:'あ', nums:'1,2,3,4'},
+  '大鹿東口': {cha:'あ', nums:'1'},
+  '大野': {cha:'あ', nums:'1,2'},
+  '大樋橋': {cha:'あ', nums:'1,2'},
+  '荻野': {cha:'あ', nums:'1,2,3,4'},
+  '荻野北': {cha:'あ', nums:'1,2'},
+  '荻野西': {cha:'あ', nums:'1,2'},
+  '荻野南': {cha:'あ', nums:'1,2'},
+  '春日丘': {cha:'か', nums:'1,2,3'},
+  '春日丘西': {cha:'か', nums:'1,2'},
+  '神津': {cha:'か', nums:'1,2'},
+  '神津大橋': {cha:'か', nums:'1,2'},
+  '神津交流センター前': {cha:'か', nums:'1,2'},
+  '北河原6丁目': {cha:'か', nums:'1'},
+  '北センター前': {cha:'か', nums:'1,2'},
+  '北野': {cha:'か', nums:'1,2'},
+  '北ノ口': {cha:'か', nums:'1,2'},
+  '北町': {cha:'か', nums:'1,2'},
+  '北村': {cha:'か', nums:'1,2,3'},
+  '北村西口': {cha:'か', nums:'1,2'},
+  '行基町1丁目': {cha:'か', nums:'1,2'},
+  '近畿中央病院前': {cha:'か', nums:'1,2'},
+  '空港１丁目': {cha:'か', nums:'1'},
+  '口酒井': {cha:'か', nums:'1'},
+  'クリーンランド前': {cha:'か', nums:'1'},
+  '車塚': {cha:'か', nums:'1,2'},
+  '桑田': {cha:'か', nums:'1,2'},
+  '県高前': {cha:'か', nums:'1,2'},
+  '県住北口': {cha:'か', nums:'1,2'},
+  '県住南口': {cha:'か', nums:'1,2'},
+  '小井内': {cha:'か', nums:'1,2'},
+  '小井内南': {cha:'か', nums:'1,2'},
+  '公設市場前': {cha:'か', nums:'1,2'},
+  '鴻池': {cha:'か', nums:'1,2,3,4'},
+  '鴻池東': {cha:'か', nums:'1'},
+  '御願塚': {cha:'か', nums:'1,2'},
+  '昆陽': {cha:'か', nums:'1,2'},
+  '昆陽池公園前': {cha:'か', nums:'1,2'},
+  '昆陽西口': {cha:'か', nums:'1,2'},
+  '昆陽里': {cha:'か', nums:'1,2'},
+  '昆陽里・交番前': {cha:'か', nums:'1'},
+  '昆陽里北': {cha:'か', nums:'1,2'},
+  '坂ノ下': {cha:'さ', nums:'1,2'},
+  '桜ヶ丘2丁目': {cha:'さ', nums:'1,2'},
+  '桜ヶ丘8丁目': {cha:'さ', nums:'1,2'},
+  '佐々原': {cha:'さ', nums:'1,2'},
+  '三師団・交通局前': {cha:'さ', nums:'1'},
+  'サンシティ': {cha:'さ', nums:'1,2'},
+  'ＪＲ伊丹': {cha:'さ', nums:'1,2,3,4,5,6'},
+  'ＪＲ猪名寺': {cha:'さ', nums:'1'},
+  'JR北伊丹': {cha:'さ', nums:'1,2'},
+  'ＪＲ中山寺': {cha:'さ', nums:'1'},
+  '自衛隊病院前': {cha:'さ', nums:'1,2'},
+  '清水橋': {cha:'さ', nums:'1,2'},
+  '下河原': {cha:'さ', nums:'1'},
+  '瑞ヶ池': {cha:'さ', nums:'1,2'},
+  '鈴原町1丁目': {cha:'さ', nums:'1,2'},
+  '鈴原町4丁目': {cha:'さ', nums:'1,2'},
+  '鈴原町6丁目': {cha:'さ', nums:'1,2'},
+  'スポーツセンター前': {cha:'さ', nums:'1,2'},
+  'スポーツセンター南': {cha:'さ', nums:'1,2'},
+  '住友北': {cha:'さ', nums:'1,2'},
+  '玉田団地': {cha:'た', nums:'1,2'},
+  '塚口': {cha:'た', nums:'1,2'},
+  '塚口小学校前': {cha:'た', nums:'1,2'},
+  '塚口町1丁目': {cha:'た', nums:'1,2,3,4'},
+  '塚口町5丁目': {cha:'た', nums:'1,2'},
+  '塚口町6丁目': {cha:'た', nums:'1,2'},
+  '辻村': {cha:'た', nums:'1,2'},
+  '鶴田団地': {cha:'た', nums:'1,2'},
+  '寺本': {cha:'た', nums:'1,2'},
+  '寺本東': {cha:'た', nums:'1,2'},
+  '天神川団地': {cha:'た', nums:'1,2'},
+  '天王寺中学校前': {cha:'た', nums:'1,2'},
+  '中野': {cha:'な', nums:'1,2'},
+  '中野北': {cha:'な', nums:'1,2'},
+  '中野大橋': {cha:'な', nums:'1,2,3,4'},
+  '中野東': {cha:'な', nums:'1,2'},
+  '南菱': {cha:'な', nums:'1,2'},
+  '西池': {cha:'な', nums:'1,2'},
+  '西桑津': {cha:'な', nums:'1,2'},
+  '西野': {cha:'な', nums:'1,2'},
+  '西野団地': {cha:'な', nums:'1,2'},
+  '西野変電所': {cha:'な', nums:'1,2'},
+  '西野武庫川センター前': {cha:'な', nums:'1'},
+  '野里': {cha:'な', nums:'1,2'},
+  '野間': {cha:'な', nums:'1,2'},
+  '野間口': {cha:'な', nums:'1,2,3'},
+  '阪急伊丹': {cha:'は', nums:'1,2,3,4,5,6,9'},
+  '東有岡': {cha:'は', nums:'1,2'},
+  '東口酒井': {cha:'は', nums:'1'},
+  '東野': {cha:'は', nums:'1,2'},
+  '東野南': {cha:'は', nums:'1,2'},
+  '藤ノ木': {cha:'は', nums:'1'},
+  '札場辻': {cha:'は', nums:'1,2,3,4'},
+  '蛍池西町': {cha:'は', nums:'1'},
+  '蛍池南町': {cha:'は', nums:'1,2'},
+  '堀池口': {cha:'は', nums:'1,2,3'},
+  '堀池団地': {cha:'は', nums:'1,2'},
+  '堀池西': {cha:'は', nums:'1,2'},
+  '本町': {cha:'は', nums:'1,2'},
+  '松ヶ丘': {cha:'ま', nums:'1,2'},
+  '松ヶ丘南': {cha:'ま', nums:'1,2'},
+  '瑞原１丁目': {cha:'ま', nums:'1,2'},
+  '瑞原3丁目': {cha:'ま', nums:'1,2'},
+  '瑞穂小学校前': {cha:'ま', nums:'1,2'},
+  '緑丘小学校前': {cha:'ま', nums:'1,2,3,4'},
+  '緑ヶ丘7丁目': {cha:'ま', nums:'1,2'},
+  '緑ヶ丘2丁目': {cha:'ま', nums:'1,2'},
+  '南町': {cha:'ま', nums:'1,2'},
+  '南町住宅前': {cha:'ま', nums:'1,2'},
+  '南野': {cha:'ま', nums:'1,2'},
+  '南畑': {cha:'ま', nums:'1,2'},
+  '南本町1丁目': {cha:'ま', nums:'1,2'},
+  '南本町4丁目': {cha:'ま', nums:'1,2'},
+  '箕輪': {cha:'ま', nums:'1,2'},
+  '宮川原橋': {cha:'ま', nums:'1,2'},
+  '宮ノ前': {cha:'ま', nums:'1,2'},
+  '森本2丁目': {cha:'ま', nums:'1,2'},
+  '森本4丁目': {cha:'ま', nums:'1,2'},
+  '森本6丁目': {cha:'ま', nums:'1,2'},
+  '山田': {cha:'ま', nums:'1,2'},
+  '山田北': {cha:'ま', nums:'1,2'},
+  '山本団地': {cha:'ま', nums:'1'},
+  'ラスタホール前': {cha:'ま', nums:'1,2'},
+};
 const TIMETABLE_OFFICIAL_SEARCH = 'https://itamicity-bus.jp/timetable';
-const TIMETABLE_NAME_ALIASES = {'三師団交通局前':'三師団・交通局前','ＪＲ猪名寺':'JR猪名寺','ＪＲ猪名寺駅':'JR猪名寺','JR伊丹':'ＪＲ伊丹'};
+const TIMETABLE_NAME_ALIASES = {'三師団交通局前':'三師団・交通局前','ＪＲ猪名寺':'ＪＲ猪名寺','ＪＲ猪名寺駅':'ＪＲ猪名寺','JR猪名寺':'ＪＲ猪名寺','JR伊丹':'ＪＲ伊丹','JR中山寺':'ＪＲ中山寺','JR北伊丹':'JR北伊丹'};
 const TIMETABLE_FAVORITES = ['阪急伊丹','鴻池東','塚口','西野武庫川センター前','昆陽里','三師団交通局前','JR猪名寺','山田','JR伊丹','大阪国際空港'];
 function populateTimetableStops(){
  const el=document.getElementById('busTimetableStops');
@@ -3587,15 +3740,15 @@ function updateTimetablePlatforms(){
  const sel=document.getElementById('busTimetablePlatform');
  if(!sel)return;
  const name=TIMETABLE_NAME_ALIASES[(input?.value||'').trim()]||(input?.value||'').trim();
- const confirmed=TIMETABLE_CONFIRMED[name];
+ const confirmed=TIMETABLE_STOP_PLATFORM_DATA[name];
  const previous=sel.value;
- const numbers=confirmed?Object.keys(confirmed):Array.from({length:10},(_,i)=>String(i+1));
+ const numbers=confirmed?confirmed.nums.split(','):['1'];
  sel.replaceChildren(...numbers.map(n=>{const o=document.createElement('option');o.value=n;o.textContent=n+'番';return o;}));
  if(numbers.includes(previous) && confirmed)sel.value=previous;
  const msg=document.getElementById('busTimetableMessage');
  if(msg)msg.textContent=confirmed
-  ? `${name}は現行公式時刻表の${numbers.join('・')}番のりばを確認済みです。`
-  : '全停留所検索モード：1〜10番から選択できます。未照合の番号は公式時刻表の表示内容を必ず確認してください。';
+  ? `${name}は公式一覧に登録されたのりば（${numbers.join('・')}）を表示します。`
+  : 'この停留所の乗り場番号は未確認です。公式サイトの停留所検索から確認してください。';
 }
 document.addEventListener('click',function(event){
  const choice=event.target.closest('#busTimetableFavorites button[data-stop]');
@@ -3612,21 +3765,22 @@ document.addEventListener('click',function(event){
  if(!raw){if(msg)msg.textContent='停留所名を入力してください。';input?.focus();return;}
  const name=TIMETABLE_NAME_ALIASES[raw]||raw;
  const no=document.getElementById('busTimetablePlatform')?.value||'1';
- const knownPlatform=TIMETABLE_CONFIRMED[name] && Object.prototype.hasOwnProperty.call(TIMETABLE_CONFIRMED[name],no);
- const cha=TIMETABLE_CONFIRMED[name]?.[no];
+ const info=TIMETABLE_STOP_PLATFORM_DATA[name];
+ const knownPlatform=!!info && info.nums.split(',').includes(no);
+ const cha=knownPlatform?info.cha:null;
  const viewer=document.getElementById('busTimetableViewer');
  const frame=document.getElementById('busTimetableFrame');
  const external=document.getElementById('busTimetableExternal');
  const query={stop:name,no};
  if(cha)query.cha=cha;
  const url=TIMETABLE_OFFICIAL_SEARCH+'?'+new URLSearchParams(query).toString();
- if(frame)frame.src=url;
- if(external){external.href=url;external.textContent='この時刻表を公式サイトで開く';}
+ if(frame)frame.src=knownPlatform?url:TIMETABLE_OFFICIAL_SEARCH;
+ if(external){external.href=knownPlatform?url:TIMETABLE_OFFICIAL_SEARCH;external.textContent=knownPlatform?'この時刻表を公式サイトで開く':'公式時刻表検索を開く';}
  if(viewer)viewer.hidden=false;
  requestAnimationFrame(fitBusTimetableFrame);
  if(msg)msg.textContent=knownPlatform
   ? `${name}${no}番のりばの現行公式時刻表を表示します。`
-  : `${name}${no}番のりばを現行公式サイトで検索します（乗り場未照合）。表示された停留所名・のりば・行先を必ず確認してください。`;
+  : `${name}は直接リンク未登録のため公式検索画面を表示します。`;
 });
 document.addEventListener('click',event=>{
  if(!event.target.closest('#busTimetableOfficialSearch'))return;
